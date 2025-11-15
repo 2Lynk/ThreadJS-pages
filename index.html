@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
-    /* ---------- Modern grey theme with enhanced visuals ---------- */
     :root {
       --bg-primary: #f8f9fa;
       --bg-secondary: #ffffff;
@@ -19,12 +18,9 @@
       --accent-hover: #495057;
       --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
       --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -34,7 +30,6 @@
       line-height: 1.6;
     }
 
-    /* ---------- Header ---------- */
     header {
       padding: 1.25rem 2rem;
       background: var(--panel);
@@ -62,17 +57,9 @@
       gap: 0.75rem;
     }
 
-    header h1::before {
-      content: "⚡";
-      font-size: 1.75rem;
-      -webkit-text-fill-color: #6c757d;
-    }
+    header h1::before { content: "⚡"; font-size: 1.75rem; -webkit-text-fill-color: #6c757d; }
 
-    /* ---------- Navigation ---------- */
-    nav {
-      display: flex;
-      gap: 0.75rem;
-    }
+    nav { display: flex; gap: 0.75rem; }
 
     nav a {
       color: var(--text-primary);
@@ -89,198 +76,121 @@
       overflow: hidden;
     }
 
-    nav a::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(108, 117, 125, 0.1), transparent);
-      transition: left 0.3s ease;
-    }
+    nav a:hover { background: var(--accent); color: white; border-color: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    nav a[href="index.html"], nav a[href="./"] { background: var(--accent); color: white; border-color: var(--accent-hover); }
 
-    nav a:hover::before {
-      left: 100%;
-    }
-
-    nav a:hover {
-      background: var(--accent);
-      color: white;
-      border-color: var(--accent-hover);
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-md);
-    }
-
-    nav a:active {
-      transform: translateY(0);
-      box-shadow: var(--shadow-sm);
-    }
-
-    /* Current page indicator */
-    nav a[href="index.html"] {
-      background: var(--accent);
-      color: white;
-      border-color: var(--accent-hover);
-    }
-
-    /* ---------- Main Content ---------- */
     #redoc-container {
       height: calc(100vh - 70px);
       background: var(--bg-secondary);
       box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.03);
+      position: relative;
     }
 
-    /* Redoc customization */
-    .redoc-wrap {
-      background: var(--bg-secondary) !important;
-    }
+    .redoc-wrap { background: var(--bg-secondary) !important; }
 
-    /* ---------- Loading State ---------- */
-    #redoc-container::before {
+    /* Loading overlay only while .loading is present */
+    #redoc-container.loading::before {
       content: "Loading API Documentation...";
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100%;
       font-size: 1.1rem;
       color: var(--text-secondary);
+      background: var(--bg-secondary);
+      z-index: 2;
       animation: pulse 1.5s ease-in-out infinite;
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 0.6; }
-      50% { opacity: 1; }
-    }
+    @keyframes pulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
 
-    /* ---------- Responsive Design ---------- */
     @media (max-width: 768px) {
-      header {
-        flex-direction: column;
-        gap: 1rem;
-        padding: 1rem;
-      }
-
-      header h1 {
-        font-size: 1.25rem;
-      }
-
-      nav {
-        width: 100%;
-        justify-content: center;
-      }
-
-      nav a {
-        flex: 1;
-        text-align: center;
-        padding: 0.5rem 0.8rem;
-        font-size: 0.875rem;
-      }
-
-      #redoc-container {
-        height: calc(100vh - 130px);
-      }
+      header { flex-direction: column; gap: 1rem; padding: 1rem; }
+      header h1 { font-size: 1.25rem; }
+      nav { width: 100%; justify-content: center; }
+      nav a { flex: 1; text-align: center; padding: 0.5rem 0.8rem; font-size: 0.875rem; }
+      #redoc-container { height: calc(100vh - 130px); }
     }
 
-    /* ---------- Scrollbar Styling ---------- */
-    ::-webkit-scrollbar {
-      width: 10px;
-      height: 10px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: var(--bg-primary);
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: var(--border-medium);
-      border-radius: 5px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--accent);
-    }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 5px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
   </style>
 
-  <!-- Redoc standalone -->
   <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
 </head>
-
 <body>
   <header>
     <h1>ThreadJS API Reference</h1>
     <nav>
       <a href="index.html">📚 API Reference</a>
-      <a href="inspector.html">🔍 Inspector</a>
     </nav>
   </header>
 
-  <div id="redoc-container"></div>
+  <div id="redoc-container" class="loading"></div>
 
   <script>
-    Redoc.init(
-      "openapi.yaml",
-      {
-        theme: {
-          colors: {
-            primary: { main: "#6c757d" },
-            text: {
-              primary: "#1a1d20",
-              secondary: "#495057"
+    (function() {
+      var container = document.getElementById("redoc-container");
+      var specUrl = "openapi.yaml"; // relative to docs/
+
+      function onLoaded() {
+        container.classList.remove("loading");
+      }
+
+      // Initialize Redoc and remove loading state when done
+      try {
+        Redoc.init(
+          specUrl,
+          {
+            theme: {
+              colors: {
+                primary: { main: "#6c757d" },
+                text: { primary: "#1a1d20", secondary: "#495057" },
+                http: { get: "#10b981", post: "#3b82f6", put: "#f59e0b", delete: "#ef4444", patch: "#8b5cf6" },
+                border: { dark: "#adb5bd", light: "#dee2e6" }
+              },
+              sidebar: { backgroundColor: "#f8f9fa", textColor: "#1a1d20", activeTextColor: "#495057", groupItems: { activeBackgroundColor: "#e9ecef" } },
+              rightPanel: { backgroundColor: "#212529", textColor: "#f8f9fa" },
+              typography: {
+                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                fontSize: "15px",
+                lineHeight: "1.6",
+                headings: { fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif", fontWeight: "600" },
+                code: { fontFamily: "'Fira Code', 'Courier New', monospace", fontSize: "14px" }
+              }
             },
-            http: {
-              get: "#10b981",
-              post: "#3b82f6",
-              put: "#f59e0b",
-              delete: "#ef4444",
-              patch: "#8b5cf6"
-            },
-            border: {
-              dark: "#adb5bd",
-              light: "#dee2e6"
-            }
+            scrollYOffset: 70,
+            hideDownloadButton: false,
+            disableSearch: false,
+            expandResponses: "200,201",
+            jsonSampleExpandLevel: 2,
+            hideSingleRequestSampleTab: true,
+            menuToggle: true,
+            nativeScrollbars: false,
+            pathInMiddlePanel: true,
+            requiredPropsFirst: true,
+            sortPropsAlphabetically: false,
+            expandDefaultServerVariables: true
           },
-          sidebar: {
-            backgroundColor: "#f8f9fa",
-            textColor: "#1a1d20",
-            activeTextColor: "#495057",
-            groupItems: {
-              activeBackgroundColor: "#e9ecef"
-            }
-          },
-          rightPanel: {
-            backgroundColor: "#212529",
-            textColor: "#f8f9fa"
-          },
-          typography: {
-            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-            fontSize: "15px",
-            lineHeight: "1.6",
-            headings: {
-              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-              fontWeight: "600"
-            },
-            code: {
-              fontFamily: "'Fira Code', 'Courier New', monospace",
-              fontSize: "14px"
-            }
+          container,
+          onLoaded
+        );
+
+        // Safety net: if Redoc fails silently (e.g. missing spec), show an error after 5s
+        setTimeout(function() {
+          if (container.classList.contains('loading')) {
+            container.classList.remove('loading');
+            container.innerHTML = '<div style="padding:1rem;color:#b91c1c;">Failed to load openapi.yaml. Ensure it is available at <code>docs/openapi.yaml</code> (GitHub Pages docs folder) or fix the path.</div>';
           }
-        },
-        scrollYOffset: 70,
-        hideDownloadButton: false,
-        disableSearch: false,
-        expandResponses: "200,201",
-        jsonSampleExpandLevel: 2,
-        hideSingleRequestSampleTab: true,
-        menuToggle: true,
-        nativeScrollbars: false,
-        pathInMiddlePanel: true,
-        requiredPropsFirst: true,
-        sortPropsAlphabetically: false,
-        expandDefaultServerVariables: true
-      },
-      document.getElementById("redoc-container")
-    );
+        }, 5000);
+      } catch (e) {
+        container.classList.remove('loading');
+        container.innerHTML = '<div style="padding:1rem;color:#b91c1c;">Error initializing Redoc: ' + String(e) + '</div>';
+      }
+    })();
   </script>
 </body>
 </html>
