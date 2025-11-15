@@ -335,7 +335,6 @@
       }
     }
 
-    /* scrollbars for code preview */
     .mod-code-wrapper::-webkit-scrollbar {
       width: 8px;
       height: 8px;
@@ -368,7 +367,7 @@
       <h2>Example Mods</h2>
       <p>
         These example scripts live in
-        <code>example-mods/</code> in the ThreadJS docs repository.
+        <code>example-mods/&lt;version&gt;/</code> in the ThreadJS docs repository.
         Drop any of them into your server’s <code>config/jsmods</code> folder to try them out.
       </p>
     </div>
@@ -394,13 +393,12 @@
   </div>
 </main>
 
-<!-- Shared version config/logic -->
-<script src="version.js" defer></script>
+<!-- Shared dynamic version loader -->
+<script src="version.js"></script>
 
 <script>
   const OWNER = "2Lynk";
   const REPO = "ThreadJS-pages";
-  const MODS_PATH = "example-mods";
 
   const statusEl = document.getElementById("mods-status");
   const gridEl = document.getElementById("mods-grid");
@@ -408,6 +406,10 @@
   function setStatus(text, isError) {
     statusEl.textContent = text;
     statusEl.classList.toggle("error", !!isError);
+  }
+
+  function clearGrid() {
+    gridEl.innerHTML = "";
   }
 
   function extractDescription(source) {
@@ -517,12 +519,22 @@
     return card;
   }
 
-  async function fetchMods() {
+  async function fetchModsForVersion(versionId) {
+    clearGrid();
+    setStatus(`Loading example mods for ${versionId}…`, false);
+
+    // example-mods/v1.0.0, example-mods/v2.0.0, etc.
+    const modsPath = `example-mods/${encodeURIComponent(versionId)}`;
+
     try {
       const apiUrl =
-        `https://api.github.com/repos/${OWNER}/${REPO}/contents/${MODS_PATH}`;
+        `https://api.github.com/repos/${OWNER}/${REPO}/contents/${modsPath}`;
       const res = await fetch(apiUrl);
       if (!res.ok) {
+        if (res.status === 404) {
+          setStatus(`No example mods found for ${versionId}.`, true);
+          return;
+        }
         throw new Error("GitHub API returned " + res.status);
       }
       const items = await res.json();
@@ -531,11 +543,14 @@
       );
 
       if (!files.length) {
-        setStatus("No .js example mods found in example-mods/.", true);
+        setStatus(`No .js example mods found in ${modsPath}/.`, true);
         return;
       }
 
-      setStatus(`Loaded ${files.length} example mod${files.length > 1 ? "s" : ""}.`);
+      setStatus(
+        `Loaded ${files.length} example mod${files.length > 1 ? "s" : ""} for ${versionId}.`,
+        false
+      );
 
       for (const file of files) {
         try {
@@ -565,20 +580,30 @@
       }
     } catch (e) {
       console.error(e);
-      setStatus("Failed to load example mods from GitHub. Check your network or rate limits.", true);
+      setStatus(
+        `Failed to load example mods for ${versionId}. Check your network or GitHub rate limits.`,
+        true
+      );
     }
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    // hook up shared version selector for this page
-    if (window.ThreadJsVersions && window.ThreadJsVersions.init) {
-      window.ThreadJsVersions.init({
+    if (window.ThreadJsVersion && window.ThreadJsVersion.initSelector) {
+      ThreadJsVersion.initSelector({
         selectId: "versionSelectExamples",
         noteId: "versionNoteExamples",
-        pageKey: "examples"
+        onReady(entry) {
+          // entry.id is "v1.0.0", "v2.0.0", etc.
+          fetchModsForVersion(entry.id);
+        },
+        onChange(entry) {
+          fetchModsForVersion(entry.id);
+        }
       });
+    } else {
+      // Fallback: no version system available
+      setStatus("Version system not loaded. Cannot determine example-mods version.", true);
     }
-    fetchMods();
   });
 </script>
 </body>
