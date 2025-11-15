@@ -30,11 +30,13 @@ info:
 
     ## How to read this reference
 
-    This is **not** a web/HTTP API. Everything documented here is a **JavaScript scripting API** you call from your ThreadJS scripts.
+    This is **not a web / HTTP API**.
 
-    The OpenAPI structure is only used so Redoc can render a nice reference:
+    Everything documented here is a **JavaScript scripting API** you call from your ThreadJS mods.
 
-    - Each **path** (like `/api/log`) represents a JavaScript function (`api.log(...)`).
+    The OpenAPI format is used only so Redoc can render a nice reference:
+
+    - Each **path** (like `/api/log`) represents a JavaScript function (for example `api.log(...)`).
     - The **request body** describes the function parameters.
     - The **responses** describe the return value or effect.
     - The HTTP method labels (`GET`, `POST`, etc.) have **no runtime meaning** for ThreadJS.
@@ -84,6 +86,18 @@ paths:
       responses:
         '200':
           description: OK (message logged)
+      x-codeSamples:
+        - lang: JavaScript
+          label: ThreadJS script
+          source: |
+            // Basic logging
+            api.log("Hello from ThreadJS!");
+
+            // Log an object
+            api.log({ player: "Steve", health: 20 });
+
+            // Log a number
+            api.log(42);
 
   /api/scriptsDir:
     get:
@@ -109,10 +123,6 @@ paths:
       summary: api.sendMessage(message)
       description: |
         Broadcast a chat message to **all** players on the server.
-
-        ```javascript
-        api.sendMessage("Server is restarting in 5 minutes!");
-        ```
       requestBody:
         content:
           application/json:
@@ -125,6 +135,12 @@ paths:
       responses:
         '200':
           description: OK (message broadcast)
+      x-codeSamples:
+        - lang: JavaScript
+          label: Broadcast to everyone
+          source: |
+            api.sendMessage("Server restart in 5 minutes!");
+            api.sendMessage("Welcome to the ThreadJS test server.");
 
   /api/sendMessageTo:
     post:
@@ -132,10 +148,6 @@ paths:
       summary: api.sendMessageTo(target, message)
       description: |
         Send a private chat message to a specific player by name.
-
-        ```javascript
-        api.sendMessageTo("Steve", "You found a secret area!");
-        ```
       requestBody:
         content:
           application/json:
@@ -154,6 +166,11 @@ paths:
           description: OK (message sent)
         '404':
           description: Target player not found
+      x-codeSamples:
+        - lang: JavaScript
+          label: Send to one player
+          source: |
+            api.sendMessageTo("Steve", "You found a secret room!");
 
   /api/registerCommand:
     post:
@@ -162,43 +179,21 @@ paths:
       description: |
         Register a custom JavaScript-backed command.
 
-        This is a **JavaScript runtime function**, not an HTTP endpoint. The OpenAPI mapping is purely for documentation rendering in Redoc.
-
-        You call it inside your script, e.g.:
+        You call this inside your script. It does **not** create an HTTP endpoint.
 
         ```javascript
+        // /js heal Steve 10
         api.registerCommand("heal", (ctx, args) => {
-          // ...
+          const [targetName, amountStr] = args;
+          const amount = Number(amountStr) || 0;
+          ctx.reply(`Healing ${targetName} for ${amount} HP`);
         });
 
+        // Only ops (permission level 2+) can use this
         api.registerCommand("godmode", (ctx, args) => {
           // ...
         }, 2, true);
-
-        api.registerCommand("tp", (ctx, args) => {
-          // ...
-        }, 0, false, ["player","double","double","double"]);
         ```
-
-        Parameters:
-        - `name` (string, required): Command name used after `/js` or `/threadjs run`.
-        - `handler` (function, required): `(ctx, args) => {}` invoked on execution.
-        - `minPermissionLevel` (int, optional): Minecraft permission level (0–4). Default 0.
-        - `playerOnly` (boolean, optional): If true, console cannot execute it.
-        - `argSpec` (string[] optional): Tab completion hints (e.g. `player`, `int`, `double`).
-
-        Execution examples (in game):
-
-        - `/js heal Steve 10`
-        - `/threadjs run tp Steve 0 70 0`
-
-        The handler receives:
-        - `ctx`: CommandContext (with `reply(message)` helper).
-        - `args`: Array of string arguments.
-
-        Returned value: None (side-effect only).
-
-        Note: This spec uses `POST` only to make the function visible in Redoc. There is **no network call** at `/api/registerCommand`.
       operationId: registerCommand
       x-threadjs-js-function: true
       x-internal: true
@@ -231,6 +226,22 @@ paths:
           description: Command registered
         '400':
           description: Invalid parameters
+      x-codeSamples:
+        - lang: JavaScript
+          label: Basic command
+          source: |
+            api.registerCommand("ping", (ctx, args) => {
+              ctx.reply("Pong!");
+            });
+
+        - lang: JavaScript
+          label: Command with permissions
+          source: |
+            api.registerCommand("heal", (ctx, args) => {
+              const [targetName, amountStr] = args;
+              const amount = Number(amountStr) || 10;
+              ctx.reply(`Healing ${targetName} for ${amount} HP`);
+            }, 2, true, ["player", "int"]);
 
   /api/registerMod:
     post:
@@ -238,17 +249,6 @@ paths:
       summary: api.registerMod(id, module)
       description: |
         Register a JavaScript "mod module" with optional lifecycle hooks.
-
-        ```javascript
-        api.registerMod("hello-mod", {
-          onInitialize(api) {
-            api.log("hello-mod initialized");
-          },
-          onReload(api) {
-            api.log("hello-mod reloaded");
-          }
-        });
-        ```
       requestBody:
         content:
           application/json:
@@ -263,13 +263,23 @@ paths:
                   properties:
                     onInitialize:
                       type: string
-                      description: Stringified function body (for docs only).
                     onReload:
                       type: string
-                      description: Stringified function body (for docs only).
       responses:
         '201':
           description: Mod registered
+      x-codeSamples:
+        - lang: JavaScript
+          label: Simple mod
+          source: |
+            api.registerMod("hello-mod", {
+              onInitialize(api) {
+                api.log("hello-mod initialized");
+              },
+              onReload(api) {
+                api.log("hello-mod reloaded");
+              }
+            });
 
   /api/events/serverTick:
     post:
@@ -277,12 +287,6 @@ paths:
       summary: api.onServerTick(callback)
       description: |
         Register a callback that runs every server tick.
-
-        ```javascript
-        api.onServerTick(() => {
-          // runs every tick
-        });
-        ```
       requestBody:
         content:
           application/json:
@@ -291,10 +295,16 @@ paths:
               properties:
                 callback:
                   type: string
-                  description: Stringified function (for docs only).
       responses:
         '200':
           description: Handler registered
+      x-codeSamples:
+        - lang: JavaScript
+          label: Every tick
+          source: |
+            api.onServerTick(() => {
+              // do something every tick
+            });
 
   /api/events/playerJoin:
     post:
@@ -302,12 +312,6 @@ paths:
       summary: api.onPlayerJoin(callback)
       description: |
         Register a callback for when a player joins the server.
-
-        ```javascript
-        api.onPlayerJoin(player => {
-          api.sendMessage(`${player.name} joined the server!`);
-        });
-        ```
       requestBody:
         content:
           application/json:
@@ -316,13 +320,18 @@ paths:
       responses:
         '200':
           description: Handler registered
+      x-codeSamples:
+        - lang: JavaScript
+          label: Welcome message
+          source: |
+            api.onPlayerJoin(player => {
+              api.sendMessage(`Welcome ${player.name} to the server!`);
+            });
 
   /api/events/playerLeave:
     post:
       tags: [Events]
       summary: api.onPlayerLeave(callback)
-      description: |
-        Register a callback for when a player leaves the server.
       requestBody:
         content:
           application/json:
@@ -336,8 +345,6 @@ paths:
     post:
       tags: [Events]
       summary: api.onPlayerTick(callback)
-      description: |
-        Register a callback that runs every tick **per player**.
       requestBody:
         content:
           application/json:
@@ -351,8 +358,6 @@ paths:
     post:
       tags: [Events]
       summary: api.onChatMessage(callback)
-      description: |
-        Register a callback for every chat message.
       requestBody:
         content:
           application/json:
@@ -369,8 +374,6 @@ paths:
     post:
       tags: [Events]
       summary: api.onBlockBreak(callback)
-      description: |
-        Register a callback for when a player breaks a block.
       requestBody:
         content:
           application/json:
@@ -384,8 +387,6 @@ paths:
     post:
       tags: [Events]
       summary: api.onBlockPlace(callback)
-      description: |
-        Register a callback for when a player places a block.
       requestBody:
         content:
           application/json:
@@ -399,8 +400,6 @@ paths:
     post:
       tags: [Events]
       summary: api.onUseBlock(callback)
-      description: |
-        Register a callback for when a player interacts with a block.
       requestBody:
         content:
           application/json:
@@ -414,8 +413,6 @@ paths:
     post:
       tags: [Events]
       summary: api.onUseItem(callback)
-      description: |
-        Register a callback for when a player uses an item.
       requestBody:
         content:
           application/json:
@@ -429,8 +426,6 @@ paths:
     post:
       tags: [Events]
       summary: api.onAttackEntity(callback)
-      description: |
-        Register a callback for when a player attacks an entity.
       requestBody:
         content:
           application/json:
@@ -444,8 +439,6 @@ paths:
     post:
       tags: [Events]
       summary: api.onEntityDamage(callback)
-      description: |
-        Register a callback for when an entity takes damage.
       requestBody:
         content:
           application/json:
@@ -459,8 +452,6 @@ paths:
     post:
       tags: [Events]
       summary: api.onEntityDeath(callback)
-      description: |
-        Register a callback for when an entity dies.
       requestBody:
         content:
           application/json:
@@ -474,8 +465,7 @@ paths:
     post:
       tags: [World]
       summary: api.world.setBlock(x, y, z, dimensionId, blockId)
-      description: |
-        Set a single block at the given position.
+      description: Set a single block at the given position.
       requestBody:
         content:
           application/json:
@@ -491,13 +481,16 @@ paths:
       responses:
         '200':
           description: Block set
+      x-codeSamples:
+        - lang: JavaScript
+          label: Place a diamond block
+          source: |
+            api.world.setBlock(0, 64, 0, "minecraft:overworld", "minecraft:diamond_block");
 
   /api/world/getBlock:
     get:
       tags: [World]
       summary: api.world.getBlock(x, y, z, dimensionId)
-      description: |
-        Get a snapshot of the block at the given position.
       parameters:
         - name: x
           in: query
@@ -527,8 +520,6 @@ paths:
     post:
       tags: [World]
       summary: api.world.fillArea(x1, y1, z1, x2, y2, z2, dimensionId, blockId)
-      description: |
-        Fill a rectangular area with the given block.
       requestBody:
         content:
           application/json:
@@ -552,15 +543,12 @@ paths:
               schema:
                 type: object
                 properties:
-                  blocksPlaced:
-                    type: integer
+                  blocksPlaced: { type: integer }
 
   /api/world/replaceBlocks:
     post:
       tags: [World]
       summary: api.world.replaceBlocks(x1, y1, z1, x2, y2, z2, dimensionId, fromBlockId, toBlockId)
-      description: |
-        Replace blocks of a given type inside a rectangular area.
       requestBody:
         content:
           application/json:
@@ -585,15 +573,12 @@ paths:
               schema:
                 type: object
                 properties:
-                  blocksReplaced:
-                    type: integer
+                  blocksReplaced: { type: integer }
 
   /api/players/list:
     get:
       tags: [Players]
       summary: api.players.list()
-      description: |
-        List all online players as `PlayerState` objects.
       responses:
         '200':
           description: List of players
@@ -608,8 +593,6 @@ paths:
     post:
       tags: [Players]
       summary: api.players.teleport(player, x, y, z, dimensionId)
-      description: |
-        Teleport a player to a specific position.
       requestBody:
         content:
           application/json:
@@ -623,17 +606,18 @@ paths:
                 z: { type: number }
                 dimensionId: { type: string }
       responses:
-        '200':
-          description: Player teleported
-        '404':
-          description: Player not found
+        '200': { description: Player teleported }
+        '404': { description: Player not found }
+      x-codeSamples:
+        - lang: JavaScript
+          label: Teleport Steve
+          source: |
+            api.players.teleport("Steve", 0, 80, 0, "minecraft:overworld");
 
   /api/players/setGamemode:
     post:
       tags: [Players]
       summary: api.players.setGamemode(player, mode)
-      description: |
-        Set a player's gamemode.
       requestBody:
         content:
           application/json:
@@ -646,15 +630,12 @@ paths:
                   type: string
                   enum: [SURVIVAL, CREATIVE, ADVENTURE, SPECTATOR]
       responses:
-        '200':
-          description: Gamemode set
+        '200': { description: Gamemode set }
 
   /api/players/setHealth:
     post:
       tags: [Players]
       summary: api.players.setHealth(player, health)
-      description: |
-        Set a player's health (hearts × 2).
       requestBody:
         content:
           application/json:
@@ -667,15 +648,12 @@ paths:
                   type: number
                   minimum: 0
       responses:
-        '200':
-          description: Health set
+        '200': { description: Health set }
 
   /api/players/heal:
     post:
       tags: [Players]
       summary: api.players.heal(player, amount)
-      description: |
-        Heal a player by the specified amount.
       requestBody:
         content:
           application/json:
@@ -688,15 +666,12 @@ paths:
                   type: number
                   minimum: 0
       responses:
-        '200':
-          description: Player healed
+        '200': { description: Player healed }
 
   /api/players/giveItem:
     post:
       tags: [Players]
       summary: api.players.giveItem(player, itemId, count)
-      description: |
-        Give an item stack to a player.
       requestBody:
         content:
           application/json:
@@ -710,15 +685,12 @@ paths:
                   type: integer
                   minimum: 1
       responses:
-        '200':
-          description: Item given
+        '200': { description: Item given }
 
   /api/players/playerSetPos:
     post:
       tags: [Players]
       summary: api.players.setPos(playerState, x, y, z)
-      description: |
-        Set the position of a `PlayerState`.
       requestBody:
         content:
           application/json:
@@ -732,15 +704,12 @@ paths:
                 y: { type: number }
                 z: { type: number }
       responses:
-        '200':
-          description: Position set
+        '200': { description: Position set }
 
   /api/players/playerTeleport:
     post:
       tags: [Players]
       summary: api.players.teleportState(playerState, x, y, z, dimensionId)
-      description: |
-        Teleport a `PlayerState` to another position / dimension.
       requestBody:
         content:
           application/json:
@@ -755,15 +724,12 @@ paths:
                 z: { type: number }
                 dimensionId: { type: string }
       responses:
-        '200':
-          description: PlayerState teleported
+        '200': { description: PlayerState teleported }
 
   /api/players/playerSetHealth:
     post:
       tags: [Players]
       summary: api.players.setHealthState(playerState, health)
-      description: |
-        Set the health of a `PlayerState`.
       requestBody:
         content:
           application/json:
@@ -775,15 +741,12 @@ paths:
                   $ref: '#/components/schemas/PlayerState'
                 health: { type: number }
       responses:
-        '200':
-          description: PlayerState health set
+        '200': { description: PlayerState health set }
 
   /api/players/playerHeal:
     post:
       tags: [Players]
       summary: api.players.healState(playerState, amount)
-      description: |
-        Heal a `PlayerState`.
       requestBody:
         content:
           application/json:
@@ -795,15 +758,12 @@ paths:
                   $ref: '#/components/schemas/PlayerState'
                 amount: { type: number }
       responses:
-        '200':
-          description: PlayerState healed
+        '200': { description: PlayerState healed }
 
   /api/players/playerSetGamemode:
     post:
       tags: [Players]
       summary: api.players.setGamemodeState(playerState, mode)
-      description: |
-        Set gamemode on a `PlayerState`.
       requestBody:
         content:
           application/json:
@@ -817,15 +777,12 @@ paths:
                   type: string
                   enum: [SURVIVAL, CREATIVE, ADVENTURE, SPECTATOR]
       responses:
-        '200':
-          description: PlayerState gamemode set
+        '200': { description: PlayerState gamemode set }
 
   /api/players/playerGiveItem:
     post:
       tags: [Players]
       summary: api.players.giveItemState(playerState, itemId, count)
-      description: |
-        Give an item to a `PlayerState`.
       requestBody:
         content:
           application/json:
@@ -838,15 +795,12 @@ paths:
                 itemId: { type: string }
                 count: { type: integer }
       responses:
-        '200':
-          description: Item given
+        '200': { description: Item given }
 
   /api/players/playerEquipArmor:
     post:
       tags: [Players]
       summary: api.players.equipArmor(playerState, armorSpec)
-      description: |
-        Equip armor pieces on a `PlayerState`.
       requestBody:
         content:
           application/json:
@@ -864,15 +818,12 @@ paths:
                     leggings: { type: string, nullable: true }
                     boots: { type: string, nullable: true }
       responses:
-        '200':
-          description: Armor equipped
+        '200': { description: Armor equipped }
 
   /api/entities/spawn:
     post:
       tags: [Entities]
       summary: api.entities.spawn(entityTypeId, x, y, z, dimensionId)
-      description: |
-        Spawn an entity at a position.
       requestBody:
         content:
           application/json:
@@ -893,15 +844,17 @@ paths:
               schema:
                 type: object
                 properties:
-                  uuid:
-                    type: string
+                  uuid: { type: string }
+      x-codeSamples:
+        - lang: JavaScript
+          label: Spawn a cow
+          source: |
+            api.entities.spawn("minecraft:cow", 0, 64, 0, "minecraft:overworld");
 
   /api/entities/kill:
     delete:
       tags: [Entities]
       summary: api.entities.kill(entityId)
-      description: |
-        Kill an entity by UUID.
       parameters:
         - name: entityId
           in: query
@@ -910,17 +863,13 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
-          description: Entity killed
-        '404':
-          description: Entity not found
+        '200': { description: Entity killed }
+        '404': { description: Entity not found }
 
   /api/entities/find:
     post:
       tags: [Entities]
       summary: api.entities.find(options)
-      description: |
-        Find entities around a center point, optionally by type.
       requestBody:
         content:
           application/json:
@@ -928,8 +877,7 @@ paths:
               type: object
               required: [center]
               properties:
-                typeId:
-                  type: string
+                typeId: { type: string }
                 center:
                   type: object
                   required: [x, y, z, dimensionId]
@@ -955,8 +903,6 @@ paths:
     get:
       tags: [Data]
       summary: api.data.load(namespace, key)
-      description: |
-        Load persistent JSON data from the ThreadJS data store.
       parameters:
         - name: namespace
           in: query
@@ -980,8 +926,6 @@ paths:
     post:
       tags: [Data]
       summary: api.data.save(namespace, key, value)
-      description: |
-        Save persistent JSON data in the ThreadJS data store.
       requestBody:
         content:
           application/json:
@@ -995,13 +939,19 @@ paths:
       responses:
         '200':
           description: Data saved
+      x-codeSamples:
+        - lang: JavaScript
+          label: Save player stats
+          source: |
+            api.data.save("stats", "steve", {
+              kills: 10,
+              deaths: 2
+            });
 
   /api/scheduling/runLater:
     post:
       tags: [Scheduling]
       summary: api.scheduling.runLater(ticks, callback)
-      description: |
-        Schedule a callback to run once after a delay (in ticks).
       requestBody:
         content:
           application/json:
@@ -1017,13 +967,19 @@ paths:
       responses:
         '200':
           description: Task scheduled
+      x-codeSamples:
+        - lang: JavaScript
+          label: Run once later
+          source: |
+            // Run after 100 ticks (~5 seconds)
+            api.scheduling.runLater(100, () => {
+              api.log("5 seconds passed!");
+            });
 
   /api/scheduling/runRepeating:
     post:
       tags: [Scheduling]
       summary: api.scheduling.runRepeating(intervalTicks, callback)
-      description: |
-        Schedule a repeating callback every `intervalTicks`.
       requestBody:
         content:
           application/json:
@@ -1044,8 +1000,6 @@ paths:
     post:
       tags: [Debug]
       summary: api.debug.inspect(obj)
-      description: |
-        Inspect an object for debugging purposes.
       requestBody:
         content:
           application/json:
@@ -1061,8 +1015,6 @@ paths:
     post:
       tags: [Debug]
       summary: api.debug.describe(obj)
-      description: |
-        Get a human-readable description of an object.
       requestBody:
         content:
           application/json:
@@ -1078,8 +1030,6 @@ paths:
     post:
       tags: [Debug]
       summary: api.debug.breakpoint()
-      description: |
-        Hit a debugger breakpoint (if a debugger is attached).
       responses:
         '500':
           description: Breakpoint thrown
@@ -1088,8 +1038,6 @@ paths:
     post:
       tags: [Debug]
       summary: api.debug.setDebugLocal(options)
-      description: |
-        Configure where debug output goes.
       requestBody:
         content:
           application/json:
@@ -1112,8 +1060,6 @@ paths:
     post:
       tags: [Debug]
       summary: api.debug.startDebugger(port?)
-      description: |
-        Start the WebSocket debugger, optionally specifying a port.
       requestBody:
         content:
           application/json:
@@ -1128,6 +1074,16 @@ paths:
       responses:
         '200':
           description: Debugger started
+      x-codeSamples:
+        - lang: JavaScript
+          label: Default port
+          source: |
+            api.debug.startDebugger();
+
+        - lang: JavaScript
+          label: Custom port
+          source: |
+            api.debug.startDebugger(40000);
 
 components:
   schemas:
