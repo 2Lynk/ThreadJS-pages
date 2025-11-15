@@ -5,12 +5,11 @@
   <title>ThreadJS API Reference</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Grey UI + layout -->
   <style>
     :root {
-      --bg-primary: #e9ecef;
-      --bg-secondary: #f8f9fa;
-      --panel: linear-gradient(135deg, #dde2e6 0%, #ced4da 100%);
+      --bg-primary: #f8f9fa;
+      --bg-secondary: #ffffff;
+      --panel: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
       --text-primary: #1a1d20;
       --text-secondary: #495057;
       --border-light: #dee2e6;
@@ -25,8 +24,7 @@
 
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-        "Helvetica Neue", Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background: var(--bg-primary);
       color: var(--text-primary);
       line-height: 1.6;
@@ -81,6 +79,9 @@
       border: 1px solid var(--border-light);
       box-shadow: var(--shadow-sm);
       transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+      white-space: nowrap;
     }
 
     nav a:hover {
@@ -91,6 +92,7 @@
       box-shadow: var(--shadow-md);
     }
 
+    /* Current page highlight */
     nav a[href="index.html"],
     nav a[href="./"] {
       background: var(--accent);
@@ -98,298 +100,118 @@
       border-color: var(--accent-hover);
     }
 
-    main {
-      display: grid;
-      grid-template-columns: 260px minmax(0, 1fr);
-      gap: 1.5rem;
-      padding: 1.5rem 2rem 2rem;
-      height: calc(100vh - 70px);
-      box-sizing: border-box;
-    }
-
-    @media (max-width: 900px) {
-      main {
-        grid-template-columns: 1fr;
-        height: auto;
-      }
-    }
-
-    /* Sidebar: modules + functions */
-    .sidebar {
-      background: var(--bg-secondary);
-      border-radius: 10px;
-      border: 1px solid var(--border-light);
-      box-shadow: var(--shadow-sm);
-      padding: 1rem;
-      overflow-y: auto;
-      max-height: calc(100vh - 90px);
-    }
-
-    .sidebar h2 {
-      margin-top: 0;
-      margin-bottom: 0.75rem;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-secondary);
-    }
-
-    .tag-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .tag-list > li {
-      margin-bottom: 0.35rem;
-    }
-
-    .module-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.4rem 0.6rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      color: var(--text-primary);
-      border: 1px solid transparent;
-      user-select: none;
-    }
-
-    .module-header:hover {
-      background: #dee2e6;
-      border-color: var(--border-medium);
-    }
-
-    .module-header.active {
-      background: #dee2e6;
-      border-color: var(--border-medium);
-    }
-
-    .module-header-title {
-      flex: 1;
-    }
-
-    .module-header-chevron {
-      font-size: 0.7rem;
-      opacity: 0.7;
-      margin-left: 0.4rem;
-    }
-
-    .module-header.expanded .module-header-chevron {
-      transform: rotate(90deg);
-    }
-
-    .func-list {
-      list-style: none;
-      padding-left: 0.75rem;
-      margin: 0.25rem 0 0.35rem;
-    }
-
-    .func-list.hidden {
-      display: none;
-    }
-
-    .func-link {
-      display: block;
-      padding: 0.25rem 0.6rem 0.25rem 1.2rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      color: var(--text-secondary);
-      text-decoration: none;
-      border: 1px solid transparent;
-    }
-
-    .func-link:hover {
-      background: #e9ecef;
-      color: var(--text-primary);
-    }
-
-    .func-link.active {
-      background: #e9ecef;
-      color: var(--text-primary);
-      border-color: var(--border-medium);
-    }
-
-    /* Content area */
-    .content {
-      background: var(--bg-secondary);
-      border-radius: 10px;
-      border: 1px solid var(--border-light);
-      box-shadow: var(--shadow-sm);
-      padding: 1.25rem 1.5rem 2rem;
-      overflow-y: auto;
-      max-height: calc(100vh - 90px);
-    }
-
-    .intro {
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
+    /* Top version bar under header */
+    .version-bar {
+      padding: 0.5rem 2rem;
+      background: #f1f3f5;
       border-bottom: 1px solid var(--border-light);
-      color: var(--text-secondary);
-      font-size: 0.95rem;
-    }
-
-    .tag-section {
-      margin-bottom: 2rem;
-    }
-
-    .tag-section h2 {
-      margin: 1.5rem 0 0.75rem;
-      font-size: 1.1rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-secondary);
-    }
-
-    .function-card {
-      border-radius: 10px;
-      border: 1px solid var(--border-light);
-      box-shadow: var(--shadow-sm);
-      padding: 1rem 1.1rem;
-      margin-bottom: 1rem;
-      background: #ffffff;
-    }
-
-    .function-header {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .function-name {
-      font-family: "Fira Code", "Courier New", monospace;
-      font-size: 0.95rem;
-      background: #f1f3f5;
-      padding: 0.25rem 0.5rem;
-      border-radius: 6px;
-      border: 1px solid var(--border-light);
-    }
-
-    .function-tag-label {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-secondary);
-    }
-
-    .function-body {
-      display: grid;
-      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-      gap: 1rem;
-      margin-top: 0.5rem;
-    }
-
-    @media (max-width: 900px) {
-      .function-body {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .func-description {
+      gap: 0.5rem;
       font-size: 0.9rem;
       color: var(--text-secondary);
     }
 
-    .func-description h3,
-    .func-description h4 {
-      margin-top: 0.75rem;
-      margin-bottom: 0.35rem;
-      font-size: 0.95rem;
+    .version-bar label {
+      font-weight: 500;
+    }
+
+    .version-select {
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-medium);
+      background: var(--bg-secondary);
+      font-size: 0.9rem;
       color: var(--text-primary);
     }
 
-    .func-description p {
-      margin: 0.25rem 0;
-    }
-
-    .func-description ul {
-      padding-left: 1.2rem;
-      margin: 0.25rem 0;
-    }
-
-    /* Inline code only (not inside fenced code blocks) */
-    .func-description p > code,
-    .func-description li > code {
-      font-family: "Fira Code", "Courier New", monospace;
+    .version-note {
       font-size: 0.85rem;
-      background: #f1f3f5;
-      padding: 0.1rem 0.3rem;
-      border-radius: 4px;
-    }
-
-
-    .func-samples {
-      font-size: 0.85rem;
-    }
-
-    .func-samples-title {
-      font-weight: 600;
-      margin-bottom: 0.25rem;
       color: var(--text-secondary);
     }
 
-    .sample-block {
-      margin-bottom: 0.75rem;
+    #redoc-container {
+      height: calc(100vh - 120px); /* header + version bar */
+      background: var(--bg-secondary);
+      box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.03);
+      position: relative;
     }
 
-    .sample-label {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
+    .redoc-wrap {
+      background: var(--bg-secondary) !important;
+    }
+
+    /* Loading overlay only while .loading is present */
+    #redoc-container.loading::before {
+      content: "Loading API Documentation...";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
       color: var(--text-secondary);
-      margin-bottom: 0.15rem;
+      background: var(--bg-secondary);
+      z-index: 2;
+      animation: pulse 1.5s ease-in-out infinite;
     }
 
-    /* Code blocks */
-    pre {
-      margin: 0;
-      padding: 0.5rem 0.6rem;
-      background: #212529;
-      color: #f8f9fa;
-      border-radius: 6px;
-      overflow-x: auto;
-      font-size: 0.8rem;
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
     }
 
-    pre code {
-      font-family: "Fira Code", "Courier New", monospace;
-      background: transparent;
-      padding: 0;
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      header h1 {
+        font-size: 1.25rem;
+      }
+      nav {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      nav a {
+        flex: 1;
+        text-align: center;
+        padding: 0.5rem 0.8rem;
+        font-size: 0.875rem;
+      }
+      .version-bar {
+        padding: 0.5rem 1rem;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      #redoc-container {
+        height: calc(100vh - 150px);
+      }
     }
 
-    .loading-msg {
-      padding: 1rem;
-      color: var(--text-secondary);
-      font-size: 0.95rem;
+    /* scrollbars */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
     }
-
-    .error-msg {
-      padding: 1rem;
-      color: #b91c1c;
-      font-size: 0.95rem;
-      background: #fef2f2;
-      border-radius: 6px;
-      border: 1px solid #fecaca;
+    ::-webkit-scrollbar-track {
+      background: var(--bg-primary);
     }
-
-    /* Scrollbars */
-    ::-webkit-scrollbar { width: 10px; height: 10px; }
-    ::-webkit-scrollbar-track { background: var(--bg-primary); }
     ::-webkit-scrollbar-thumb {
       background: var(--border-medium);
       border-radius: 5px;
     }
-    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent);
+    }
   </style>
 
-  <!-- Markdown + YAML parsers -->
-  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+  <!-- shared version logic -->
+  <script src="version.js"></script>
 </head>
 <body>
   <header>
@@ -401,340 +223,111 @@
     </nav>
   </header>
 
-  <main>
-    <aside class="sidebar">
-      <h2>Modules</h2>
-      <ul class="tag-list" id="tag-list">
-        <!-- filled by JS -->
-      </ul>
-    </aside>
+  <!-- Version selector bar -->
+  <div class="version-bar">
+    <label for="versionSelectApi">Version:</label>
+    <select id="versionSelectApi" class="version-select"></select>
+    <span id="versionNoteApi" class="version-note"></span>
+  </div>
 
-    <section class="content" id="content-panel">
-      <div class="intro" id="intro">
-        Loading ThreadJS API description…
-      </div>
-      <div id="sections">
-        <!-- sections built by JS -->
-      </div>
-    </section>
-  </main>
+  <div id="redoc-container" class="loading"></div>
 
   <script>
-    const tagListEl = document.getElementById("tag-list");
-    const sectionsEl = document.getElementById("sections");
-    const introEl = document.getElementById("intro");
-    const contentPanel = document.getElementById("content-panel");
+    (function() {
+      var container = document.getElementById("redoc-container");
+      var specUrl = "openapi.yaml"; // relative to docs/
 
-    const moduleHeadersByTag = {};
-    const funcListsByTag = {};
-    const funcLinksById = {};
-    const functionCards = [];
-
-    // Smooth scroll inside content panel
-    function scrollToElement(el) {
-      if (!el || !contentPanel) return;
-      const contentRect = contentPanel.getBoundingClientRect();
-      const elRect = el.getBoundingClientRect();
-      const offset = elRect.top - contentRect.top + contentPanel.scrollTop - 10;
-      contentPanel.scrollTo({ top: offset, behavior: "smooth" });
-    }
-
-    function scrollToFunction(funcId) {
-      const el = document.getElementById("func-" + funcId);
-      scrollToElement(el);
-    }
-
-    function setActiveModuleAndFunc(tagName, funcId) {
-      // Expand correct module, collapse others
-      Object.entries(funcListsByTag).forEach(([tag, ul]) => {
-        const header = moduleHeadersByTag[tag];
-        const isActive = (tag === tagName);
-
-        if (isActive) {
-          ul.classList.remove("hidden");
-          header.classList.add("expanded", "active");
-        } else {
-          ul.classList.add("hidden");
-          header.classList.remove("expanded", "active");
-        }
-      });
-
-      // Highlight function
-      Object.values(funcLinksById).forEach(link => link.classList.remove("active"));
-      if (funcId && funcLinksById[funcId]) {
-        funcLinksById[funcId].classList.add("active");
+      // init shared version selector for this page (API docs)
+      if (window.ThreadJsVersions && window.ThreadJsVersions.init) {
+        window.ThreadJsVersions.init({
+          selectId: "versionSelectApi",
+          noteId: "versionNoteApi",
+          pageKey: "api"
+        });
       }
-    }
 
-    // Load and render openapi.yaml
-    fetch("openapi.yaml")
-      .then(res => {
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        return res.text();
-      })
-      .then(text => {
-        const spec = jsyaml.load(text);
+      function onLoaded() {
+        container.classList.remove("loading");
+      }
 
-        // Intro text from spec.info.description
-        if (spec.info && spec.info.description) {
-          introEl.innerHTML = marked.parse(spec.info.description);
-        } else {
-          introEl.textContent =
-            "ThreadJS lets you write Minecraft server mods in JavaScript. This page documents the scripting API.";
-        }
+      try {
+        Redoc.init(
+          specUrl,
+          {
+            theme: {
+              colors: {
+                primary: { main: "#6c757d" },
+                text: { primary: "#1a1d20", secondary: "#495057" },
+                http: {
+                  get: "#10b981",
+                  post: "#3b82f6",
+                  put: "#f59e0b",
+                  delete: "#ef4444",
+                  patch: "#8b5cf6"
+                },
+                border: { dark: "#adb5bd", light: "#dee2e6" }
+              },
+              sidebar: {
+                backgroundColor: "#f8f9fa",
+                textColor: "#1a1d20",
+                activeTextColor: "#495057",
+                groupItems: { activeBackgroundColor: "#e9ecef" }
+              },
+              rightPanel: {
+                backgroundColor: "#212529",
+                textColor: "#f8f9fa"
+              },
+              typography: {
+                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                fontSize: "15px",
+                lineHeight: "1.6",
+                headings: {
+                  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                  fontWeight: "600"
+                },
+                code: {
+                  fontFamily: "'Fira Code', 'Courier New', monospace",
+                  fontSize: "14px"
+                }
+              }
+            },
+            scrollYOffset: 110,           // header + version bar
+            hideDownloadButton: false,
+            disableSearch: false,
+            expandResponses: "200,201",
+            jsonSampleExpandLevel: 2,
+            hideSingleRequestSampleTab: true,
+            menuToggle: true,
+            nativeScrollbars: false,
+            pathInMiddlePanel: true,
+            requiredPropsFirst: true,
+            sortPropsAlphabetically: false,
+            expandDefaultServerVariables: true,
+            hideInternal: true
+          },
+          container,
+          onLoaded
+        );
 
-        const tags = (spec.tags || []).map(t => t.name);
-
-        // Collect operations per tag (no methods, direct op under path)
-        const operationsByTag = {};
-        const paths = spec.paths || {};
-
-        for (const path in paths) {
-          if (!Object.prototype.hasOwnProperty.call(paths, path)) continue;
-          const op = paths[path];
-          if (!op || !Array.isArray(op.tags)) continue;
-
-          const summary = op.summary || path;
-          const description = op.description || "";
-          const samples = op["x-codeSamples"] || [];
-
-          op.tags.forEach(tag => {
-            if (!operationsByTag[tag]) operationsByTag[tag] = [];
-
-            const list = operationsByTag[tag];
-
-            // Create a stable-ish function id
-            const baseId = (summary || path)
-              .toLowerCase()
-              .replace(/[^a-z0-9]+/g, "-")
-              .replace(/^-|-$/g, "");
-            let uniqueId = baseId || "func";
-            let counter = 1;
-            while (list.some(f => f.id === uniqueId)) {
-              counter += 1;
-              uniqueId = baseId + "-" + counter;
-            }
-
-            // Namespaced short: "api.log(message)" -> "api.log"
-            const parenIndex = summary.indexOf("(");
-            const sidebarLabel =
-              parenIndex > 0 ? summary.slice(0, parenIndex).trim() : summary.trim();
-
-            list.push({
-              id: uniqueId,
-              summary,
-              description,
-              samples,
-              sidebarLabel
-            });
-          });
-        }
-
-        // Build sidebar: modules + collapsible function lists
-        tagListEl.innerHTML = "";
-        tags.forEach((tag, idx) => {
-          const funcs = operationsByTag[tag] || [];
-          if (funcs.length === 0) {
-            return;
+        // Safety net: if Redoc fails silently (e.g. missing spec), show an error after 5s
+        setTimeout(function() {
+          if (container.classList.contains("loading")) {
+            container.classList.remove("loading");
+            container.innerHTML =
+              '<div style="padding:1rem;color:#b91c1c;">' +
+              'Failed to load <code>openapi.yaml</code>. ' +
+              'Ensure it is available at <code>docs/openapi.yaml</code> (GitHub Pages docs folder) or fix the path.' +
+              "</div>";
           }
-
-          const li = document.createElement("li");
-
-          // Module header
-          const header = document.createElement("div");
-          header.className = "module-header";
-          if (idx === 0) header.classList.add("expanded", "active");
-
-          const titleSpan = document.createElement("span");
-          titleSpan.className = "module-header-title";
-          titleSpan.textContent = tag;
-
-          const chevSpan = document.createElement("span");
-          chevSpan.className = "module-header-chevron";
-          chevSpan.textContent = "▸";
-
-          header.appendChild(titleSpan);
-          header.appendChild(chevSpan);
-
-          moduleHeadersByTag[tag] = header;
-
-          // Function list
-          const funcUl = document.createElement("ul");
-          funcUl.className = "func-list";
-          if (idx !== 0) funcUl.classList.add("hidden");
-          funcListsByTag[tag] = funcUl;
-
-          funcs.forEach(func => {
-            const funcLi = document.createElement("li");
-            const funcA = document.createElement("a");
-            funcA.className = "func-link";
-            funcA.textContent = func.sidebarLabel;
-            funcA.href = "javascript:void(0)";
-            funcLinksById[func.id] = funcA;
-
-            funcA.onclick = () => {
-              setActiveModuleAndFunc(tag, func.id);
-              scrollToFunction(func.id);
-            };
-
-            funcLi.appendChild(funcA);
-            funcUl.appendChild(funcLi);
-          });
-
-          header.onclick = () => {
-            const isHidden = funcUl.classList.contains("hidden");
-            if (isHidden) {
-              setActiveModuleAndFunc(tag, null);
-            } else {
-              funcUl.classList.add("hidden");
-              header.classList.remove("expanded", "active");
-            }
-          };
-
-          li.appendChild(header);
-          li.appendChild(funcUl);
-          tagListEl.appendChild(li);
-        });
-
-        // Build content sections
-        sectionsEl.innerHTML = "";
-        functionCards.length = 0;
-
-        tags.forEach(tag => {
-          const funcs = operationsByTag[tag] || [];
-          if (funcs.length === 0) return;
-
-          const section = document.createElement("section");
-          section.className = "tag-section";
-          section.id = "tag-" + tag;
-          section.dataset.tag = tag;
-
-          const h2 = document.createElement("h2");
-          h2.textContent = tag;
-          section.appendChild(h2);
-
-          funcs.forEach(func => {
-            const card = document.createElement("article");
-            card.className = "function-card";
-            card.id = "func-" + func.id;
-            card.dataset.tag = tag;
-            card.dataset.funcId = func.id;
-
-            const header = document.createElement("div");
-            header.className = "function-header";
-
-            const nameEl = document.createElement("div");
-            nameEl.className = "function-name";
-            nameEl.textContent = func.summary;
-
-            const tagLabel = document.createElement("div");
-            tagLabel.className = "function-tag-label";
-            tagLabel.textContent = tag;
-
-            header.appendChild(nameEl);
-            header.appendChild(tagLabel);
-            card.appendChild(header);
-
-            const body = document.createElement("div");
-            body.className = "function-body";
-
-            const desc = document.createElement("div");
-            desc.className = "func-description";
-            if (func.description) {
-              desc.innerHTML = marked.parse(func.description);
-            } else {
-              desc.textContent = "No description yet.";
-            }
-
-            const samples = document.createElement("div");
-            samples.className = "func-samples";
-
-            if (func.samples && func.samples.length > 0) {
-              const title = document.createElement("div");
-              title.className = "func-samples-title";
-              title.textContent = "Examples";
-              samples.appendChild(title);
-
-              func.samples.forEach(sample => {
-                const block = document.createElement("div");
-                block.className = "sample-block";
-
-                const label = document.createElement("div");
-                label.className = "sample-label";
-                label.textContent =
-                  (sample.label || sample.lang || "Example") +
-                  (sample.lang ? " — " + sample.lang : "");
-                block.appendChild(label);
-
-                const pre = document.createElement("pre");
-                const code = document.createElement("code");
-                code.textContent = sample.source || "";
-                pre.appendChild(code);
-                block.appendChild(pre);
-
-                samples.appendChild(block);
-              });
-            }
-
-            body.appendChild(desc);
-            body.appendChild(samples);
-            card.appendChild(body);
-            section.appendChild(card);
-
-            functionCards.push(card);
-          });
-
-          sectionsEl.appendChild(section);
-        });
-
-        if (!sectionsEl.innerHTML.trim()) {
-          sectionsEl.innerHTML =
-            '<div class="loading-msg">No functions found in the spec.</div>';
-        }
-
-        // Initial highlight: first tag + first function in that tag
-        const firstTag = tags.find(t => (operationsByTag[t] || []).length > 0);
-        if (firstTag) {
-          const firstFunc = (operationsByTag[firstTag] || [])[0];
-          setActiveModuleAndFunc(firstTag, firstFunc && firstFunc.id);
-          const firstCard = document.getElementById("func-" + (firstFunc && firstFunc.id));
-          if (firstCard) scrollToElement(firstCard);
-        }
-
-        // Scroll sync: highlight current function & module
-        contentPanel.addEventListener("scroll", () => {
-          if (functionCards.length === 0) return;
-
-          const containerRect = contentPanel.getBoundingClientRect();
-          const threshold = 60;
-
-          let bestCard = null;
-          let bestDelta = Infinity;
-
-          functionCards.forEach(card => {
-            const rect = card.getBoundingClientRect();
-            const delta = rect.top - containerRect.top;
-
-            if (delta <= threshold && Math.abs(delta) < bestDelta) {
-              bestDelta = Math.abs(delta);
-              bestCard = card;
-            }
-          });
-
-          if (!bestCard) return;
-
-          const tag = bestCard.dataset.tag;
-          const funcId = bestCard.dataset.funcId;
-          setActiveModuleAndFunc(tag, funcId);
-        });
-      })
-      .catch(err => {
-        introEl.innerHTML = "";
-        sectionsEl.innerHTML =
-          '<div class="error-msg">Failed to load <code>openapi.yaml</code>: ' +
-          String(err) +
+        }, 5000);
+      } catch (e) {
+        container.classList.remove("loading");
+        container.innerHTML =
+          '<div style="padding:1rem;color:#b91c1c;">Error initializing Redoc: ' +
+          String(e) +
           "</div>";
-      });
+      }
+    })();
   </script>
 </body>
 </html>
