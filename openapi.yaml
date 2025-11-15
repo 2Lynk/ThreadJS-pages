@@ -44,11 +44,7 @@ info:
     - The **responses** describe the return value or effect.
     - The HTTP method labels (`GET`, `POST`, etc.) have **no runtime meaning** for ThreadJS.
     - There is **no HTTP server** you can call with `curl` or `fetch`.
-
-servers:
-  - url: minecraft://localhost:25565
-    description: Local Minecraft server
-
+    
 tags:
   - name: Core
   - name: Messaging
