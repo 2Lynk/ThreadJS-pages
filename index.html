@@ -100,7 +100,7 @@
       border-color: var(--accent-hover);
     }
 
-    /* Top version bar under header */
+    /* Version bar under header */
     .version-bar {
       padding: 0.5rem 2rem;
       background: #f1f3f5;
@@ -209,8 +209,9 @@
     }
   </style>
 
+  <!-- ReDoc bundle -->
   <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
-  <!-- shared version logic -->
+  <!-- dynamic version logic -->
   <script src="version.js"></script>
 </head>
 <body>
@@ -233,99 +234,119 @@
   <div id="redoc-container" class="loading"></div>
 
   <script>
-    (function() {
+    (function () {
       var container = document.getElementById("redoc-container");
-      var specUrl = "openapi.yaml"; // relative to docs/
+      var noteEl = document.getElementById("versionNoteApi");
+      var selectEl = document.getElementById("versionSelectApi");
 
-      // init shared version selector for this page (API docs)
-      if (window.ThreadJsVersions && window.ThreadJsVersions.init) {
-        window.ThreadJsVersions.init({
+      function bootRedoc(specUrl) {
+        // Reset state
+        container.classList.add("loading");
+        container.innerHTML = "";
+
+        try {
+          Redoc.init(
+            specUrl,
+            {
+              theme: {
+                colors: {
+                  primary: { main: "#6c757d" },
+                  text: { primary: "#1a1d20", secondary: "#495057" },
+                  http: {
+                    get: "#10b981",
+                    post: "#3b82f6",
+                    put: "#f59e0b",
+                    delete: "#ef4444",
+                    patch: "#8b5cf6"
+                  },
+                  border: { dark: "#adb5bd", light: "#dee2e6" }
+                },
+                sidebar: {
+                  backgroundColor: "#f8f9fa",
+                  textColor: "#1a1d20",
+                  activeTextColor: "#495057",
+                  groupItems: { activeBackgroundColor: "#e9ecef" }
+                },
+                rightPanel: {
+                  backgroundColor: "#212529",
+                  textColor: "#f8f9fa"
+                },
+                typography: {
+                  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                  fontSize: "15px",
+                  lineHeight: "1.6",
+                  headings: {
+                    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                    fontWeight: "600"
+                  },
+                  code: {
+                    fontFamily: "'Fira Code', 'Courier New', monospace",
+                    fontSize: "14px"
+                  }
+                }
+              },
+              scrollYOffset: 120,           // header + version bar
+              hideDownloadButton: false,
+              disableSearch: false,
+              expandResponses: "200,201",
+              jsonSampleExpandLevel: 2,
+              hideSingleRequestSampleTab: true,
+              menuToggle: true,
+              nativeScrollbars: false,
+              pathInMiddlePanel: true,
+              requiredPropsFirst: true,
+              sortPropsAlphabetically: false,
+              expandDefaultServerVariables: true,
+              hideInternal: true
+            },
+            container,
+            function onLoaded() {
+              container.classList.remove("loading");
+            }
+          );
+
+          // Safety net: if ReDoc fails silently, show error after 5s
+          setTimeout(function () {
+            if (container.classList.contains("loading")) {
+              container.classList.remove("loading");
+              container.innerHTML =
+                '<div style="padding:1rem;color:#b91c1c;">' +
+                'Failed to load spec <code>' + specUrl + '</code>. ' +
+                'Check that it exists in the <code>versions/</code> folder.' +
+                "</div>";
+            }
+          }, 5000);
+        } catch (e) {
+          container.classList.remove("loading");
+          container.innerHTML =
+            '<div style="padding:1rem;color:#b91c1c;">Error initializing ReDoc: ' +
+            String(e) +
+            "</div>";
+        }
+      }
+
+      // Wire up dynamic version selector
+      if (window.ThreadJsVersion && window.ThreadJsVersion.initSelector) {
+        ThreadJsVersion.initSelector({
           selectId: "versionSelectApi",
           noteId: "versionNoteApi",
-          pageKey: "api"
-        });
-      }
-
-      function onLoaded() {
-        container.classList.remove("loading");
-      }
-
-      try {
-        Redoc.init(
-          specUrl,
-          {
-            theme: {
-              colors: {
-                primary: { main: "#6c757d" },
-                text: { primary: "#1a1d20", secondary: "#495057" },
-                http: {
-                  get: "#10b981",
-                  post: "#3b82f6",
-                  put: "#f59e0b",
-                  delete: "#ef4444",
-                  patch: "#8b5cf6"
-                },
-                border: { dark: "#adb5bd", light: "#dee2e6" }
-              },
-              sidebar: {
-                backgroundColor: "#f8f9fa",
-                textColor: "#1a1d20",
-                activeTextColor: "#495057",
-                groupItems: { activeBackgroundColor: "#e9ecef" }
-              },
-              rightPanel: {
-                backgroundColor: "#212529",
-                textColor: "#f8f9fa"
-              },
-              typography: {
-                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-                fontSize: "15px",
-                lineHeight: "1.6",
-                headings: {
-                  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-                  fontWeight: "600"
-                },
-                code: {
-                  fontFamily: "'Fira Code', 'Courier New', monospace",
-                  fontSize: "14px"
-                }
-              }
-            },
-            scrollYOffset: 110,           // header + version bar
-            hideDownloadButton: false,
-            disableSearch: false,
-            expandResponses: "200,201",
-            jsonSampleExpandLevel: 2,
-            hideSingleRequestSampleTab: true,
-            menuToggle: true,
-            nativeScrollbars: false,
-            pathInMiddlePanel: true,
-            requiredPropsFirst: true,
-            sortPropsAlphabetically: false,
-            expandDefaultServerVariables: true,
-            hideInternal: true
+          onReady: function (entry) {
+            // entry.yamlPath is something like "versions/v1.0.0.yaml"
+            bootRedoc(entry.yamlPath);
           },
-          container,
-          onLoaded
-        );
-
-        // Safety net: if Redoc fails silently (e.g. missing spec), show an error after 5s
-        setTimeout(function() {
-          if (container.classList.contains("loading")) {
-            container.classList.remove("loading");
-            container.innerHTML =
-              '<div style="padding:1rem;color:#b91c1c;">' +
-              'Failed to load <code>openapi.yaml</code>. ' +
-              'Ensure it is available at <code>docs/openapi.yaml</code> (GitHub Pages docs folder) or fix the path.' +
-              "</div>";
+          onChange: function (entry) {
+            bootRedoc(entry.yamlPath);
           }
-        }, 5000);
-      } catch (e) {
-        container.classList.remove("loading");
-        container.innerHTML =
-          '<div style="padding:1rem;color:#b91c1c;">Error initializing Redoc: ' +
-          String(e) +
-          "</div>";
+        });
+      } else {
+        // Fallback: no dynamic version.js available
+        if (selectEl) {
+          selectEl.style.display = "none";
+        }
+        if (noteEl) {
+          noteEl.textContent = "Version system not available – using openapi.yaml";
+        }
+        bootRedoc("openapi.yaml");
       }
     })();
   </script>
