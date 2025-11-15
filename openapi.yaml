@@ -3,10 +3,7 @@ info:
   title: ThreadJS API Reference
   version: 1.0.0
   description: |
-    **ThreadJS** is a Minecraft Fabric mod that lets you write server mods in JavaScript.
-
-    Put your `.js` files in `/jsmods/` and restart the server, or run `/threadjs reload`
-    to hot-reload scripts.
+    **ThreadJS** Reference
 
 tags:
   - name: Quickstart
