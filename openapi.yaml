@@ -12,6 +12,7 @@ info:
     
     ```javascript
     // hello.js - runs on server startup
+    // Sends a welcome message to each player that joins.
     
     api.registerMod("Hello", {
       api.log("Hello from ThreadJS!");
