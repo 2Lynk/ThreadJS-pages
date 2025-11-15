@@ -20,9 +20,7 @@
       --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -128,13 +126,8 @@
     }
 
     @keyframes pulse {
-      0%,
-      100% {
-        opacity: 0.6;
-      }
-      50% {
-        opacity: 1;
-      }
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
     }
 
     @media (max-width: 768px) {
@@ -143,9 +136,7 @@
         gap: 1rem;
         padding: 1rem;
       }
-      header h1 {
-        font-size: 1.25rem;
-      }
+      header h1 { font-size: 1.25rem; }
       nav {
         width: 100%;
         justify-content: center;
@@ -162,24 +153,17 @@
     }
 
     /* Scrollbars */
-    ::-webkit-scrollbar {
-      width: 10px;
-      height: 10px;
-    }
-    ::-webkit-scrollbar-track {
-      background: var(--bg-primary);
-    }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
     ::-webkit-scrollbar-thumb {
       background: var(--border-medium);
       border-radius: 5px;
     }
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--accent);
-    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
     /* --- Redoc de-web-ifying tweaks --- */
 
-    /* Hide HTTP method chips completely (no text, no hitbox) */
+    /* Hide HTTP method chips (POST/GET) just in case */
     .http-verb {
       display: none !important;
       width: 0 !important;
@@ -188,12 +172,9 @@
       pointer-events: none !important;
     }
 
-    /* Make the operation bar look like a neutral section header */
-    .operation-type {
-      border-radius: 6px !important;
-      border: 1px solid var(--border-light) !important;
-      background: #f1f3f5 !important;
-      box-shadow: none !important;
+    /* Completely hide the path/URL header bar (the clickable dropdown) */
+    .redoc-wrap .operation-type {
+      display: none !important;
     }
 
     /* Hide layout / sample toggles in top-right */
@@ -208,7 +189,7 @@
       border-left: 1px solid var(--border-light);
     }
 
-    /* Make servers block neutral */
+    /* Make servers block neutral (when it appears elsewhere) */
     .servers {
       background: #f1f3f5 !important;
       border-radius: 6px !important;
@@ -241,7 +222,6 @@
         Redoc.init(
           specUrl,
           {
-            /* Layout / behaviour */
             layout: "three-panel",
             scrollYOffset: 70,
             hideDownloadButton: false,
@@ -260,11 +240,10 @@
             expandDefaultServerVariables: true,
             hideInternal: true,
 
-            /* IMPORTANT: no JSON payload in right sidebar */
+            /* No JSON payload example in right sidebar */
             hideRequestPayloadSample: true,
             collapseRequestSamplePanel: true,
 
-            /* Theme: grey, Minecraft-docs-ish */
             theme: {
               colors: {
                 primary: { main: "#6c757d" },
@@ -345,4 +324,3 @@
   </script>
 </body>
 </html>
- 
