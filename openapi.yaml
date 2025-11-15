@@ -81,7 +81,6 @@ paths:
         - lang: JavaScript
           label: ThreadJS script
           source: |
-            ```javascript
             // hello.js - runs on server startup
             
             api.registerMod("Hello", {
@@ -89,7 +88,6 @@ paths:
               api.log({ foo: "bar" });
               api.log(42);
             }
-            ```
            
   /api/scriptsDir:
     get:
