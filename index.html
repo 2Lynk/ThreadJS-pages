@@ -312,8 +312,9 @@
       margin: 0.25rem 0;
     }
 
-    /* INLINE code only */
-    .func-description code {
+    /* Inline code only (not inside fenced code blocks) */
+    .func-description p > code,
+    .func-description li > code {
       font-family: "Fira Code", "Courier New", monospace;
       font-size: 0.85rem;
       background: #f1f3f5;
