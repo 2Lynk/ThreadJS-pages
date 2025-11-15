@@ -67,16 +67,15 @@ paths:
       description: |
         Log a value to the server console from your script.
 
-        ```javascript
-         // Basic logging
-          api.log("Hello from ThreadJS!");
+        // Basic logging
+        api.log("Hello from ThreadJS!");
 
-          // Log an object
-          api.log({ player: "Steve", health: 20 });
+        // Log an object
+        api.log({ player: "Steve", health: 20 });
 
-          // Log a number
-          api.log(42);
-        ```
+        // Log a number
+        api.log(42);
+
       x-codeSamples:
         - lang: JavaScript
           label: ThreadJS script
