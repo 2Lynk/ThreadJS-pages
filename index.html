@@ -6,22 +6,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
+    /* ---------- Color mode variables used by Redoc ---------- */
+    :root {
+      /* Light mode defaults */
+      --color-primary: #4f46e5;
+      --color-primary-hover: #4338ca;
+      --link-text-color: #4f46e5;
+      --sidebar-background-color: #f9fafb;
+      --sidebar-active-background-color: #e5e7eb;
+      --text-color: #111827;
+      --bg-overlay: #ffffff; /* main content background */
+    }
+
+    :root.dark {
+      /* Dark mode overrides */
+      --color-primary: #6366f1;
+      --color-primary-hover: #818cf8;
+      --link-text-color: #a5b4fc;
+      --sidebar-background-color: #020617;
+      --sidebar-active-background-color: #111827;
+      --text-color: #e5e7eb;
+      --bg-overlay: #020617; /* main content background */
+    }
+
+    /* ---------- Page layout ---------- */
     body {
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg-overlay);
+      color: var(--text-color);
     }
+
     header {
       padding: 1rem 1.5rem;
-      border-bottom: 1px solid #ccc;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.4);
       display: flex;
       align-items: center;
       justify-content: space-between;
       position: sticky;
       top: 0;
-      background: var(--bg);
-      color: var(--text);
+      background: var(--sidebar-background-color);
+      color: var(--text-color);
       z-index: 10;
     }
+
     header h1 {
       margin: 0;
       font-size: 1.1rem;
@@ -31,94 +59,72 @@
 
     #theme-btn {
       cursor: pointer;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      border: 1px solid var(--text);
-      background: none;
-      color: var(--text);
-      font-size: 0.85rem;
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.9);
+      background: transparent;
+      color: var(--text-color);
+      font-size: 0.8rem;
+    }
+
+    #theme-btn:hover {
+      opacity: 0.9;
     }
 
     #redoc-container {
       height: calc(100vh - 60px);
     }
-
-    /* Light theme vars */
-    .light {
-      --bg: #ffffff;
-      --text: #111111;
-    }
-
-    /* Dark theme vars */
-    .dark {
-      --bg: #0f172a;
-      --text: #e5e7eb;
-    }
   </style>
 
+  <!-- Redoc standalone bundle -->
   <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
 </head>
 
 <body>
   <header>
-    <h1>ThreadJS API — Reference</h1>
+    <h1>THREADJS API — REFERENCE</h1>
     <button id="theme-btn">Toggle Theme</button>
   </header>
 
   <div id="redoc-container"></div>
 
   <script>
+    // Use <html> as color-mode root so :root.dark works
+    const root = document.documentElement;
+
     // Load saved theme or default to dark
     const savedTheme = localStorage.getItem("theme") || "dark";
-    document.body.classList.add(savedTheme);
-
-    function loadRedoc() {
-      const dark = document.body.classList.contains("dark");
-
-      Redoc.init(
-        'openapi.yaml',
-        {
-          theme: dark
-            ? {
-                colors: {
-                  primary: { main: '#6366f1' },
-                  text: { primary: '#e5e7eb', secondary: '#9ca3af' }
-                },
-                typography: {
-                  fontSize: '14px',
-                  fontFamily: 'system-ui'
-                },
-                sidebar: { backgroundColor: '#020617' },
-                rightPanel: { backgroundColor: '#020617' }
-              }
-            : {
-                colors: {
-                  primary: { main: '#4f46e5' },
-                  text: { primary: '#111111', secondary: '#555555' }
-                },
-                typography: {
-                  fontSize: '14px',
-                  fontFamily: 'system-ui'
-                },
-                sidebar: { backgroundColor: '#f3f4f6' },
-                rightPanel: { backgroundColor: '#ffffff' }
-              }
-        },
-        document.getElementById('redoc-container')
-      );
+    if (savedTheme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
     }
 
-    loadRedoc();
+    // Initialize Redoc once; it reacts to CSS vars for color modes
+    Redoc.init(
+      "openapi.yaml",
+      {
+        // Minimal config; colors come from CSS variables above
+        typography: {
+          fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+          fontSize: "14px",
+        },
+      },
+      document.getElementById("redoc-container")
+    );
 
     // Theme toggle button
     document.getElementById("theme-btn").onclick = () => {
-      const isDark = document.body.classList.contains("dark");
-      document.body.classList.remove(isDark ? "dark" : "light");
-      document.body.classList.add(isDark ? "light" : "dark");
-      localStorage.setItem("theme", isDark ? "light" : "dark");
-      loadRedoc();
+      const isDark = root.classList.contains("dark");
+      if (isDark) {
+        root.classList.remove("dark");
+        localStorage.setItem("theme", "light");
+      } else {
+        root.classList.add("dark");
+        localStorage.setItem("theme", "dark");
+      }
+      // No need to re-init Redoc; it picks up new CSS vars automatically
     };
   </script>
-
 </body>
 </html>
