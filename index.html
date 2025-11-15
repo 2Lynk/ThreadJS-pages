@@ -114,7 +114,7 @@
       }
     }
 
-    /* Sidebar: tags */
+    /* Sidebar: modules + functions */
     .sidebar {
       background: var(--bg-secondary);
       border-radius: 10px;
@@ -140,24 +140,76 @@
       margin: 0;
     }
 
-    .tag-list li {
+    .tag-list > li {
       margin-bottom: 0.35rem;
     }
 
-    .tag-link {
-      display: block;
+    .module-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       padding: 0.4rem 0.6rem;
       border-radius: 6px;
       font-size: 0.9rem;
       cursor: pointer;
       color: var(--text-primary);
+      border: 1px solid transparent;
+      user-select: none;
+    }
+
+    .module-header:hover {
+      background: #dee2e6;
+      border-color: var(--border-medium);
+    }
+
+    .module-header.active {
+      background: #dee2e6;
+      border-color: var(--border-medium);
+    }
+
+    .module-header-title {
+      flex: 1;
+    }
+
+    .module-header-chevron {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      margin-left: 0.4rem;
+    }
+
+    .module-header.expanded .module-header-chevron {
+      transform: rotate(90deg);
+    }
+
+    .func-list {
+      list-style: none;
+      padding-left: 0.75rem;
+      margin: 0.25rem 0 0.35rem;
+    }
+
+    .func-list.hidden {
+      display: none;
+    }
+
+    .func-link {
+      display: block;
+      padding: 0.25rem 0.6rem 0.25rem 1.2rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      color: var(--text-secondary);
       text-decoration: none;
       border: 1px solid transparent;
     }
 
-    .tag-link:hover,
-    .tag-link.active {
-      background: #dee2e6;
+    .func-link:hover {
+      background: #e9ecef;
+      color: var(--text-primary);
+    }
+
+    .func-link.active {
+      background: #e9ecef;
+      color: var(--text-primary);
       border-color: var(--border-medium);
     }
 
@@ -291,7 +343,7 @@
       margin-bottom: 0.15rem;
     }
 
-    /* Code blocks (both sides) */
+    /* Code blocks */
     pre {
       margin: 0;
       padding: 0.5rem 0.6rem;
@@ -333,7 +385,7 @@
     ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
   </style>
 
-  <!-- Markdown + YAML parsers (browser-side, from CDN) -->
+  <!-- Markdown + YAML parsers -->
   <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -370,13 +422,13 @@
     const introEl = document.getElementById("intro");
     const contentPanel = document.getElementById("content-panel");
 
-    const tagLinksByName = {};
-    const sectionEls = [];
-    let tagsGlobal = [];
+    const moduleHeadersByTag = {};
+    const funcListsByTag = {};
+    const funcLinksById = {};
+    const functionCards = [];
 
-    // Helper: smooth scroll inside the content panel
-    function scrollToSectionId(id) {
-      const el = document.getElementById(id);
+    // Smooth scroll inside content panel
+    function scrollToElement(el) {
       if (!el || !contentPanel) return;
       const contentRect = contentPanel.getBoundingClientRect();
       const elRect = el.getBoundingClientRect();
@@ -384,12 +436,31 @@
       contentPanel.scrollTo({ top: offset, behavior: "smooth" });
     }
 
-    function setActiveTag(tagName) {
-      Object.values(tagLinksByName).forEach(link =>
-        link.classList.remove("active")
-      );
-      const link = tagLinksByName[tagName];
-      if (link) link.classList.add("active");
+    function scrollToFunction(funcId) {
+      const el = document.getElementById("func-" + funcId);
+      scrollToElement(el);
+    }
+
+    function setActiveModuleAndFunc(tagName, funcId) {
+      // Expand correct module, collapse others
+      Object.entries(funcListsByTag).forEach(([tag, ul]) => {
+        const header = moduleHeadersByTag[tag];
+        const isActive = (tag === tagName);
+
+        if (isActive) {
+          ul.classList.remove("hidden");
+          header.classList.add("expanded", "active");
+        } else {
+          ul.classList.add("hidden");
+          header.classList.remove("expanded", "active");
+        }
+      });
+
+      // Highlight function
+      Object.values(funcLinksById).forEach(link => link.classList.remove("active"));
+      if (funcId && funcLinksById[funcId]) {
+        funcLinksById[funcId].classList.add("active");
+      }
     }
 
     // Load and render openapi.yaml
@@ -410,47 +481,121 @@
         }
 
         const tags = (spec.tags || []).map(t => t.name);
-        tagsGlobal = tags;
 
-        // Collect operations per tag
+        // Collect operations per tag (no methods, direct op under path)
         const operationsByTag = {};
         const paths = spec.paths || {};
 
         for (const path in paths) {
           if (!Object.prototype.hasOwnProperty.call(paths, path)) continue;
           const op = paths[path];
-          if (!op || !op.tags) continue;
+          if (!op || !Array.isArray(op.tags)) continue;
+
+          const summary = op.summary || path;
+          const description = op.description || "";
+          const samples = op["x-codeSamples"] || [];
 
           op.tags.forEach(tag => {
             if (!operationsByTag[tag]) operationsByTag[tag] = [];
-            operationsByTag[tag].push({
-              summary: op.summary || path,
-              description: op.description || "",
-              samples: op["x-codeSamples"] || []
+
+            const list = operationsByTag[tag];
+
+            // Create a stable-ish function id
+            const baseId = (summary || path)
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-|-$/g, "");
+            let uniqueId = baseId || "func";
+            let counter = 1;
+            while (list.some(f => f.id === uniqueId)) {
+              counter += 1;
+              uniqueId = baseId + "-" + counter;
+            }
+
+            // Namespaced short: "api.log(message)" -> "api.log"
+            const parenIndex = summary.indexOf("(");
+            const sidebarLabel =
+              parenIndex > 0 ? summary.slice(0, parenIndex).trim() : summary.trim();
+
+            list.push({
+              id: uniqueId,
+              summary,
+              description,
+              samples,
+              sidebarLabel
             });
           });
         }
 
-        // Build sidebar tag list
+        // Build sidebar: modules + collapsible function lists
         tagListEl.innerHTML = "";
         tags.forEach((tag, idx) => {
+          const funcs = operationsByTag[tag] || [];
+          if (funcs.length === 0) {
+            return;
+          }
+
           const li = document.createElement("li");
-          const a = document.createElement("a");
-          a.className = "tag-link" + (idx === 0 ? " active" : "");
-          a.textContent = tag;
-          a.href = "javascript:void(0)";
-          tagLinksByName[tag] = a;
-          a.onclick = () => {
-            scrollToSectionId("tag-" + tag);
-            setActiveTag(tag);
+
+          // Module header
+          const header = document.createElement("div");
+          header.className = "module-header";
+          if (idx === 0) header.classList.add("expanded", "active");
+
+          const titleSpan = document.createElement("span");
+          titleSpan.className = "module-header-title";
+          titleSpan.textContent = tag;
+
+          const chevSpan = document.createElement("span");
+          chevSpan.className = "module-header-chevron";
+          chevSpan.textContent = "▸";
+
+          header.appendChild(titleSpan);
+          header.appendChild(chevSpan);
+
+          moduleHeadersByTag[tag] = header;
+
+          // Function list
+          const funcUl = document.createElement("ul");
+          funcUl.className = "func-list";
+          if (idx !== 0) funcUl.classList.add("hidden");
+          funcListsByTag[tag] = funcUl;
+
+          funcs.forEach(func => {
+            const funcLi = document.createElement("li");
+            const funcA = document.createElement("a");
+            funcA.className = "func-link";
+            funcA.textContent = func.sidebarLabel;
+            funcA.href = "javascript:void(0)";
+            funcLinksById[func.id] = funcA;
+
+            funcA.onclick = () => {
+              setActiveModuleAndFunc(tag, func.id);
+              scrollToFunction(func.id);
+            };
+
+            funcLi.appendChild(funcA);
+            funcUl.appendChild(funcLi);
+          });
+
+          header.onclick = () => {
+            const isHidden = funcUl.classList.contains("hidden");
+            if (isHidden) {
+              setActiveModuleAndFunc(tag, null);
+            } else {
+              funcUl.classList.add("hidden");
+              header.classList.remove("expanded", "active");
+            }
           };
-          li.appendChild(a);
+
+          li.appendChild(header);
+          li.appendChild(funcUl);
           tagListEl.appendChild(li);
         });
 
         // Build content sections
         sectionsEl.innerHTML = "";
-        sectionEls.length = 0;
+        functionCards.length = 0;
 
         tags.forEach(tag => {
           const funcs = operationsByTag[tag] || [];
@@ -468,6 +613,9 @@
           funcs.forEach(func => {
             const card = document.createElement("article");
             card.className = "function-card";
+            card.id = "func-" + func.id;
+            card.dataset.tag = tag;
+            card.dataset.funcId = func.id;
 
             const header = document.createElement("div");
             header.className = "function-header";
@@ -529,10 +677,11 @@
             body.appendChild(samples);
             card.appendChild(body);
             section.appendChild(card);
+
+            functionCards.push(card);
           });
 
           sectionsEl.appendChild(section);
-          sectionEls.push(section);
         });
 
         if (!sectionsEl.innerHTML.trim()) {
@@ -540,33 +689,40 @@
             '<div class="loading-msg">No functions found in the spec.</div>';
         }
 
-        // Scroll to first tag by default
-        if (tags.length > 0) {
-          scrollToSectionId("tag-" + tags[0]);
-          setActiveTag(tags[0]);
+        // Initial highlight: first tag + first function in that tag
+        const firstTag = tags.find(t => (operationsByTag[t] || []).length > 0);
+        if (firstTag) {
+          const firstFunc = (operationsByTag[firstTag] || [])[0];
+          setActiveModuleAndFunc(firstTag, firstFunc && firstFunc.id);
+          const firstCard = document.getElementById("func-" + (firstFunc && firstFunc.id));
+          if (firstCard) scrollToElement(firstCard);
         }
 
-        // Update active tag while scrolling
+        // Scroll sync: highlight current function & module
         contentPanel.addEventListener("scroll", () => {
-          if (sectionEls.length === 0) return;
+          if (functionCards.length === 0) return;
 
           const containerRect = contentPanel.getBoundingClientRect();
-          const threshold = 40; // px from top inside content panel
+          const threshold = 60;
 
-          let bestTag = tags[0];
+          let bestCard = null;
           let bestDelta = Infinity;
 
-          sectionEls.forEach(sec => {
-            const rect = sec.getBoundingClientRect();
+          functionCards.forEach(card => {
+            const rect = card.getBoundingClientRect();
             const delta = rect.top - containerRect.top;
 
             if (delta <= threshold && Math.abs(delta) < bestDelta) {
               bestDelta = Math.abs(delta);
-              bestTag = sec.dataset.tag;
+              bestCard = card;
             }
           });
 
-          setActiveTag(bestTag);
+          if (!bestCard) return;
+
+          const tag = bestCard.dataset.tag;
+          const funcId = bestCard.dataset.funcId;
+          setActiveModuleAndFunc(tag, funcId);
         });
       })
       .catch(err => {
