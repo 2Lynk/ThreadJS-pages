@@ -252,14 +252,14 @@ paths:
 
   /api/events/blockPlace:
     post:
-    tags: [Events]
-    summary: Register block place handler
-    requestBody:
-      content:
-        application/json:
-          schema: { $ref: '#/components/schemas/BlockEventHandler' }
-    responses:
-      '200': { description: OK }
+      tags: [Events]
+      summary: Register block place handler
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BlockEventHandler' }
+      responses:
+        '200': { description: OK }
 
   /api/events/useBlock:
     post:
@@ -490,18 +490,18 @@ paths:
   /api/players/heal:
     post:
       tags: [Players]
-    summary: Heal a player
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            required: [player, amount]
-            properties:
-              player: { type: string }
-              amount: { type: number, minimum: 0 }
-    responses:
-      '200': { description: OK }
+      summary: Heal a player
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [player, amount]
+              properties:
+                player: { type: string }
+                amount: { type: number, minimum: 0 }
+      responses:
+        '200': { description: OK }
 
   /api/players/giveItem:
     post:
