@@ -72,9 +72,6 @@ paths:
         api.log({ foo: "bar" });
         api.log(42);
         ```
-      responses:
-        '200':
-          description: OK (message logged)
       x-codeSamples:
         - lang: JavaScript
           label: ThreadJS script
