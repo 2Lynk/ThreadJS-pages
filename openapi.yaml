@@ -12,11 +12,14 @@ info:
     
     ```javascript
     // hello.js - runs on server startup
-    api.log("Hello from ThreadJS!");
     
-    api.onPlayerJoin(player => {
-      api.sendMessage(`Welcome ${player.name}!`);
-    });
+    api.registerMod("Hello", {
+      api.log("Hello from ThreadJS!");
+      
+      api.onPlayerJoin(player => {
+        api.sendMessage(`Welcome ${player.name}!`);
+      });
+    }
     ```
     
     ## Features
