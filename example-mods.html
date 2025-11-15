@@ -375,9 +375,9 @@
 
     <!-- Version selector bar -->
     <div class="version-bar">
-      <label for="versionSelect">Version:</label>
-      <select id="versionSelect" class="version-select"></select>
-      <span id="versionNote" style="font-size:0.85rem;"></span>
+      <label for="versionSelectExamples">Version:</label>
+      <select id="versionSelectExamples" class="version-select"></select>
+      <span id="versionNoteExamples" style="font-size:0.85rem;"></span>
     </div>
 
     <p class="hint">
@@ -394,82 +394,32 @@
   </div>
 </main>
 
+<!-- Shared version config/logic -->
+<script src="version.js" defer></script>
+
 <script>
   const OWNER = "2Lynk";
   const REPO = "ThreadJS-pages";
   const MODS_PATH = "example-mods";
 
-  // Configure available documentation versions for this page.
-  // When you cut a new release, copy docs into /vX.Y.Z/ and add an entry here.
-  const VERSION_CONFIG = [
-    {
-      id: "main",
-      label: "main (latest)",
-      href: "example-mods.html", // this page
-      note: "Tracking the latest code on the main branch."
-    },
-    {
-      id: "v1.0.0",
-      label: "v1.0.0",
-      href: "v1.0.0/example-mods.html",
-      note: "Snapshot of the API for ThreadJS v1.0.0."
-    }
-    // Add more versions like:
-    // { id: "v1.1.0", label: "v1.1.0", href: "v1.1.0/example-mods.html", note: "..." }
-  ];
-
   const statusEl = document.getElementById("mods-status");
   const gridEl = document.getElementById("mods-grid");
-  const versionSelectEl = document.getElementById("versionSelect");
-  const versionNoteEl = document.getElementById("versionNote");
 
   function setStatus(text, isError) {
     statusEl.textContent = text;
     statusEl.classList.toggle("error", !!isError);
   }
 
-  // --- Version selector logic ---
-
-  function initVersionSelector() {
-    const currentPath = window.location.pathname.replace(/\/+$/, "");
-    let currentIndex = 0;
-
-    VERSION_CONFIG.forEach((v, idx) => {
-      const opt = document.createElement("option");
-      opt.value = v.href;
-      opt.textContent = v.label;
-      versionSelectEl.appendChild(opt);
-
-      // Rough match by ending path (works for GitHub Pages base path too)
-      const hrefPath = ("/" + v.href).replace(/\/+$/, "");
-      if (currentPath.endsWith(hrefPath)) {
-        currentIndex = idx;
-      }
-    });
-
-    versionSelectEl.selectedIndex = currentIndex;
-    const current = VERSION_CONFIG[currentIndex];
-    if (current && current.note) {
-      versionNoteEl.textContent = current.note;
-    }
-
-    versionSelectEl.addEventListener("change", () => {
-      const targetHref = versionSelectEl.value;
-      if (!targetHref) return;
-      window.location.href = targetHref;
-    });
-  }
-
   function extractDescription(source) {
     const lines = source.split(/\r?\n/);
 
-    // 1) Block comment at the top: /** ... */
+    // Block comment at the top: /** ... */
     if (lines[0] && lines[0].trim().startsWith("/**")) {
       let descLines = [];
       let done = false;
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        if (i === 0) continue; // skip '/**'
+        if (i === 0) continue;
         const trimmed = line.trim();
         if (trimmed.startsWith("*/")) {
           done = true;
@@ -483,7 +433,7 @@
       }
     }
 
-    // 2) Leading // comment block
+    // Leading // comment block
     const commentLines = [];
     for (let i = 0; i < lines.length; i++) {
       const l = lines[i].trim();
@@ -619,8 +569,17 @@
     }
   }
 
-  initVersionSelector();
-  fetchMods();
+  document.addEventListener("DOMContentLoaded", function () {
+    // hook up shared version selector for this page
+    if (window.ThreadJsVersions && window.ThreadJsVersions.init) {
+      window.ThreadJsVersions.init({
+        selectId: "versionSelectExamples",
+        noteId: "versionNoteExamples",
+        pageKey: "examples"
+      });
+    }
+    fetchMods();
+  });
 </script>
 </body>
 </html>
