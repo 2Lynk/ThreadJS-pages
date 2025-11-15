@@ -7,9 +7,9 @@
 
   <style>
     :root {
-      --bg-primary: #f8f9fa;
-      --bg-secondary: #ffffff;
-      --panel: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+      --bg-primary: #e9ecef;
+      --bg-secondary: #f8f9fa;
+      --panel: linear-gradient(135deg, #dde2e6 0%, #ced4da 100%);
       --text-primary: #1a1d20;
       --text-secondary: #495057;
       --border-light: #dee2e6;
@@ -20,11 +20,14 @@
       --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
       background: var(--bg-primary);
       color: var(--text-primary);
       line-height: 1.6;
@@ -57,9 +60,16 @@
       gap: 0.75rem;
     }
 
-    header h1::before { content: "⚡"; font-size: 1.75rem; -webkit-text-fill-color: #6c757d; }
+    header h1::before {
+      content: "⚡";
+      font-size: 1.75rem;
+      -webkit-text-fill-color: #6c757d;
+    }
 
-    nav { display: flex; gap: 0.75rem; }
+    nav {
+      display: flex;
+      gap: 0.75rem;
+    }
 
     nav a {
       color: var(--text-primary);
@@ -76,8 +86,20 @@
       overflow: hidden;
     }
 
-    nav a:hover { background: var(--accent); color: white; border-color: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
-    nav a[href="index.html"], nav a[href="./"] { background: var(--accent); color: white; border-color: var(--accent-hover); }
+    nav a:hover {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    nav a[href="index.html"],
+    nav a[href="./"] {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent-hover);
+    }
 
     #redoc-container {
       height: calc(100vh - 70px);
@@ -86,11 +108,13 @@
       position: relative;
     }
 
-    .redoc-wrap { background: var(--bg-secondary) !important; }
+    .redoc-wrap {
+      background: var(--bg-secondary) !important;
+    }
 
     /* Loading overlay only while .loading is present */
     #redoc-container.loading::before {
-      content: "Loading API Documentation...";
+      content: "Loading ThreadJS API Reference…";
       position: absolute;
       inset: 0;
       display: flex;
@@ -103,20 +127,88 @@
       animation: pulse 1.5s ease-in-out infinite;
     }
 
-    @keyframes pulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
-
-    @media (max-width: 768px) {
-      header { flex-direction: column; gap: 1rem; padding: 1rem; }
-      header h1 { font-size: 1.25rem; }
-      nav { width: 100%; justify-content: center; }
-      nav a { flex: 1; text-align: center; padding: 0.5rem 0.8rem; font-size: 0.875rem; }
-      #redoc-container { height: calc(100vh - 130px); }
+    @keyframes pulse {
+      0%,
+      100% {
+        opacity: 0.6;
+      }
+      50% {
+        opacity: 1;
+      }
     }
 
-    ::-webkit-scrollbar { width: 10px; height: 10px; }
-    ::-webkit-scrollbar-track { background: var(--bg-primary); }
-    ::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 5px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      header h1 {
+        font-size: 1.25rem;
+      }
+      nav {
+        width: 100%;
+        justify-content: center;
+      }
+      nav a {
+        flex: 1;
+        text-align: center;
+        padding: 0.5rem 0.8rem;
+        font-size: 0.875rem;
+      }
+      #redoc-container {
+        height: calc(100vh - 130px);
+      }
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-medium);
+      border-radius: 5px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent);
+    }
+
+    /* --- Redoc de-web-ifying tweaks --- */
+
+    /* Hide HTTP method chips (POST / GET badges) */
+    .http-verb {
+      display: none !important;
+    }
+
+    /* Tone down the operation header bar so it looks less like an API console */
+    .operation-type {
+      border-radius: 6px !important;
+      border: 1px solid var(--border-light) !important;
+      background: #f1f3f5 !important;
+      box-shadow: none !important;
+    }
+
+    /* Hide the layout + samples toggles in the top-right of the Redoc UI */
+    .redoc-wrap button[title="Change layout"],
+    .redoc-wrap button[title="Hide samples"],
+    .redoc-wrap button[title="Show samples"] {
+      display: none !important;
+    }
+
+    /* Slightly soften the right panel border when in 3-panel mode */
+    .api-content {
+      border-left: 1px solid var(--border-light);
+    }
+
+    /* Make server block more neutral */
+    .servers {
+      background: #f1f3f5 !important;
+      border-radius: 6px !important;
+    }
   </style>
 
   <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
@@ -126,71 +218,120 @@
     <h1>ThreadJS API Reference</h1>
     <nav>
       <a href="index.html">📚 API Reference</a>
-      <a href="inspector.html">📚 Inspector</a>
+      <a href="inspector.html">🧪 Inspector</a>
     </nav>
   </header>
 
   <div id="redoc-container" class="loading"></div>
 
   <script>
-    (function() {
+    (function () {
       var container = document.getElementById("redoc-container");
-      var specUrl = "openapi.yaml"; // relative to docs/
+      var specUrl = "openapi.yaml";
 
       function onLoaded() {
         container.classList.remove("loading");
       }
 
-      // Initialize Redoc and remove loading state when done
       try {
         Redoc.init(
           specUrl,
           {
-            theme: {
-              colors: {
-                primary: { main: "#6c757d" },
-                text: { primary: "#1a1d20", secondary: "#495057" },
-                http: { get: "#10b981", post: "#3b82f6", put: "#f59e0b", delete: "#ef4444", patch: "#8b5cf6" },
-                border: { dark: "#adb5bd", light: "#dee2e6" }
-              },
-              sidebar: { backgroundColor: "#f8f9fa", textColor: "#1a1d20", activeTextColor: "#495057", groupItems: { activeBackgroundColor: "#e9ecef" } },
-              rightPanel: { backgroundColor: "#212529", textColor: "#f8f9fa" },
-              typography: {
-                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-                fontSize: "15px",
-                lineHeight: "1.6",
-                headings: { fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif", fontWeight: "600" },
-                code: { fontFamily: "'Fira Code', 'Courier New', monospace", fontSize: "14px" }
-              }
-            },
+            // Layout / behaviour
+            layout: "three-panel",          // keep 3 columns but softer look
             scrollYOffset: 70,
             hideDownloadButton: false,
             disableSearch: false,
-            expandResponses: "200,201",
-            jsonSampleExpandLevel: 2,
             hideSingleRequestSampleTab: true,
+            hideTryItPanel: true,
+            showChangeLayoutButton: false,
+            showRightPanelToggle: false,
             menuToggle: true,
             nativeScrollbars: false,
             pathInMiddlePanel: true,
             requiredPropsFirst: true,
             sortPropsAlphabetically: false,
-            expandDefaultServerVariables: true
-            ,hideInternal: true
+            expandResponses: "200,201",
+            jsonSampleExpandLevel: 2,
+            expandDefaultServerVariables: true,
+            hideInternal: true,
+
+            // Theme: grey, Minecraft-docs-ish
+            theme: {
+              colors: {
+                primary: { main: "#6c757d" },
+                text: {
+                  primary: "#1a1d20",
+                  secondary: "#495057",
+                  light: "#868e96"
+                },
+                http: {
+                  get: "#10b981",
+                  post: "#3b82f6",
+                  put: "#f59e0b",
+                  delete: "#ef4444",
+                  patch: "#8b5cf6"
+                },
+                border: {
+                  dark: "#adb5bd",
+                  light: "#dee2e6"
+                },
+                responses: {
+                  success: { borderColor: "#51cf66" },
+                  error: { borderColor: "#ff6b6b" }
+                }
+              },
+              sidebar: {
+                backgroundColor: "#dee2e6",
+                textColor: "#1a1d20",
+                activeTextColor: "#212529",
+                groupItems: {
+                  activeBackgroundColor: "#ced4da"
+                }
+              },
+              rightPanel: {
+                backgroundColor: "#343a40", // soft dark grey for code
+                textColor: "#f8f9fa"
+              },
+              typography: {
+                fontFamily:
+                  "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                fontSize: "15px",
+                lineHeight: "1.6",
+                headings: {
+                  fontFamily:
+                    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                  fontWeight: "600"
+                },
+                code: {
+                  fontFamily: "'Fira Code', 'Courier New', monospace",
+                  fontSize: "14px"
+                }
+              }
+            }
           },
           container,
           onLoaded
         );
 
-        // Safety net: if Redoc fails silently (e.g. missing spec), show an error after 5s
-        setTimeout(function() {
-          if (container.classList.contains('loading')) {
-            container.classList.remove('loading');
-            container.innerHTML = '<div style="padding:1rem;color:#b91c1c;">Failed to load openapi.yaml. Ensure it is available at <code>docs/openapi.yaml</code> (GitHub Pages docs folder) or fix the path.</div>';
+        // Safety net if spec fails to load
+        setTimeout(function () {
+          if (container.classList.contains("loading")) {
+            container.classList.remove("loading");
+            container.innerHTML =
+              '<div style="padding:1rem;color:#b91c1c;">' +
+              'Failed to load <code>openapi.yaml</code>. ' +
+              'Make sure it exists next to <code>index.html</code> in your GitHub Pages site.' +
+              "</div>";
           }
         }, 5000);
       } catch (e) {
-        container.classList.remove('loading');
-        container.innerHTML = '<div style="padding:1rem;color:#b91c1c;">Error initializing Redoc: ' + String(e) + '</div>';
+        container.classList.remove("loading");
+        container.innerHTML =
+          '<div style="padding:1rem;color:#b91c1c;">' +
+          "Error initializing Redoc: " +
+          String(e) +
+          "</div>";
       }
     })();
   </script>
