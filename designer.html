@@ -43,12 +43,19 @@
       color: var(--text-secondary, #495057);
     }
 
+    .tool-group {
+      margin-bottom: 0.75rem;
+    }
+
     .tool-group-title {
       font-size: 0.8rem;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--text-secondary, #495057);
-      margin: 0.4rem 0 0.25rem;
+      margin: 0 0 0.4rem;
+      padding-bottom: 0.25rem;
+      border-bottom: 1px solid var(--border-light, #dee2e6);
     }
 
     .node-type {
@@ -56,17 +63,27 @@
       border-radius: 6px;
       border: 1px dashed var(--border-medium, #adb5bd);
       background: #ffffff;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       margin-bottom: 0.25rem;
       cursor: pointer;
       user-select: none;
       transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
     }
 
     .node-type:hover {
       background: #f1f3f5;
       border-color: var(--accent, #6c757d);
       transform: translateY(-1px);
+    }
+
+    .node-type-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 3px;
+      flex-shrink: 0;
     }
 
     /* Center canvas */
@@ -91,11 +108,10 @@
 
     .node {
       position: absolute;
-      min-width: 160px;
-      max-width: 260px;
-      padding: 0.45rem 0.55rem;
+      min-width: 180px;
+      max-width: 280px;
       border-radius: 8px;
-      border: 1px solid var(--border-medium, #adb5bd);
+      border: 2px solid var(--border-medium, #adb5bd);
       background: #ffffff;
       box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.08));
       cursor: move;
@@ -105,17 +121,102 @@
 
     .node.selected {
       border-color: #ffd43b;
-      box-shadow: 0 0 0 2px rgba(255, 212, 59, 0.5);
+      box-shadow: 0 0 0 3px rgba(255, 212, 59, 0.5);
+    }
+
+    .node-header {
+      padding: 0.5rem 0.6rem;
+      border-bottom: 1px solid var(--border-light, #dee2e6);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: #f8f9fa;
+      border-radius: 6px 6px 0 0;
+    }
+
+    .node-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      flex-shrink: 0;
     }
 
     .node-title {
       font-weight: 600;
-      margin-bottom: 0.25rem;
+      font-size: 0.85rem;
+      flex: 1;
+    }
+
+    .node-body {
+      padding: 0.5rem 0.6rem;
     }
 
     .node-io {
       font-size: 0.75rem;
       color: var(--text-secondary, #495057);
+      margin-bottom: 0.25rem;
+    }
+
+    .node-ports {
+      margin-top: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .port {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid var(--border-medium, #adb5bd);
+      background: #ffffff;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .port:hover {
+      background: #ffd43b;
+      border-color: #ffc107;
+    }
+
+    .port.input {
+      transform: translateX(-50%);
+    }
+
+    .port.output {
+      transform: translateX(50%);
+    }
+
+    .port.connected {
+      background: #51cf66;
+      border-color: #37b24d;
+    }
+
+    svg.connections {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .connection-line {
+      stroke: #868e96;
+      stroke-width: 2;
+      fill: none;
+      pointer-events: stroke;
+      cursor: pointer;
+    }
+
+    .connection-line.selected {
+      stroke: #ffd43b;
+      stroke-width: 3;
+    }
+
+    .connection-line:hover {
+      stroke: #ffc107;
+      stroke-width: 3;
     }
 
     /* Right properties / controls */
@@ -334,29 +435,86 @@
     <aside id="toolbox">
       <h2>Nodes</h2>
 
-      <div>
+      <div class="tool-group">
         <div class="tool-group-title">Events</div>
-        <div class="node-type" data-node-type="onJoin">On player join</div>
-        <div class="node-type" data-node-type="onChat">On player chat</div>
-        <div class="node-type" data-node-type="onTick">On server tick</div>
+        <div class="node-type" data-node-type="onServerTick"><div class="node-type-icon" style="background:#845ef7"></div>Server Tick</div>
+        <div class="node-type" data-node-type="onPlayerJoin"><div class="node-type-icon" style="background:#4c6ef5"></div>Player Join</div>
+        <div class="node-type" data-node-type="onPlayerLeave"><div class="node-type-icon" style="background:#4c6ef5"></div>Player Leave</div>
+        <div class="node-type" data-node-type="onPlayerTick"><div class="node-type-icon" style="background:#4c6ef5"></div>Player Tick</div>
+        <div class="node-type" data-node-type="onChatMessage"><div class="node-type-icon" style="background:#15aabf"></div>Chat Message</div>
+        <div class="node-type" data-node-type="onBlockBreak"><div class="node-type-icon" style="background:#74b816"></div>Block Break</div>
+        <div class="node-type" data-node-type="onBlockPlace"><div class="node-type-icon" style="background:#74b816"></div>Block Place</div>
+        <div class="node-type" data-node-type="onUseBlock"><div class="node-type-icon" style="background:#74b816"></div>Use Block</div>
+        <div class="node-type" data-node-type="onUseItem"><div class="node-type-icon" style="background:#f59f00"></div>Use Item</div>
+        <div class="node-type" data-node-type="onAttackEntity"><div class="node-type-icon" style="background:#f03e3e"></div>Attack Entity</div>
+        <div class="node-type" data-node-type="onEntityDamage"><div class="node-type-icon" style="background:#f03e3e"></div>Entity Damage</div>
+        <div class="node-type" data-node-type="onEntityDeath"><div class="node-type-icon" style="background:#f03e3e"></div>Entity Death</div>
       </div>
 
-      <div>
-        <div class="tool-group-title">Actions</div>
-        <div class="node-type" data-node-type="log">Log message</div>
-        <div class="node-type" data-node-type="broadcast">Broadcast to all players</div>
-        <div class="node-type" data-node-type="command">Run command</div>
+      <div class="tool-group">
+        <div class="tool-group-title">Commands</div>
+        <div class="node-type" data-node-type="registerCommand"><div class="node-type-icon" style="background:#20c997"></div>Register Command</div>
       </div>
 
-      <div>
-        <div class="tool-group-title">Control</div>
-        <div class="node-type" data-node-type="if">If condition</div>
-        <div class="node-type" data-node-type="delay">Delay</div>
+      <div class="tool-group">
+        <div class="tool-group-title">Messaging</div>
+        <div class="node-type" data-node-type="log"><div class="node-type-icon" style="background:#868e96"></div>Log</div>
+        <div class="node-type" data-node-type="broadcast"><div class="node-type-icon" style="background:#15aabf"></div>Broadcast</div>
+        <div class="node-type" data-node-type="sendMessageTo"><div class="node-type-icon" style="background:#15aabf"></div>Send Message To</div>
       </div>
 
-      <p class="hint">
-        Click a node type to add it to the canvas. Drag nodes around, select one, then edit its
-        properties on the right. The JS preview updates automatically.
+      <div class="tool-group">
+        <div class="tool-group-title">World</div>
+        <div class="node-type" data-node-type="setBlock"><div class="node-type-icon" style="background:#74b816"></div>Set Block</div>
+        <div class="node-type" data-node-type="getBlock"><div class="node-type-icon" style="background:#74b816"></div>Get Block</div>
+        <div class="node-type" data-node-type="fillArea"><div class="node-type-icon" style="background:#74b816"></div>Fill Area</div>
+        <div class="node-type" data-node-type="replaceBlocks"><div class="node-type-icon" style="background:#74b816"></div>Replace Blocks</div>
+      </div>
+
+      <div class="tool-group">
+        <div class="tool-group-title">Players</div>
+        <div class="node-type" data-node-type="getPlayers"><div class="node-type-icon" style="background:#4c6ef5"></div>Get Players</div>
+        <div class="node-type" data-node-type="teleport"><div class="node-type-icon" style="background:#4c6ef5"></div>Teleport</div>
+        <div class="node-type" data-node-type="setGamemode"><div class="node-type-icon" style="background:#4c6ef5"></div>Set Gamemode</div>
+        <div class="node-type" data-node-type="setHealth"><div class="node-type-icon" style="background:#e64980"></div>Set Health</div>
+        <div class="node-type" data-node-type="heal"><div class="node-type-icon" style="background:#e64980"></div>Heal</div>
+        <div class="node-type" data-node-type="giveItem"><div class="node-type-icon" style="background:#f59f00"></div>Give Item</div>
+      </div>
+
+      <div class="tool-group">
+        <div class="tool-group-title">Entities</div>
+        <div class="node-type" data-node-type="spawnEntity"><div class="node-type-icon" style="background:#37b24d"></div>Spawn Entity</div>
+        <div class="node-type" data-node-type="killEntity"><div class="node-type-icon" style="background:#f03e3e"></div>Kill Entity</div>
+        <div class="node-type" data-node-type="findEntities"><div class="node-type-icon" style="background:#37b24d"></div>Find Entities</div>
+      </div>
+
+      <div class="tool-group">
+        <div class="tool-group-title">Sound</div>
+        <div class="node-type" data-node-type="playSound"><div class="node-type-icon" style="background:#845ef7"></div>Play Sound</div>
+        <div class="node-type" data-node-type="playSoundTo"><div class="node-type-icon" style="background:#845ef7"></div>Play Sound To</div>
+        <div class="node-type" data-node-type="playSoundAt"><div class="node-type-icon" style="background:#845ef7"></div>Play Sound At</div>
+      </div>
+
+      <div class="tool-group">
+        <div class="tool-group-title">Data</div>
+        <div class="node-type" data-node-type="loadData"><div class="node-type-icon" style="background:#f59f00"></div>Load Data</div>
+        <div class="node-type" data-node-type="saveData"><div class="node-type-icon" style="background:#f59f00"></div>Save Data</div>
+      </div>
+
+      <div class="tool-group">
+        <div class="tool-group-title">Scheduling</div>
+        <div class="node-type" data-node-type="runLater"><div class="node-type-icon" style="background:#fab005"></div>Run Later</div>
+        <div class="node-type" data-node-type="runRepeating"><div class="node-type-icon" style="background:#fab005"></div>Run Repeating</div>
+      </div>
+
+      <div class="tool-group">
+        <div class="tool-group-title">Control Flow</div>
+        <div class="node-type" data-node-type="if"><div class="node-type-icon" style="background:#868e96"></div>If Condition</div>
+        <div class="node-type" data-node-type="forEach"><div class="node-type-icon" style="background:#868e96"></div>For Each</div>
+      </div>
+
+      <p class="hint" style="font-size: 0.75rem; margin-top: auto;">
+        Click to add nodes. Drag to move. Click ports to connect nodes. Right-click connections to delete.
       </p>
     </aside>
 
@@ -381,23 +539,24 @@
         </div>
 
         <div class="field-group">
-          <div class="field-label">Event / Command name (if applicable)</div>
-          <input id="field-node-event" class="field-input" type="text" placeholder="e.g. playerJoin, say, myCommand" />
+          <div class="field-label">Parameters (read-only)</div>
+          <input id="field-node-event" class="field-input" type="text" placeholder="No parameters" disabled />
         </div>
 
         <div class="field-group">
-          <div class="field-label">Message / details</div>
-          <textarea id="field-node-message" class="field-textarea" placeholder="Optional message or details for this node"></textarea>
+          <div class="field-label">Parameters (JSON)</div>
+          <textarea id="field-node-message" class="field-textarea" placeholder='{"param": "value"}'></textarea>
+          <div class="hint" style="margin-top: 0.25rem; font-size: 0.75rem;">Edit parameters as JSON. Changes apply automatically.</div>
         </div>
 
         <div class="field-group">
-          <div class="field-label">Custom JS snippet (advanced)</div>
-          <textarea id="field-node-custom" class="field-textarea" placeholder="// extra code that will be inserted for this node"></textarea>
+          <div class="field-label">Custom JS code (optional)</div>
+          <textarea id="field-node-custom" class="field-textarea" placeholder="// Custom code to insert for this node&#10;// e.g., api.log('custom logic');"></textarea>
         </div>
 
         <p class="hint">
-          <strong>Note:</strong> The Designer generates a mod stub from your graph. You can always
-          edit the exported JS file by hand afterwards.
+          <strong>Tip:</strong> Connect nodes by dragging from output ports (right) to input ports (left).
+          Right-click nodes or connections to delete them.
         </p>
       </div>
 
@@ -431,469 +590,6 @@
     </section>
   </main>
 
-  <script>
-    // Simple in-page designer logic
-
-    const canvasWrapper = document.getElementById("canvas-wrapper");
-    const canvasEl      = document.getElementById("canvas");
-    const toolbox       = document.getElementById("toolbox");
-
-    const fieldLabel    = document.getElementById("field-node-label");
-    const fieldType     = document.getElementById("field-node-type");
-    const fieldEvent    = document.getElementById("field-node-event");
-    const fieldMessage  = document.getElementById("field-node-message");
-    const fieldCustom   = document.getElementById("field-node-custom");
-
-    const statusEl      = document.getElementById("designer-status");
-    const previewCodeEl = document.getElementById("preview-code");
-    const uploadInput   = document.getElementById("upload-input");
-
-    const btnNewGraph   = document.getElementById("btn-new-graph");
-    const btnExportJson = document.getElementById("btn-export-json");
-    const btnImportJson = document.getElementById("btn-import-json");
-    const btnDownloadJs = document.getElementById("btn-download-js");
-
-    const nodeTypeButtons = toolbox.querySelectorAll(".node-type");
-
-    let nodes = [];        // { id, type, label, x, y, eventName, message, customCode }
-    let nextNodeId = 1;
-    let selectedNodeId = null;
-
-    function setStatus(text, isError) {
-      if (!statusEl) return;
-      statusEl.textContent = text;
-      statusEl.style.color = isError ? "#b91c1c" : "var(--text-secondary, #495057)";
-    }
-
-    function findNode(id) {
-      return nodes.find(n => n.id === id) || null;
-    }
-
-    function createNode(type, x, y) {
-      const label = defaultLabelForType(type);
-      const node = {
-        id: nextNodeId++,
-        type,
-        label,
-        x,
-        y,
-        eventName: "",
-        message: "",
-        customCode: ""
-      };
-      nodes.push(node);
-      renderNode(node);
-      selectNode(node.id);
-      updatePreview();
-    }
-
-    function defaultLabelForType(type) {
-      switch (type) {
-        case "onJoin": return "On player join";
-        case "onChat": return "On player chat";
-        case "onTick": return "On server tick";
-        case "log": return "Log message";
-        case "broadcast": return "Broadcast";
-        case "command": return "Run command";
-        case "if": return "If condition";
-        case "delay": return "Delay";
-        default: return type;
-      }
-    }
-
-    function renderNode(node) {
-      let el = canvasEl.querySelector('[data-node-id="' + node.id + '"]');
-      if (!el) {
-        el = document.createElement("div");
-        el.className = "node";
-        el.dataset.nodeId = String(node.id);
-
-        const title = document.createElement("div");
-        title.className = "node-title";
-        el.appendChild(title);
-
-        const io = document.createElement("div");
-        io.className = "node-io";
-        el.appendChild(io);
-
-        canvasEl.appendChild(el);
-
-        // click -> select node
-        el.addEventListener("mousedown", (e) => {
-          if (e.button === 0) {
-            e.stopPropagation();
-            selectNode(node.id);
-          }
-        });
-
-        // basic drag
-        makeNodeDraggable(el, node);
-      }
-
-      el.style.left = node.x + "px";
-      el.style.top  = node.y + "px";
-
-      const titleEl = el.querySelector(".node-title");
-      const ioEl    = el.querySelector(".node-io");
-      if (titleEl) titleEl.textContent = node.label || "(" + node.type + ")";
-      if (ioEl)    ioEl.textContent =
-        node.type +
-        (node.eventName ? " :: " + node.eventName : "") +
-        (node.message ? " — " + node.message.slice(0, 24) : "");
-      el.classList.toggle("selected", node.id === selectedNodeId);
-    }
-
-    function rerenderAllNodes() {
-      nodes.forEach(renderNode);
-    }
-
-    function clearSelection() {
-      selectedNodeId = null;
-      canvasEl.querySelectorAll(".node").forEach(el => {
-        el.classList.remove("selected");
-      });
-      refreshSidebarFields();
-    }
-
-    function selectNode(id) {
-      selectedNodeId = id;
-      canvasEl.querySelectorAll(".node").forEach(el => {
-        el.classList.toggle("selected", Number(el.dataset.nodeId) === id);
-      });
-      refreshSidebarFields();
-    }
-
-    function refreshSidebarFields() {
-      const node = selectedNodeId ? findNode(selectedNodeId) : null;
-      if (!node) {
-        fieldLabel.value   = "";
-        fieldType.value    = "";
-        fieldEvent.value   = "";
-        fieldMessage.value = "";
-        fieldCustom.value  = "";
-        fieldLabel.placeholder = "No node selected";
-        fieldLabel.disabled = true;
-        fieldEvent.disabled = true;
-        fieldMessage.disabled = true;
-        fieldCustom.disabled = true;
-        return;
-      }
-
-      fieldLabel.disabled   = false;
-      fieldEvent.disabled   = false;
-      fieldMessage.disabled = false;
-      fieldCustom.disabled  = false;
-
-      fieldLabel.placeholder = "";
-      fieldLabel.value   = node.label || "";
-      fieldType.value    = node.type || "";
-      fieldEvent.value   = node.eventName || "";
-      fieldMessage.value = node.message || "";
-      fieldCustom.value  = node.customCode || "";
-    }
-
-    function attachFieldHandlers() {
-      fieldLabel.addEventListener("input", () => {
-        const node = selectedNodeId ? findNode(selectedNodeId) : null;
-        if (!node) return;
-        node.label = fieldLabel.value;
-        renderNode(node);
-        updatePreview();
-      });
-
-      fieldEvent.addEventListener("input", () => {
-        const node = selectedNodeId ? findNode(selectedNodeId) : null;
-        if (!node) return;
-        node.eventName = fieldEvent.value;
-        renderNode(node);
-        updatePreview();
-      });
-
-      fieldMessage.addEventListener("input", () => {
-        const node = selectedNodeId ? findNode(selectedNodeId) : null;
-        if (!node) return;
-        node.message = fieldMessage.value;
-        renderNode(node);
-        updatePreview();
-      });
-
-      fieldCustom.addEventListener("input", () => {
-        const node = selectedNodeId ? findNode(selectedNodeId) : null;
-        if (!node) return;
-        node.customCode = fieldCustom.value;
-        updatePreview();
-      });
-    }
-
-    // Basic mouse drag for nodes
-    function makeNodeDraggable(el, node) {
-      let dragging = false;
-      let startX = 0;
-      let startY = 0;
-      let nodeStartX = 0;
-      let nodeStartY = 0;
-
-      el.addEventListener("mousedown", (e) => {
-        if (e.button !== 0) return;
-        dragging = true;
-        startX = e.clientX;
-        startY = e.clientY;
-        nodeStartX = node.x;
-        nodeStartY = node.y;
-        document.addEventListener("mousemove", onMove);
-        document.addEventListener("mouseup", onUp);
-      });
-
-      function onMove(e) {
-        if (!dragging) return;
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        node.x = nodeStartX + dx;
-        node.y = nodeStartY + dy;
-        renderNode(node);
-      }
-
-      function onUp() {
-        dragging = false;
-        document.removeEventListener("mousemove", onMove);
-        document.removeEventListener("mouseup", onUp);
-        updatePreview();
-      }
-    }
-
-    // Click on empty canvas -> clear selection
-    canvasEl.addEventListener("mousedown", (e) => {
-      if (e.target === canvasEl) {
-        clearSelection();
-      }
-    });
-
-    // Add node from toolbox
-    nodeTypeButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const type = btn.dataset.nodeType;
-        const rect = canvasWrapper.getBoundingClientRect();
-        const scrollLeft = canvasWrapper.scrollLeft;
-        const scrollTop  = canvasWrapper.scrollTop;
-        const centerX = scrollLeft + rect.width / 2;
-        const centerY = scrollTop + rect.height / 2;
-
-        createNode(type, centerX - 80, centerY - 40);
-        setStatus("Added node: " + type);
-      });
-    });
-
-    // Graph actions
-    btnNewGraph.addEventListener("click", () => {
-      if (!confirm("Clear the current graph? This cannot be undone.")) return;
-      nodes = [];
-      nextNodeId = 1;
-      selectedNodeId = null;
-      canvasEl.innerHTML = "";
-      refreshSidebarFields();
-      updatePreview();
-      setStatus("Graph cleared.");
-    });
-
-    btnExportJson.addEventListener("click", () => {
-      const data = {
-        version: 1,
-        nodes
-      };
-      const json = JSON.stringify(data, null, 2);
-      const blob = new Blob([json], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "threadjs-designer-graph.json";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      setStatus("Exported graph JSON.");
-    });
-
-    btnImportJson.addEventListener("click", () => {
-      uploadInput.value = "";
-      uploadInput.click();
-    });
-
-    uploadInput.addEventListener("change", async () => {
-      const file = uploadInput.files && uploadInput.files[0];
-      if (!file) return;
-      try {
-        const text = await file.text();
-        const parsed = JSON.parse(text);
-        if (!parsed || !Array.isArray(parsed.nodes)) {
-          throw new Error("JSON has no 'nodes' array");
-        }
-        nodes = parsed.nodes.map(n => ({
-          id: Number(n.id) || (nextNodeId++),
-          type: n.type || "node",
-          label: n.label || defaultLabelForType(n.type || "node"),
-          x: Number(n.x) || 40,
-          y: Number(n.y) || 40,
-          eventName: n.eventName || "",
-          message: n.message || "",
-          customCode: n.customCode || ""
-        }));
-        // ensure next id is larger than any we loaded
-        const maxId = nodes.reduce((m, n) => Math.max(m, n.id), 0);
-        nextNodeId = maxId + 1;
-        selectedNodeId = null;
-
-        canvasEl.innerHTML = "";
-        nodes.forEach(renderNode);
-        refreshSidebarFields();
-        updatePreview();
-        setStatus("Imported graph with " + nodes.length + " node(s).");
-      } catch (err) {
-        console.error(err);
-        setStatus("Failed to import graph: " + err.message, true);
-      }
-    });
-
-    btnDownloadJs.addEventListener("click", () => {
-      const code = previewCodeEl.textContent || "";
-      const blob = new Blob([code], { type: "text/javascript" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "threadjs-designer-mod.js";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      setStatus("Downloaded generated mod file.");
-    });
-
-    // Generate JS from nodes
-    function generateJs() {
-      const lines = [];
-      lines.push("// Auto-generated by ThreadJS Designer");
-      lines.push("// You can modify this file after export.");
-      lines.push("");
-      lines.push("module.exports = function(api) {");
-
-      // For a simple first version, we just emit each node as a block.
-      // You can refine this later (e.g. real flow connections, etc.).
-      nodes.forEach(node => {
-        const label = node.label || "(" + node.type + ")";
-        const ev = node.eventName || "";
-        const msg = node.message || "";
-
-        lines.push("");
-        lines.push("  // Node #" + node.id + " — " + label);
-
-        switch (node.type) {
-          case "onJoin":
-            lines.push(
-              '  api.on("playerJoin", (player, ctx) => {',
-              msg ? '    api.log("[' + escapeString(label) + '] " + ' + JSON.stringify(msg) + ');' : "    // TODO: add logic for player join",
-              node.customCode ? indentLines(node.customCode, 4) : "",
-              "  });"
-            );
-            break;
-          case "onChat":
-            lines.push(
-              '  api.on("playerChat", (player, message, ctx) => {',
-              msg ? '    api.log("[' + escapeString(label) + '] " + ' + JSON.stringify(msg) + ');' : "    // TODO: add logic for chat",
-              node.customCode ? indentLines(node.customCode, 4) : "",
-              "  });"
-            );
-            break;
-          case "onTick":
-            lines.push(
-              '  api.on("tick", (ctx) => {',
-              msg ? '    api.log("[' + escapeString(label) + '] " + ' + JSON.stringify(msg) + ');' : "    // TODO: add logic for tick",
-              node.customCode ? indentLines(node.customCode, 4) : "",
-              "  });"
-            );
-            break;
-          case "log":
-            lines.push(
-              "  api.log(" +
-              (msg ? JSON.stringify(msg) : JSON.stringify(label)) +
-              ");"
-            );
-            if (node.customCode) {
-              lines.push(indentLines(node.customCode, 2));
-            }
-            break;
-          case "broadcast":
-            lines.push(
-              "  api.broadcast(" +
-              (msg ? JSON.stringify(msg) : JSON.stringify(label)) +
-              ");"
-            );
-            if (node.customCode) {
-              lines.push(indentLines(node.customCode, 2));
-            }
-            break;
-          case "command":
-            {
-              const cmd = ev || "myCommand";
-              lines.push(
-                '  api.registerCommand("' + escapeString(cmd) + '", (player, args, ctx) => {',
-                msg ? '    api.log("[' + escapeString(label) + '] " + ' + JSON.stringify(msg) + ');' : "    // TODO: add command logic",
-                node.customCode ? indentLines(node.customCode, 4) : "",
-                "  });"
-              );
-            }
-            break;
-          case "if":
-            lines.push(
-              "  if (/* TODO: condition for '" + label + "' */ true) {",
-              msg ? "    // " + msg : "    // condition passed",
-              node.customCode ? indentLines(node.customCode, 4) : "",
-              "  }"
-            );
-            break;
-          case "delay":
-            lines.push(
-              "  api.delay(1000, () => {",
-              msg ? '    api.log(' + JSON.stringify(msg) + ');' : "    // TODO: delayed logic",
-              node.customCode ? indentLines(node.customCode, 4) : "",
-              "  });"
-            );
-            break;
-          default:
-            lines.push("  // TODO: node type '" + node.type + "'");
-            if (node.customCode) {
-              lines.push(indentLines(node.customCode, 2));
-            }
-            break;
-        }
-      });
-
-      lines.push("");
-      lines.push("};");
-      lines.push("");
-
-      return lines.join("\n");
-    }
-
-    function updatePreview() {
-      if (!previewCodeEl) return;
-      previewCodeEl.textContent = generateJs();
-    }
-
-    function escapeString(str) {
-      return String(str).replace(/"/g, '\\"');
-    }
-
-    function indentLines(str, spaces) {
-      const pad = " ".repeat(spaces);
-      return String(str)
-        .split("\n")
-        .map((line) => (line.trim() ? pad + line : ""))
-        .join("\n");
-    }
-
-    // Initial boot
-    attachFieldHandlers();
-    updatePreview();
-    setStatus("Ready.");
-  </script>
+  <script src="designer-new-script.js"></script>
 </body>
 </html>
