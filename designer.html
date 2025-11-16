@@ -691,119 +691,14 @@
           <textarea id="field-node-custom" class="field-textarea" placeholder="// Custom code to insert for this node&#10;// e.g., api.log('custom logic');"></textarea>
         </div>
 
-        <details class="var-reference">
-          <summary>📖 Variable Reference</summary>
-          <div class="var-ref-content">
-            <div class="var-ref-item">
-              <strong>player</strong>
-              <ul>
-                <li><code>player.name</code> - Player name (string)</li>
-                <li><code>player.tick</code> - Player's tick count (number)</li>
-                <li><code>player.pos</code> - Position array <code>[x, y, z]</code></li>
-                <li><code>player.dimensionId</code> - Dimension ID (string)</li>
-                <li><code>player.uuid</code> - Player UUID (string)</li>
-              </ul>
-            </div>
-            
-            <div class="var-ref-item">
-              <strong>evt (Chat Message)</strong>
-              <ul>
-                <li><code>evt.player</code> - Player object</li>
-                <li><code>evt.player.name</code> - Player name</li>
-                <li><code>evt.message</code> - Chat message text</li>
-              </ul>
-            </div>
-            
-            <div class="var-ref-item">
-              <strong>evt (Block Events)</strong>
-              <ul>
-                <li><code>evt.playerName</code> - Player name</li>
-                <li><code>evt.blockId</code> - Block ID (e.g., "minecraft:stone")</li>
-                <li><code>evt.x</code>, <code>evt.y</code>, <code>evt.z</code> - Coordinates</li>
-              </ul>
-            </div>
-            
-            <div class="var-ref-item">
-              <strong>evt (Item/Entity Events)</strong>
-              <ul>
-                <li><code>evt.playerName</code> - Player name</li>
-                <li><code>evt.itemId</code> - Item ID (for useItem)</li>
-                <li><code>evt.targetType</code> - Entity type (for attackEntity)</li>
-                <li><code>evt.victimType</code>, <code>evt.sourceType</code> - Entity types</li>
-                <li><code>evt.amount</code> - Damage amount</li>
-              </ul>
-            </div>
-            
-            <div class="var-ref-item">
-              <strong>ctx (Command context)</strong>
-              <ul>
-                <li><code>ctx.player</code> - Player object (if player ran command)</li>
-                <li><code>ctx.player.name</code> - Player name</li>
-              </ul>
-            </div>
-            
-            <div class="var-ref-item">
-              <strong>args (Command arguments)</strong>
-              <ul>
-                <li><code>args[0]</code>, <code>args[1]</code>, ... - Array of string arguments</li>
-              </ul>
-            </div>
-            
-            <div class="var-ref-item">
-              <strong>block (from getBlock)</strong>
-              <ul>
-                <li><code>block</code> - Block ID string</li>
-              </ul>
-            </div>
-            
-            <div class="var-ref-item">
-              <strong>data (from loadData)</strong>
-              <ul>
-                <li><code>data</code> - Loaded object/value</li>
-                <li><code>data.propertyName</code> - Access properties</li>
-              </ul>
-            </div>
-            
-            <div class="var-ref-item">
-              <strong>players (from getPlayers)</strong>
-              <ul>
-                <li><code>players</code> - Array of player objects</li>
-                <li><code>players[0].name</code> - First player's name</li>
-              </ul>
-            </div>
-            
-            <div class="var-ref-item">
-              <strong>entities (from findEntities)</strong>
-              <ul>
-                <li><code>entities</code> - Array of entity objects</li>
-                <li><code>entities[0].uuid</code> - First entity's UUID</li>
-              </ul>
-            </div>
-            
-            <div class="var-ref-item">
-              <strong>entityId (from spawnEntity)</strong>
-              <ul>
-                <li><code>entityId</code> - UUID of spawned entity</li>
-              </ul>
-            </div>
-            
-            <div class="var-ref-item">
-              <strong>item (from forEach)</strong>
-              <ul>
-                <li><code>item</code> - Current iteration item</li>
-                <li>Type depends on the array being iterated</li>
-              </ul>
-            </div>
-            
-            <p style="margin-top: 0.75rem; font-size: 0.76rem; color: var(--text-secondary, #495057);">
-              <strong>Usage in parameters:</strong> Use <code>$variableName</code> for direct reference or <code>${'{variable.property}'}</code> for template strings.
-            </p>
-          </div>
-        </details>
-
         <p class="hint">
-          <strong>Tip:</strong> Connect nodes by dragging from output ports (right) to input ports (left).
-          Right-click nodes or connections to delete them.
+          <strong>💡 Tip:</strong> Type variable names in Parameters for autocomplete suggestions!<br>
+          <a href="variable-reference.html" target="_blank" style="color: #1971c2; font-weight: 600;">View Variable Reference →</a>
+        </p>
+
+        <p class="hint" style="margin-top: 0.5rem;">
+          <strong>Connection:</strong> Drag from output ports (right) to input ports (left).
+          Right-click to delete.
         </p>
       </div>
 
