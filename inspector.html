@@ -2,7 +2,12 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ThreadJS Inspector</title>
+  
+  <!-- Shared global stylesheet -->
+  <link rel="stylesheet" href="https://2lynk.github.io/stylesheet.css">
+  
   <style>
     :root {
       /* Dark (default) – tuned to match your docs vibe but darker */
@@ -101,76 +106,10 @@
       color: var(--text);
     }
 
-    /* Shared header like index.html */
+    /* Override header for inspector-specific styling */
     header {
-      padding: 1.1rem 2rem;
       background: var(--header-panel);
       border-bottom: 2px solid var(--header-border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 1.4rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    header h1::before {
-      content: "⚡";
-      font-size: 1.75rem;
-      -webkit-text-fill-color: #6c757d;
-    }
-
-    nav {
-      display: flex;
-      gap: 0.75rem;
-    }
-
-    nav a {
-      color: var(--header-text-main);
-      text-decoration: none;
-      font-size: 0.95rem;
-      font-weight: 500;
-      padding: 0.5rem 1.1rem;
-      border-radius: 8px;
-      background: #f8f9fa;
-      border: 1px solid #dee2e6;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-      transition: all 0.2s ease;
-    }
-
-    nav a:hover {
-      background: #6c757d;
-      color: #ffffff;
-      border-color: #495057;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 6px rgba(0,0,0,0.12);
-    }
-
-    /* Highlight Inspector on this page */
-    nav a[href="inspector.html"] {
-      background: #6c757d;
-      color: #ffffff;
-      border-color: #495057;
-    }
-
-    nav a[href="index.html"],
-    nav a[href="./"] {
-      /* unselected but still nice */
     }
 
     /* Layout below header */
@@ -407,13 +346,12 @@
     }
 
     @media (max-width: 900px) {
-      header {
-        padding: 1rem;
+      .header-inner {
         flex-direction: column;
-        gap: 0.75rem;
         align-items: flex-start;
+        gap: 0.75rem;
       }
-      nav {
+      .nav-links {
         width: 100%;
         justify-content: flex-start;
         flex-wrap: wrap;
@@ -444,12 +382,30 @@
     </div>
   </div>
 <header>
-  <h1>ThreadJS API Reference</h1>
-  <nav>
-    <a href="index.html">📚 API Reference</a>
-    <a href="inspector.html">🧪 Inspector</a>
-    <a href="example-mods.html">🧩 Example Mods</a>
-  </nav>
+  <div class="header-inner">
+    <!-- Left: ThreadJS brand + Lynk link -->
+    <div style="display:flex; align-items:center; gap:0.75rem;">
+      <a href="../" class="brand">
+        <div class="brand-mark">T</div>
+        <div class="brand-labels">
+          <div class="brand-text-main">ThreadJS</div>
+          <div class="brand-text-sub">Minecraft JS scripting</div>
+        </div>
+      </a>
+
+      <!-- Back to main homepage -->
+      <a class="nav-pill" href="https://2lynk.github.io/">Lynk</a>
+    </div>
+
+    <!-- Right: ThreadJS section navigation -->
+    <nav class="nav-links">
+      <a class="nav-pill" href="index.html">API Reference</a>
+      <a class="nav-pill nav-pill--accent" href="inspector.html">Inspector</a>
+      <a class="nav-pill" href="example-mods.html">Example Mods</a>
+      <a class="nav-pill" href="designer.html">Designer</a>
+      <a class="nav-pill" href="variable-reference.html">Variables</a>
+    </nav>
+  </div>
 </header>
 
 <div id="inspector-layout">
