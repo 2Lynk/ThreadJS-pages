@@ -1,40 +1,33 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>ThreadJS – Designer</title>
+  <title>ThreadJS Designer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Shared global stylesheet -->
   <link rel="stylesheet" href="https://2lynk.github.io/stylesheet.css">
 
   <style>
-    /* Page-specific layout + node/editor styling.
-       Colors & base typography come from stylesheet.css via CSS variables. */
+    /* Designer layout builds on the shared light theme vars from stylesheet.css */
 
-    body {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-    }
-
-    main {
+    main.designer-main {
       flex: 1;
       display: grid;
       grid-template-columns: 220px minmax(0, 1fr) 320px;
       grid-template-rows: minmax(0, 1fr) 220px;
-      border-top: 1px solid var(--border-light);
+      gap: 0;
+      border-top: 1px solid var(--border-light, #dee2e6);
       min-height: 0;
+      background: var(--bg-primary, #f8f9fa);
     }
 
     /* Left toolbox */
     #toolbox {
       grid-column: 1 / 2;
       grid-row: 1 / 3;
-      border-right: 1px solid var(--border-light);
-      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-light, #dee2e6);
+      background: var(--bg-secondary, #ffffff);
       padding: 0.75rem;
       display: flex;
       flex-direction: column;
@@ -47,45 +40,33 @@
       font-size: 0.9rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--text-secondary);
+      color: var(--text-secondary, #495057);
     }
 
     .tool-group-title {
       font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--text-secondary);
+      color: var(--text-secondary, #495057);
       margin: 0.4rem 0 0.25rem;
     }
 
     .node-type {
       padding: 0.35rem 0.45rem;
       border-radius: 6px;
-      border: 1px dashed var(--border-medium);
-      background: var(--bg-secondary);
+      border: 1px dashed var(--border-medium, #adb5bd);
+      background: #ffffff;
       font-size: 0.85rem;
       margin-bottom: 0.25rem;
       cursor: pointer;
       user-select: none;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .node-type span.label {
-      flex: 1;
-    }
-
-    .node-type span.small {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      white-space: nowrap;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
     }
 
     .node-type:hover {
-      background: #ffffff;
-      border-style: solid;
+      background: #f1f3f5;
+      border-color: var(--accent, #6c757d);
+      transform: translateY(-1px);
     }
 
     /* Center canvas */
@@ -110,15 +91,16 @@
 
     .node {
       position: absolute;
-      min-width: 170px;
+      min-width: 160px;
       max-width: 260px;
       padding: 0.45rem 0.55rem;
       border-radius: 8px;
-      border: 1px solid var(--border-medium);
+      border: 1px solid var(--border-medium, #adb5bd);
       background: #ffffff;
-      box-shadow: var(--shadow-sm);
+      box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.08));
       cursor: move;
       font-size: 0.82rem;
+      box-sizing: border-box;
     }
 
     .node.selected {
@@ -133,21 +115,15 @@
 
     .node-io {
       font-size: 0.75rem;
-      color: var(--text-secondary);
-    }
-
-    .node-footer {
-      margin-top: 0.3rem;
-      font-size: 0.75rem;
-      color: var(--text-secondary);
+      color: var(--text-secondary, #495057);
     }
 
     /* Right properties / controls */
     #sidebar-right {
       grid-column: 3 / 4;
       grid-row: 1 / 2;
-      border-left: 1px solid var(--border-light);
-      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-light, #dee2e6);
+      background: var(--bg-secondary, #ffffff);
       padding: 0.75rem 0.9rem;
       display: flex;
       flex-direction: column;
@@ -160,16 +136,16 @@
       font-size: 0.9rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--text-secondary);
+      color: var(--text-secondary, #495057);
     }
 
     .field-group {
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.6rem;
     }
 
     .field-label {
       font-size: 0.8rem;
-      color: var(--text-secondary);
+      color: var(--text-secondary, #495057);
       margin-bottom: 0.2rem;
     }
 
@@ -179,10 +155,11 @@
       width: 100%;
       font-size: 0.85rem;
       border-radius: 6px;
-      border: 1px solid var(--border-light);
+      border: 1px solid var(--border-light, #dee2e6);
       padding: 0.25rem 0.4rem;
       font-family: inherit;
-      background: var(--bg-secondary);
+      background: var(--bg-secondary, #ffffff);
+      box-sizing: border-box;
     }
 
     .field-textarea {
@@ -192,37 +169,39 @@
 
     .hint {
       font-size: 0.78rem;
-      color: var(--text-secondary);
+      color: var(--text-secondary, #495057);
     }
 
     .button-row {
       display: flex;
       flex-wrap: wrap;
       gap: 0.4rem;
-      margin-top: 0.3rem;
+      margin-top: 0.25rem;
     }
 
-    .btn-soft {
+    #sidebar-right button {
       padding: 0.35rem 0.7rem;
       border-radius: 6px;
-      border: 1px solid var(--border-medium);
+      border: 1px solid var(--border-medium, #adb5bd);
       background: #e9ecef;
-      color: var(--text-primary);
+      color: var(--text-primary, #1a1d20);
       font-size: 0.8rem;
       cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
     }
 
-    .btn-soft:hover {
-      background: var(--accent);
+    #sidebar-right button:hover {
+      background: var(--accent, #6c757d);
       color: #ffffff;
-      border-color: var(--accent-hover);
+      border-color: var(--accent-hover, #495057);
+      transform: translateY(-1px);
     }
 
     /* Bottom: JS preview */
     #preview-panel {
       grid-column: 2 / 4;
       grid-row: 2 / 3;
-      border-top: 1px solid var(--border-light);
+      border-top: 1px solid var(--border-light, #dee2e6);
       background: #f1f3f5;
       display: flex;
       flex-direction: column;
@@ -235,628 +214,686 @@
       align-items: center;
       justify-content: space-between;
       font-size: 0.82rem;
-      color: var(--text-secondary);
+      color: var(--text-secondary, #495057);
       background: #e9ecef;
+    }
+
+    #preview-header button {
+      padding: 0.3rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-medium, #adb5bd);
+      background: #f8f9fa;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    }
+
+    #preview-header button:hover {
+      background: var(--accent, #6c757d);
+      color: #ffffff;
+      border-color: var(--accent-hover, #495057);
+      transform: translateY(-1px);
     }
 
     #preview-code {
       flex: 1;
       padding: 0.5rem 0.75rem;
-      background: var(--code-bg);
-      color: var(--code-text);
-      font-family: "Fira Code", monospace;
+      background: var(--code-bg, #212529);
+      color: var(--code-text, #f8f9fa);
+      font-family: "Fira Code", "Courier New", monospace;
       font-size: 0.8rem;
-      border-top: 1px solid var(--code-border);
+      border-top: 1px solid var(--code-border, #343a40);
       overflow: auto;
       white-space: pre;
+      margin: 0;
     }
 
     #upload-input {
       display: none;
     }
 
-    .badge-small {
-      font-size: 0.75rem;
-      padding: 0.1rem 0.5rem;
-      border-radius: 999px;
-      border: 1px solid var(--border-light);
-      background: #f8f9fa;
-      color: var(--text-secondary);
-    }
-
+    /* Responsive */
     @media (max-width: 1024px) {
-      main {
+      main.designer-main {
         grid-template-columns: 200px minmax(0, 1fr);
-        grid-template-rows: minmax(0, 1fr) 240px 260px;
+        grid-template-rows: minmax(0, 1fr) 220px 260px;
       }
       #sidebar-right {
         grid-column: 1 / 3;
         grid-row: 2 / 3;
         border-left: none;
-        border-top: 1px solid var(--border-light);
+        border-top: 1px solid var(--border-light, #dee2e6);
         flex-direction: row;
         flex-wrap: wrap;
+      }
+      #sidebar-right > div {
+        min-width: 220px;
+        flex: 1 1 240px;
       }
       #preview-panel {
         grid-column: 1 / 3;
         grid-row: 3 / 4;
       }
     }
+
+    @media (max-width: 768px) {
+      main.designer-main {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto 260px 260px;
+      }
+      #toolbox {
+        grid-column: 1 / 2;
+        grid-row: 1 / 2;
+        border-right: none;
+        border-bottom: 1px solid var(--border-light, #dee2e6);
+      }
+      #canvas-wrapper {
+        grid-column: 1 / 2;
+        grid-row: 2 / 3;
+      }
+      #sidebar-right {
+        grid-column: 1 / 2;
+        grid-row: 3 / 4;
+      }
+      #preview-panel {
+        grid-column: 1 / 2;
+        grid-row: 4 / 5;
+      }
+    }
   </style>
 </head>
-
 <body>
-  <!-- Shared header / nav, same style as other ThreadJS pages -->
   <header>
     <div class="header-inner">
-      <a href="index.html" class="brand">
-        <div class="brand-mark">T</div>
-        <div class="brand-labels">
-          <div class="brand-text-main">ThreadJS</div>
-          <div class="brand-text-sub">Minecraft JS scripting</div>
-        </div>
-      </a>
+      <!-- Left: ThreadJS brand + Lynk link -->
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <a href="../" class="brand">
+          <div class="brand-mark">T</div>
+          <div class="brand-labels">
+            <div class="brand-text-main">ThreadJS</div>
+            <div class="brand-text-sub">Minecraft JS scripting</div>
+          </div>
+        </a>
+
+        <!-- Back to main homepage -->
+        <a class="nav-pill" href="https://2lynk.github.io/">Lynk</a>
+      </div>
+
+      <!-- Right: ThreadJS section navigation -->
       <nav class="nav-links">
-        <a class="nav-pill" href="index.html">Reference</a>
+        <a class="nav-pill" href="index.html">API Reference</a>
         <a class="nav-pill" href="inspector.html">Inspector</a>
-        <a class="nav-pill" href="example-mods.html">Example mods</a>
+        <a class="nav-pill" href="example-mods.html">Example Mods</a>
         <a class="nav-pill nav-pill--accent" href="designer.html">Designer</a>
       </nav>
     </div>
   </header>
 
-  <main>
-    <!-- LEFT: Toolbox -->
+  <main class="designer-main">
+    <!-- Toolbox -->
     <aside id="toolbox">
       <h2>Nodes</h2>
 
-      <div class="tool-group-title">Core</div>
-      <div class="node-type" data-node-type="log">
-        <span class="label">Log message</span>
-        <span class="small">api.log()</span>
-      </div>
-      <div class="node-type" data-node-type="sendMessage">
-        <span class="label">Broadcast chat</span>
-        <span class="small">api.sendMessage()</span>
+      <div>
+        <div class="tool-group-title">Events</div>
+        <div class="node-type" data-node-type="onJoin">On player join</div>
+        <div class="node-type" data-node-type="onChat">On player chat</div>
+        <div class="node-type" data-node-type="onTick">On server tick</div>
       </div>
 
-      <div class="tool-group-title">Events</div>
-      <div class="node-type" data-node-type="onJoin">
-        <span class="label">On player join</span>
-        <span class="small">api.onPlayerJoin()</span>
-      </div>
-      <div class="node-type" data-node-type="onChat">
-        <span class="label">On chat message</span>
-        <span class="small">api.onChatMessage()</span>
+      <div>
+        <div class="tool-group-title">Actions</div>
+        <div class="node-type" data-node-type="log">Log message</div>
+        <div class="node-type" data-node-type="broadcast">Broadcast to all players</div>
+        <div class="node-type" data-node-type="command">Run command</div>
       </div>
 
-      <div class="tool-group-title">Commands</div>
-      <div class="node-type" data-node-type="command">
-        <span class="label">Custom command</span>
-        <span class="small">api.registerCommand()</span>
+      <div>
+        <div class="tool-group-title">Control</div>
+        <div class="node-type" data-node-type="if">If condition</div>
+        <div class="node-type" data-node-type="delay">Delay</div>
       </div>
 
-      <div class="tool-group-title">World / Players</div>
-      <div class="node-type" data-node-type="giveItem">
-        <span class="label">Give item</span>
-        <span class="small">api.players.giveItem()</span>
-      </div>
-      <div class="node-type" data-node-type="teleport">
-        <span class="label">Teleport</span>
-        <span class="small">api.players.teleport()</span>
-      </div>
-
-      <div class="tool-group-title">Mod meta</div>
-      <div class="node-type" data-node-type="mod">
-        <span class="label">Mod root</span>
-        <span class="small">api.registerMod()</span>
-      </div>
+      <p class="hint">
+        Click a node type to add it to the canvas. Drag nodes around, select one, then edit its
+        properties on the right. The JS preview updates automatically.
+      </p>
     </aside>
 
-    <!-- CENTER: Canvas -->
+    <!-- Canvas -->
     <section id="canvas-wrapper">
       <div id="canvas"></div>
     </section>
 
-    <!-- RIGHT: Properties -->
+    <!-- Right sidebar: properties & graph actions -->
     <aside id="sidebar-right">
-      <div style="flex: 1; min-width: 0;">
-        <h2>Node properties</h2>
-        <div id="nodePropsEmpty" class="hint">
-          Select a node on the canvas to edit its properties.
+      <div style="flex:1 1 260px; min-width: 220px;">
+        <h2>Node Properties</h2>
+
+        <div class="field-group">
+          <div class="field-label">Selected node</div>
+          <input id="field-node-label" class="field-input" type="text" placeholder="No node selected" disabled />
         </div>
-        <div id="nodeProps" style="display:none;">
-          <div class="field-group">
-            <div class="field-label">Node title</div>
-            <input id="propTitle" class="field-input" />
-          </div>
-          <div class="field-group">
-            <div class="field-label">Description (optional)</div>
-            <textarea id="propDescription" class="field-textarea"></textarea>
-          </div>
-          <div class="field-group" id="fieldExtra1" style="display:none;">
-            <div class="field-label" id="fieldExtra1Label"></div>
-            <input id="fieldExtra1Input" class="field-input" />
-          </div>
-          <div class="field-group" id="fieldExtra2" style="display:none;">
-            <div class="field-label" id="fieldExtra2Label"></div>
-            <input id="fieldExtra2Input" class="field-input" />
-          </div>
+
+        <div class="field-group">
+          <div class="field-label">Node type</div>
+          <input id="field-node-type" class="field-input" type="text" disabled />
         </div>
+
+        <div class="field-group">
+          <div class="field-label">Event / Command name (if applicable)</div>
+          <input id="field-node-event" class="field-input" type="text" placeholder="e.g. playerJoin, say, myCommand" />
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Message / details</div>
+          <textarea id="field-node-message" class="field-textarea" placeholder="Optional message or details for this node"></textarea>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Custom JS snippet (advanced)</div>
+          <textarea id="field-node-custom" class="field-textarea" placeholder="// extra code that will be inserted for this node"></textarea>
+        </div>
+
+        <p class="hint">
+          <strong>Note:</strong> The Designer generates a mod stub from your graph. You can always
+          edit the exported JS file by hand afterwards.
+        </p>
       </div>
 
-      <div style="flex: 0 0 auto;">
+      <div style="flex:0 0 220px; min-width: 220px;">
         <h2>Graph</h2>
-        <div class="hint">
-          This editor exports plain <code>.js</code> mods that you can drop into
-          <code>config/jsmods</code>.
+        <div class="field-group">
+          <div class="field-label">Graph actions</div>
+          <div class="button-row">
+            <button id="btn-new-graph" type="button">New graph</button>
+            <button id="btn-export-json" type="button">Export graph (.json)</button>
+            <button id="btn-import-json" type="button">Import graph (.json)</button>
+          </div>
         </div>
-        <div class="button-row">
-          <button type="button" class="btn-soft" id="btnGenerate">Refresh code</button>
-          <button type="button" class="btn-soft" id="btnDownload">Download .js</button>
-          <button type="button" class="btn-soft" id="btnSaveJson">Download blueprint</button>
-          <button type="button" class="btn-soft" id="btnLoadJson">Load blueprint</button>
+
+        <div class="field-group">
+          <div class="field-label">Status</div>
+          <div id="designer-status" class="hint">Ready.</div>
         </div>
-        <input type="file" id="upload-input" accept="application/json" />
+
+        <input id="upload-input" type="file" accept=".json" />
       </div>
     </aside>
 
-    <!-- BOTTOM: Preview -->
+    <!-- JS preview -->
     <section id="preview-panel">
       <div id="preview-header">
-        <span>Generated ThreadJS mod</span>
-        <span class="badge-small">Drop into <code>config/jsmods</code> and reload</span>
+        <span>Generated ThreadJS mod (read-only preview)</span>
+        <button id="btn-download-js" type="button">Download mod (.js)</button>
       </div>
-      <pre id="preview-code">// Your generated JavaScript mod will appear here.</pre>
+      <pre id="preview-code"></pre>
     </section>
   </main>
 
   <script>
-    // ----- Data model -----
-    let nodes = [];
-    let selectedNodeId = null;
-    let dragState = null;
+    // Simple in-page designer logic
 
     const canvasWrapper = document.getElementById("canvas-wrapper");
-    const canvas = document.getElementById("canvas");
+    const canvasEl      = document.getElementById("canvas");
+    const toolbox       = document.getElementById("toolbox");
 
-    // Node templates: define extra fields for each type
-    const NODE_TEMPLATES = {
-      mod: {
-        title: "My ThreadJS Mod",
-        description: "Root mod: use this to initialize your logic.",
-        extra1Label: "Mod ID",
-        extra1Key: "modId",
-        extra1Default: "my-mod",
-        extra2Label: "",
-        extra2Key: "",
-        extra2Default: ""
-      },
-      log: {
-        title: "Log message",
-        description: "Write a line to the server console.",
-        extra1Label: "Message",
-        extra1Key: "message",
-        extra1Default: "Hello from ThreadJS!",
-        extra2Label: "",
-        extra2Key: "",
-        extra2Default: ""
-      },
-      sendMessage: {
-        title: "Broadcast chat",
-        description: "Send a chat message to all players.",
-        extra1Label: "Chat message",
-        extra1Key: "message",
-        extra1Default: "Welcome to the server!",
-        extra2Label: "",
-        extra2Key: "",
-        extra2Default: ""
-      },
-      onJoin: {
-        title: "On player join",
-        description: "Runs when a player joins the server.",
-        extra1Label: "Welcome message",
-        extra1Key: "message",
-        extra1Default: "✨ ${player.name} joined the server!",
-        extra2Label: "",
-        extra2Key: "",
-        extra2Default: ""
-      },
-      onChat: {
-        title: "On chat message",
-        description: "Runs on every chat message.",
-        extra1Label: "Filter word (optional)",
-        extra1Key: "filter",
-        extra1Default: "",
-        extra2Label: "",
-        extra2Key: "",
-        extra2Default: ""
-      },
-      command: {
-        title: "Custom command",
-        description: "Create a simple /command.",
-        extra1Label: "Command name",
-        extra1Key: "commandName",
-        extra1Default: "ping",
-        extra2Label: "Reply text",
-        extra2Key: "reply",
-        extra2Default: "Pong!"
-      },
-      giveItem: {
-        title: "Give item",
-        description: "Give an item to a player.",
-        extra1Label: "Item ID",
-        extra1Key: "itemId",
-        extra1Default: "minecraft:diamond_sword",
-        extra2Label: "Count",
-        extra2Key: "count",
-        extra2Default: "1"
-      },
-      teleport: {
-        title: "Teleport",
-        description: "Teleport a player.",
-        extra1Label: "Target X Y Z",
-        extra1Key: "coords",
-        extra1Default: "0 80 0",
-        extra2Label: "",
-        extra2Key: "",
-        extra2Default: ""
-      }
-    };
+    const fieldLabel    = document.getElementById("field-node-label");
+    const fieldType     = document.getElementById("field-node-type");
+    const fieldEvent    = document.getElementById("field-node-event");
+    const fieldMessage  = document.getElementById("field-node-message");
+    const fieldCustom   = document.getElementById("field-node-custom");
+
+    const statusEl      = document.getElementById("designer-status");
+    const previewCodeEl = document.getElementById("preview-code");
+    const uploadInput   = document.getElementById("upload-input");
+
+    const btnNewGraph   = document.getElementById("btn-new-graph");
+    const btnExportJson = document.getElementById("btn-export-json");
+    const btnImportJson = document.getElementById("btn-import-json");
+    const btnDownloadJs = document.getElementById("btn-download-js");
+
+    const nodeTypeButtons = toolbox.querySelectorAll(".node-type");
+
+    let nodes = [];        // { id, type, label, x, y, eventName, message, customCode }
+    let nextNodeId = 1;
+    let selectedNodeId = null;
+
+    function setStatus(text, isError) {
+      if (!statusEl) return;
+      statusEl.textContent = text;
+      statusEl.style.color = isError ? "#b91c1c" : "var(--text-secondary, #495057)";
+    }
+
+    function findNode(id) {
+      return nodes.find(n => n.id === id) || null;
+    }
 
     function createNode(type, x, y) {
-      const tpl = NODE_TEMPLATES[type] || {};
-      const id = "node_" + Math.random().toString(36).slice(2, 9);
+      const label = defaultLabelForType(type);
       const node = {
-        id,
+        id: nextNodeId++,
         type,
+        label,
         x,
         y,
-        title: tpl.title || type,
-        description: tpl.description || "",
-        extra: {
-          [tpl.extra1Key || ""]: tpl.extra1Default || "",
-          [tpl.extra2Key || ""]: tpl.extra2Default || ""
-        }
+        eventName: "",
+        message: "",
+        customCode: ""
       };
       nodes.push(node);
-      renderNodes();
-      selectNode(id);
+      renderNode(node);
+      selectNode(node.id);
+      updatePreview();
     }
 
-    // ----- Rendering -----
-    function renderNodes() {
-      canvas.innerHTML = "";
-      nodes.forEach(node => {
-        const div = document.createElement("div");
-        div.className = "node" + (node.id === selectedNodeId ? " selected" : "");
-        div.style.left = node.x + "px";
-        div.style.top = node.y + "px";
-        div.dataset.id = node.id;
-
-        const tpl = NODE_TEMPLATES[node.type] || {};
-
-        const title = document.createElement("div");
-        title.className = "node-title";
-        title.textContent = node.title || tpl.title || node.type;
-        div.appendChild(title);
-
-        const io = document.createElement("div");
-        io.className = "node-io";
-        io.textContent = shortNodeLabel(node.type);
-        div.appendChild(io);
-
-        if (node.description) {
-          const footer = document.createElement("div");
-          footer.className = "node-footer";
-          footer.textContent = node.description;
-          div.appendChild(footer);
-        }
-
-        // Drag start
-        div.addEventListener("mousedown", (e) => {
-          e.preventDefault();
-          selectNode(node.id);
-          dragState = {
-            nodeId: node.id,
-            startX: e.clientX,
-            startY: e.clientY,
-            nodeStartX: node.x,
-            nodeStartY: node.y
-          };
-        });
-
-        canvas.appendChild(div);
-      });
-    }
-
-    function shortNodeLabel(type) {
+    function defaultLabelForType(type) {
       switch (type) {
-        case "mod": return "api.registerMod()";
-        case "log": return "api.log(message)";
-        case "sendMessage": return "api.sendMessage(message)";
-        case "onJoin": return "api.onPlayerJoin(player => …)";
-        case "onChat": return "api.onChatMessage(evt => …)";
-        case "command": return "api.registerCommand(name, handler)";
-        case "giveItem": return "api.players.giveItem(player, item, count)";
-        case "teleport": return "api.players.teleport(player, x,y,z,dim)";
+        case "onJoin": return "On player join";
+        case "onChat": return "On player chat";
+        case "onTick": return "On server tick";
+        case "log": return "Log message";
+        case "broadcast": return "Broadcast";
+        case "command": return "Run command";
+        case "if": return "If condition";
+        case "delay": return "Delay";
         default: return type;
       }
     }
 
-    // ----- Selection & properties -----
-    const nodePropsEmpty = document.getElementById("nodePropsEmpty");
-    const nodeProps = document.getElementById("nodeProps");
-    const propTitle = document.getElementById("propTitle");
-    const propDescription = document.getElementById("propDescription");
-    const fieldExtra1 = document.getElementById("fieldExtra1");
-    const fieldExtra2 = document.getElementById("fieldExtra2");
-    const fieldExtra1Label = document.getElementById("fieldExtra1Label");
-    const fieldExtra2Label = document.getElementById("fieldExtra2Label");
-    const fieldExtra1Input = document.getElementById("fieldExtra1Input");
-    const fieldExtra2Input = document.getElementById("fieldExtra2Input");
+    function renderNode(node) {
+      let el = canvasEl.querySelector('[data-node-id="' + node.id + '"]');
+      if (!el) {
+        el = document.createElement("div");
+        el.className = "node";
+        el.dataset.nodeId = String(node.id);
+
+        const title = document.createElement("div");
+        title.className = "node-title";
+        el.appendChild(title);
+
+        const io = document.createElement("div");
+        io.className = "node-io";
+        el.appendChild(io);
+
+        canvasEl.appendChild(el);
+
+        // click -> select node
+        el.addEventListener("mousedown", (e) => {
+          if (e.button === 0) {
+            e.stopPropagation();
+            selectNode(node.id);
+          }
+        });
+
+        // basic drag
+        makeNodeDraggable(el, node);
+      }
+
+      el.style.left = node.x + "px";
+      el.style.top  = node.y + "px";
+
+      const titleEl = el.querySelector(".node-title");
+      const ioEl    = el.querySelector(".node-io");
+      if (titleEl) titleEl.textContent = node.label || "(" + node.type + ")";
+      if (ioEl)    ioEl.textContent =
+        node.type +
+        (node.eventName ? " :: " + node.eventName : "") +
+        (node.message ? " — " + node.message.slice(0, 24) : "");
+      el.classList.toggle("selected", node.id === selectedNodeId);
+    }
+
+    function rerenderAllNodes() {
+      nodes.forEach(renderNode);
+    }
+
+    function clearSelection() {
+      selectedNodeId = null;
+      canvasEl.querySelectorAll(".node").forEach(el => {
+        el.classList.remove("selected");
+      });
+      refreshSidebarFields();
+    }
 
     function selectNode(id) {
       selectedNodeId = id;
-      renderNodes();
-      updatePropertyPanel();
-      generateCode();
+      canvasEl.querySelectorAll(".node").forEach(el => {
+        el.classList.toggle("selected", Number(el.dataset.nodeId) === id);
+      });
+      refreshSidebarFields();
     }
 
-    function getSelectedNode() {
-      return nodes.find(n => n.id === selectedNodeId) || null;
-    }
-
-    function updatePropertyPanel() {
-      const node = getSelectedNode();
+    function refreshSidebarFields() {
+      const node = selectedNodeId ? findNode(selectedNodeId) : null;
       if (!node) {
-        nodePropsEmpty.style.display = "";
-        nodeProps.style.display = "none";
+        fieldLabel.value   = "";
+        fieldType.value    = "";
+        fieldEvent.value   = "";
+        fieldMessage.value = "";
+        fieldCustom.value  = "";
+        fieldLabel.placeholder = "No node selected";
+        fieldLabel.disabled = true;
+        fieldEvent.disabled = true;
+        fieldMessage.disabled = true;
+        fieldCustom.disabled = true;
         return;
       }
-      const tpl = NODE_TEMPLATES[node.type] || {};
 
-      nodePropsEmpty.style.display = "none";
-      nodeProps.style.display = "";
+      fieldLabel.disabled   = false;
+      fieldEvent.disabled   = false;
+      fieldMessage.disabled = false;
+      fieldCustom.disabled  = false;
 
-      propTitle.value = node.title || "";
-      propDescription.value = node.description || "";
+      fieldLabel.placeholder = "";
+      fieldLabel.value   = node.label || "";
+      fieldType.value    = node.type || "";
+      fieldEvent.value   = node.eventName || "";
+      fieldMessage.value = node.message || "";
+      fieldCustom.value  = node.customCode || "";
+    }
 
-      if (tpl.extra1Key) {
-        fieldExtra1.style.display = "";
-        fieldExtra1Label.textContent = tpl.extra1Label || tpl.extra1Key;
-        fieldExtra1Input.value = (node.extra && node.extra[tpl.extra1Key]) || "";
-      } else {
-        fieldExtra1.style.display = "none";
+    function attachFieldHandlers() {
+      fieldLabel.addEventListener("input", () => {
+        const node = selectedNodeId ? findNode(selectedNodeId) : null;
+        if (!node) return;
+        node.label = fieldLabel.value;
+        renderNode(node);
+        updatePreview();
+      });
+
+      fieldEvent.addEventListener("input", () => {
+        const node = selectedNodeId ? findNode(selectedNodeId) : null;
+        if (!node) return;
+        node.eventName = fieldEvent.value;
+        renderNode(node);
+        updatePreview();
+      });
+
+      fieldMessage.addEventListener("input", () => {
+        const node = selectedNodeId ? findNode(selectedNodeId) : null;
+        if (!node) return;
+        node.message = fieldMessage.value;
+        renderNode(node);
+        updatePreview();
+      });
+
+      fieldCustom.addEventListener("input", () => {
+        const node = selectedNodeId ? findNode(selectedNodeId) : null;
+        if (!node) return;
+        node.customCode = fieldCustom.value;
+        updatePreview();
+      });
+    }
+
+    // Basic mouse drag for nodes
+    function makeNodeDraggable(el, node) {
+      let dragging = false;
+      let startX = 0;
+      let startY = 0;
+      let nodeStartX = 0;
+      let nodeStartY = 0;
+
+      el.addEventListener("mousedown", (e) => {
+        if (e.button !== 0) return;
+        dragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        nodeStartX = node.x;
+        nodeStartY = node.y;
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onUp);
+      });
+
+      function onMove(e) {
+        if (!dragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        node.x = nodeStartX + dx;
+        node.y = nodeStartY + dy;
+        renderNode(node);
       }
 
-      if (tpl.extra2Key) {
-        fieldExtra2.style.display = "";
-        fieldExtra2Label.textContent = tpl.extra2Label || tpl.extra2Key;
-        fieldExtra2Input.value = (node.extra && node.extra[tpl.extra2Key]) || "";
-      } else {
-        fieldExtra2.style.display = "none";
+      function onUp() {
+        dragging = false;
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+        updatePreview();
       }
     }
 
-    propTitle.addEventListener("input", () => {
-      const node = getSelectedNode();
-      if (!node) return;
-      node.title = propTitle.value;
-      renderNodes();
-      generateCode();
+    // Click on empty canvas -> clear selection
+    canvasEl.addEventListener("mousedown", (e) => {
+      if (e.target === canvasEl) {
+        clearSelection();
+      }
     });
 
-    propDescription.addEventListener("input", () => {
-      const node = getSelectedNode();
-      if (!node) return;
-      node.description = propDescription.value;
-      renderNodes();
-      generateCode();
-    });
-
-    fieldExtra1Input.addEventListener("input", () => {
-      const node = getSelectedNode();
-      if (!node) return;
-      const tpl = NODE_TEMPLATES[node.type] || {};
-      if (!tpl.extra1Key) return;
-      node.extra = node.extra || {};
-      node.extra[tpl.extra1Key] = fieldExtra1Input.value;
-      generateCode();
-    });
-
-    fieldExtra2Input.addEventListener("input", () => {
-      const node = getSelectedNode();
-      if (!node) return;
-      const tpl = NODE_TEMPLATES[node.type] || {};
-      if (!tpl.extra2Key) return;
-      node.extra = node.extra || {};
-      node.extra[tpl.extra2Key] = fieldExtra2Input.value;
-      generateCode();
-    });
-
-    // ----- Dragging -----
-    document.addEventListener("mousemove", (e) => {
-      if (!dragState) return;
-      const node = nodes.find(n => n.id === dragState.nodeId);
-      if (!node) return;
-      const dx = e.clientX - dragState.startX;
-      const dy = e.clientY - dragState.startY;
-      node.x = dragState.nodeStartX + dx;
-      node.y = dragState.nodeStartY + dy;
-      renderNodes();
-    });
-
-    document.addEventListener("mouseup", () => {
-      dragState = null;
-    });
-
-    // ----- Toolbox handlers -----
-    document.querySelectorAll(".node-type").forEach(el => {
-      el.addEventListener("click", () => {
-        const type = el.dataset.nodeType;
+    // Add node from toolbox
+    nodeTypeButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const type = btn.dataset.nodeType;
         const rect = canvasWrapper.getBoundingClientRect();
-        const x = canvasWrapper.scrollLeft + rect.width / 2 - 80;
-        const y = canvasWrapper.scrollTop + rect.height / 2 - 40;
-        createNode(type, x, y);
+        const scrollLeft = canvasWrapper.scrollLeft;
+        const scrollTop  = canvasWrapper.scrollTop;
+        const centerX = scrollLeft + rect.width / 2;
+        const centerY = scrollTop + rect.height / 2;
+
+        createNode(type, centerX - 80, centerY - 40);
+        setStatus("Added node: " + type);
       });
     });
 
-    // ----- Code generation -----
-    const previewCodeEl = document.getElementById("preview-code");
+    // Graph actions
+    btnNewGraph.addEventListener("click", () => {
+      if (!confirm("Clear the current graph? This cannot be undone.")) return;
+      nodes = [];
+      nextNodeId = 1;
+      selectedNodeId = null;
+      canvasEl.innerHTML = "";
+      refreshSidebarFields();
+      updatePreview();
+      setStatus("Graph cleared.");
+    });
 
-    function generateCode() {
-      if (nodes.length === 0) {
-        previewCodeEl.textContent = `// ThreadJS blueprint
-// Add nodes in the Designer to generate a mod.`;
-        return;
-      }
-
-      const modNode = nodes.find(n => n.type === "mod");
-      const modId = (modNode && modNode.extra && modNode.extra.modId) || "my-mod";
-
-      let lines = [];
-      lines.push(`// Generated by ThreadJS Designer`);
-      lines.push(`// Drop this file into config/jsmods and run /threadjs reload`);
-      lines.push("");
-      lines.push(`api.registerMod("${modId}", {`);
-      lines.push(`  onInitialize(api) {`);
-
-      // log & sendMessage nodes
-      nodes.filter(n => n.type === "log").forEach(n => {
-        const msg = (n.extra && n.extra.message) || "Hello from ThreadJS!";
-        lines.push(`    api.log(${JSON.stringify(msg)});`);
-      });
-
-      nodes.filter(n => n.type === "sendMessage").forEach(n => {
-        const msg = (n.extra && n.extra.message) || "Welcome to the server!";
-        lines.push(`    api.sendMessage(${JSON.stringify(msg)});`);
-      });
-
-      // onJoin
-      if (nodes.some(n => n.type === "onJoin")) {
-        lines.push("");
-        lines.push(`    api.onPlayerJoin(player => {`);
-        nodes.filter(n => n.type === "onJoin").forEach(n => {
-          const msg = (n.extra && n.extra.message) || "✨ ${player.name} joined the server!";
-          lines.push(`      api.sendMessage(\`${msg}\`);`);
-        });
-        lines.push(`    });`);
-      }
-
-      // onChat
-      if (nodes.some(n => n.type === "onChat")) {
-        lines.push("");
-        lines.push(`    api.onChatMessage(evt => {`);
-        nodes.filter(n => n.type === "onChat").forEach(n => {
-          const filter = (n.extra && n.extra.filter) || "";
-          if (filter.trim()) {
-            lines.push(`      if (evt.message.includes(${JSON.stringify(filter)})) {`);
-            lines.push(`        api.log("Filtered word in chat: " + evt.message);`);
-            lines.push(`      }`);
-          } else {
-            lines.push(`      // TODO: handle chat: evt.player, evt.message`);
-          }
-        });
-        lines.push(`    });`);
-      }
-
-      // Commands
-      nodes.filter(n => n.type === "command").forEach(n => {
-        const cmd = (n.extra && n.extra.commandName) || "ping";
-        const reply = (n.extra && n.extra.reply) || "Pong!";
-        lines.push("");
-        lines.push(`    api.registerCommand("${cmd}", (ctx, args) => {`);
-        lines.push(`      ctx.reply(${JSON.stringify(reply)});`);
-        lines.push(`    });`);
-      });
-
-      // World / players
-      nodes.filter(n => n.type === "giveItem").forEach(n => {
-        const itemId = (n.extra && n.extra.itemId) || "minecraft:diamond_sword";
-        const count = Number((n.extra && n.extra.count) || "1") || 1;
-        lines.push("");
-        lines.push(`    // Example: give item to the first online player`);
-        lines.push(`    const p = api.players.list()[0];`);
-        lines.push(`    if (p) api.players.giveItem(p.name, "${itemId}", ${count});`);
-      });
-
-      nodes.filter(n => n.type === "teleport").forEach(n => {
-        const coords = (n.extra && n.extra.coords) || "0 80 0";
-        lines.push("");
-        lines.push(`    // Example: teleport the first online player`);
-        lines.push(`    {`);
-        lines.push(`      const p = api.players.list()[0];`);
-        lines.push(`      if (p) {`);
-        lines.push(`        const [x, y, z] = "${coords}".split(" ").map(Number);`);
-        lines.push(`        api.players.teleport(p.name, x || 0, y || 80, z || 0, "minecraft:overworld");`);
-        lines.push(`      }`);
-        lines.push(`    }`);
-      });
-
-      lines.push(`  },`);
-      lines.push(`  onReload(api) {`);
-      lines.push(`    api.log("[${modId}] reloaded from Designer");`);
-      lines.push(`  }`);
-      lines.push(`});`);
-
-      previewCodeEl.textContent = lines.join("\n");
-    }
-
-    // Buttons
-    document.getElementById("btnGenerate").addEventListener("click", generateCode);
-
-    document.getElementById("btnDownload").addEventListener("click", () => {
-      const blob = new Blob([previewCodeEl.textContent], { type: "text/javascript" });
+    btnExportJson.addEventListener("click", () => {
+      const data = {
+        version: 1,
+        nodes
+      };
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "threadjs-designer-mod.js";
+      a.href = url;
+      a.download = "threadjs-designer-graph.json";
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
+      a.remove();
+      URL.revokeObjectURL(url);
+      setStatus("Exported graph JSON.");
     });
 
-    document.getElementById("btnSaveJson").addEventListener("click", () => {
-      const data = { nodes };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "threadjs-blueprint.json";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    });
-
-    const uploadInput = document.getElementById("upload-input");
-    document.getElementById("btnLoadJson").addEventListener("click", () => {
+    btnImportJson.addEventListener("click", () => {
+      uploadInput.value = "";
       uploadInput.click();
     });
 
-    uploadInput.addEventListener("change", () => {
-      const file = uploadInput.files[0];
+    uploadInput.addEventListener("change", async () => {
+      const file = uploadInput.files && uploadInput.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const data = JSON.parse(reader.result);
-          nodes = Array.isArray(data.nodes) ? data.nodes : [];
-          selectedNodeId = null;
-          renderNodes();
-          updatePropertyPanel();
-          generateCode();
-        } catch {
-          alert("Invalid blueprint JSON");
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        if (!parsed || !Array.isArray(parsed.nodes)) {
+          throw new Error("JSON has no 'nodes' array");
         }
-      };
-      reader.readAsText(file);
+        nodes = parsed.nodes.map(n => ({
+          id: Number(n.id) || (nextNodeId++),
+          type: n.type || "node",
+          label: n.label || defaultLabelForType(n.type || "node"),
+          x: Number(n.x) || 40,
+          y: Number(n.y) || 40,
+          eventName: n.eventName || "",
+          message: n.message || "",
+          customCode: n.customCode || ""
+        }));
+        // ensure next id is larger than any we loaded
+        const maxId = nodes.reduce((m, n) => Math.max(m, n.id), 0);
+        nextNodeId = maxId + 1;
+        selectedNodeId = null;
+
+        canvasEl.innerHTML = "";
+        nodes.forEach(renderNode);
+        refreshSidebarFields();
+        updatePreview();
+        setStatus("Imported graph with " + nodes.length + " node(s).");
+      } catch (err) {
+        console.error(err);
+        setStatus("Failed to import graph: " + err.message, true);
+      }
     });
 
-    // Initial state: one mod node in the middle
-    window.addEventListener("load", () => {
-      const rect = canvasWrapper.getBoundingClientRect();
-      createNode("mod", canvasWrapper.scrollLeft + rect.width / 2 - 100, canvasWrapper.scrollTop + 80);
-      generateCode();
+    btnDownloadJs.addEventListener("click", () => {
+      const code = previewCodeEl.textContent || "";
+      const blob = new Blob([code], { type: "text/javascript" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "threadjs-designer-mod.js";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setStatus("Downloaded generated mod file.");
     });
+
+    // Generate JS from nodes
+    function generateJs() {
+      const lines = [];
+      lines.push("// Auto-generated by ThreadJS Designer");
+      lines.push("// You can modify this file after export.");
+      lines.push("");
+      lines.push("module.exports = function(api) {");
+
+      // For a simple first version, we just emit each node as a block.
+      // You can refine this later (e.g. real flow connections, etc.).
+      nodes.forEach(node => {
+        const label = node.label || "(" + node.type + ")";
+        const ev = node.eventName || "";
+        const msg = node.message || "";
+
+        lines.push("");
+        lines.push("  // Node #" + node.id + " — " + label);
+
+        switch (node.type) {
+          case "onJoin":
+            lines.push(
+              '  api.on("playerJoin", (player, ctx) => {',
+              msg ? '    api.log("[' + escapeString(label) + '] " + ' + JSON.stringify(msg) + ');' : "    // TODO: add logic for player join",
+              node.customCode ? indentLines(node.customCode, 4) : "",
+              "  });"
+            );
+            break;
+          case "onChat":
+            lines.push(
+              '  api.on("playerChat", (player, message, ctx) => {',
+              msg ? '    api.log("[' + escapeString(label) + '] " + ' + JSON.stringify(msg) + ');' : "    // TODO: add logic for chat",
+              node.customCode ? indentLines(node.customCode, 4) : "",
+              "  });"
+            );
+            break;
+          case "onTick":
+            lines.push(
+              '  api.on("tick", (ctx) => {',
+              msg ? '    api.log("[' + escapeString(label) + '] " + ' + JSON.stringify(msg) + ');' : "    // TODO: add logic for tick",
+              node.customCode ? indentLines(node.customCode, 4) : "",
+              "  });"
+            );
+            break;
+          case "log":
+            lines.push(
+              "  api.log(" +
+              (msg ? JSON.stringify(msg) : JSON.stringify(label)) +
+              ");"
+            );
+            if (node.customCode) {
+              lines.push(indentLines(node.customCode, 2));
+            }
+            break;
+          case "broadcast":
+            lines.push(
+              "  api.broadcast(" +
+              (msg ? JSON.stringify(msg) : JSON.stringify(label)) +
+              ");"
+            );
+            if (node.customCode) {
+              lines.push(indentLines(node.customCode, 2));
+            }
+            break;
+          case "command":
+            {
+              const cmd = ev || "myCommand";
+              lines.push(
+                '  api.registerCommand("' + escapeString(cmd) + '", (player, args, ctx) => {',
+                msg ? '    api.log("[' + escapeString(label) + '] " + ' + JSON.stringify(msg) + ');' : "    // TODO: add command logic",
+                node.customCode ? indentLines(node.customCode, 4) : "",
+                "  });"
+              );
+            }
+            break;
+          case "if":
+            lines.push(
+              "  if (/* TODO: condition for '" + label + "' */ true) {",
+              msg ? "    // " + msg : "    // condition passed",
+              node.customCode ? indentLines(node.customCode, 4) : "",
+              "  }"
+            );
+            break;
+          case "delay":
+            lines.push(
+              "  api.delay(1000, () => {",
+              msg ? '    api.log(' + JSON.stringify(msg) + ');' : "    // TODO: delayed logic",
+              node.customCode ? indentLines(node.customCode, 4) : "",
+              "  });"
+            );
+            break;
+          default:
+            lines.push("  // TODO: node type '" + node.type + "'");
+            if (node.customCode) {
+              lines.push(indentLines(node.customCode, 2));
+            }
+            break;
+        }
+      });
+
+      lines.push("");
+      lines.push("};");
+      lines.push("");
+
+      return lines.join("\n");
+    }
+
+    function updatePreview() {
+      if (!previewCodeEl) return;
+      previewCodeEl.textContent = generateJs();
+    }
+
+    function escapeString(str) {
+      return String(str).replace(/"/g, '\\"');
+    }
+
+    function indentLines(str, spaces) {
+      const pad = " ".repeat(spaces);
+      return String(str)
+        .split("\n")
+        .map((line) => (line.trim() ? pad + line : ""))
+        .join("\n");
+    }
+
+    // Initial boot
+    attachFieldHandlers();
+    updatePreview();
+    setStatus("Ready.");
   </script>
 </body>
 </html>
