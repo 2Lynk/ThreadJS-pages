@@ -430,6 +430,60 @@
       margin: 0.15rem 0;
     }
 
+    /* Autocomplete dropdown */
+    .autocomplete-dropdown {
+      position: absolute;
+      background: #ffffff;
+      border: 1px solid var(--border-medium, #adb5bd);
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+      min-width: 250px;
+    }
+
+    .autocomplete-dropdown.active {
+      display: block;
+    }
+
+    .autocomplete-item {
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      border-bottom: 1px solid #f1f3f5;
+      transition: background 0.1s ease;
+    }
+
+    .autocomplete-item:last-child {
+      border-bottom: none;
+    }
+
+    .autocomplete-item:hover,
+    .autocomplete-item.selected {
+      background: #e7f5ff;
+    }
+
+    .autocomplete-item code {
+      font-family: "Fira Code", monospace;
+      font-size: 0.85rem;
+      color: #1971c2;
+      font-weight: 600;
+    }
+
+    .autocomplete-item-type {
+      font-size: 0.7rem;
+      color: #868e96;
+      margin-left: 0.5rem;
+    }
+
+    .autocomplete-item-desc {
+      font-size: 0.72rem;
+      color: #495057;
+      margin-top: 0.15rem;
+    }
+
     #upload-input {
       display: none;
     }
@@ -624,10 +678,11 @@
           <input id="field-node-event" class="field-input" type="text" placeholder="No parameters" disabled />
         </div>
 
-        <div class="field-group">
+        <div class="field-group" style="position: relative;">
           <div class="field-label">Parameters (JSON)</div>
           <textarea id="field-node-message" class="field-textarea" placeholder='{"param": "value"}'></textarea>
-          <div class="hint" style="margin-top: 0.25rem; font-size: 0.75rem;">Edit parameters as JSON. Changes apply automatically.</div>
+          <div id="autocomplete-dropdown" class="autocomplete-dropdown"></div>
+          <div class="hint" style="margin-top: 0.25rem; font-size: 0.75rem;">Edit parameters as JSON. Type variable names for autocomplete (e.g., "player.").</div>
         </div>
 
         <div class="field-group">
