@@ -145,6 +145,12 @@ const fieldEvent = document.getElementById("field-node-event");
 const fieldMessage = document.getElementById("field-node-message");
 const fieldCustom = document.getElementById("field-node-custom");
 const fieldModName = document.getElementById("field-mod-name");
+const autocompleteDropdown = document.getElementById("autocomplete-dropdown");
+
+// Autocomplete state
+let autocompleteItems = [];
+let autocompleteSelectedIndex = -1;
+let autocompleteActive = false;
 
 const statusEl = document.getElementById("designer-status");
 const previewCodeEl = document.getElementById("preview-code");
@@ -690,9 +696,23 @@ function attachFieldHandlers() {
     updatePreview();
   });
 
-  fieldMessage.addEventListener("input", () => {
+  fieldMessage.addEventListener("input", (e) => {
     const node = selectedNodeId ? findNode(selectedNodeId) : null;
     if (!node) return;
+    
+    // Check for autocomplete trigger
+    const cursorPos = fieldMessage.selectionStart;
+    const textBeforeCursor = fieldMessage.value.substring(0, cursorPos);
+    const availableVars = getAvailableVariables(node.id);
+    
+    // Trigger autocomplete if typing variable or property
+    if (textBeforeCursor.match(/["']\$?([a-zA-Z_][a-zA-Z0-9_.]*)$/)) {
+      const suggestions = getAutocompleteSuggestions(textBeforeCursor, availableVars);
+      showAutocomplete(suggestions, fieldMessage);
+    } else {
+      hideAutocomplete();
+    }
+    
     try {
       node.params = JSON.parse(fieldMessage.value);
       renderNode(node);
@@ -700,6 +720,15 @@ function attachFieldHandlers() {
     } catch (e) {
       // Invalid JSON, ignore
     }
+  });
+  
+  fieldMessage.addEventListener("keydown", (e) => {
+    handleAutocompleteKeydown(e, fieldMessage);
+  });
+  
+  fieldMessage.addEventListener("blur", () => {
+    // Delay hiding to allow click on autocomplete items
+    setTimeout(() => hideAutocomplete(), 200);
   });
 
   fieldCustom.addEventListener("input", () => {
@@ -719,6 +748,13 @@ function attachFieldHandlers() {
 canvasEl.addEventListener("mousedown", (e) => {
   if (e.target === canvasEl) {
     clearSelection();
+  }
+});
+
+// Click outside autocomplete -> hide it
+document.addEventListener("mousedown", (e) => {
+  if (autocompleteActive && !autocompleteDropdown.contains(e.target) && e.target !== fieldMessage) {
+    hideAutocomplete();
   }
 });
 
@@ -1243,6 +1279,206 @@ function getAvailableVariablesWithSchema(nodeId) {
   });
   
   return result;
+}
+
+// Get autocomplete suggestions based on current input
+function getAutocompleteSuggestions(input, availableVars) {
+  const suggestions = [];
+  
+  // Check if typing a variable name (starts with $ or contains variable reference)
+  const varMatch = input.match(/["']\$?([a-zA-Z_][a-zA-Z0-9_.]*)$/);
+  if (!varMatch) return suggestions;
+  
+  const partial = varMatch[1];
+  const parts = partial.split('.');
+  
+  if (parts.length === 1) {
+    // Suggesting base variable names
+    const prefix = parts[0].toLowerCase();
+    availableVars.forEach(varName => {
+      const baseName = varName.split('.')[0];
+      if (baseName.toLowerCase().startsWith(prefix) && !suggestions.some(s => s.value === baseName)) {
+        const schema = VARIABLE_SCHEMAS[varName] || VARIABLE_SCHEMAS[baseName];
+        suggestions.push({
+          value: baseName,
+          type: schema?.type || 'variable',
+          description: schema?.description || 'Available variable'
+        });
+      }
+    });
+  } else {
+    // Suggesting properties of a variable
+    const varName = parts[0];
+    const propPath = parts.slice(1, -1).join('.');
+    const propPrefix = parts[parts.length - 1].toLowerCase();
+    
+    // Find schema for this variable
+    let schema = VARIABLE_SCHEMAS[varName];
+    if (!schema) {
+      // Try to find in available vars (might be nested like evt.player)
+      const fullVar = availableVars.find(v => v.startsWith(varName));
+      if (fullVar) schema = VARIABLE_SCHEMAS[fullVar];
+    }
+    
+    if (schema) {
+      // Handle extends
+      let properties = schema.properties || {};
+      if (schema.extends) {
+        const baseSchema = VARIABLE_SCHEMAS[schema.extends];
+        if (baseSchema && baseSchema.properties) {
+          properties = { ...baseSchema.properties, ...properties };
+        }
+      }
+      
+      // Filter properties by prefix
+      Object.entries(properties).forEach(([propName, propDef]) => {
+        if (propName.startsWith('[')) return; // Skip array accessors
+        if (propName.toLowerCase().startsWith(propPrefix)) {
+          suggestions.push({
+            value: `${varName}.${propName}`,
+            type: propDef.type,
+            description: propDef.description,
+            example: propDef.example
+          });
+        }
+      });
+    }
+  }
+  
+  return suggestions;
+}
+
+// Show autocomplete dropdown
+function showAutocomplete(suggestions, textarea) {
+  if (!autocompleteDropdown || suggestions.length === 0) {
+    hideAutocomplete();
+    return;
+  }
+  
+  autocompleteItems = suggestions;
+  autocompleteSelectedIndex = -1;
+  
+  // Build HTML
+  let html = '';
+  suggestions.forEach((item, index) => {
+    html += `<div class="autocomplete-item" data-index="${index}">`;
+    html += `<div><code>${item.value}</code>`;
+    if (item.type) html += `<span class="autocomplete-item-type">${item.type}</span>`;
+    html += '</div>';
+    if (item.description) {
+      html += `<div class="autocomplete-item-desc">${item.description}</div>`;
+    }
+    html += '</div>';
+  });
+  
+  autocompleteDropdown.innerHTML = html;
+  
+  // Position dropdown
+  const rect = textarea.getBoundingClientRect();
+  const parentRect = textarea.parentElement.getBoundingClientRect();
+  autocompleteDropdown.style.left = '0';
+  autocompleteDropdown.style.top = (rect.bottom - parentRect.top + 2) + 'px';
+  autocompleteDropdown.classList.add('active');
+  autocompleteActive = true;
+  
+  // Add click handlers
+  autocompleteDropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const index = parseInt(item.dataset.index);
+      selectAutocompleteItem(index, textarea);
+    });
+    
+    item.addEventListener('mouseenter', () => {
+      autocompleteSelectedIndex = parseInt(item.dataset.index);
+      updateAutocompleteSelection();
+    });
+  });
+}
+
+// Hide autocomplete dropdown
+function hideAutocomplete() {
+  if (autocompleteDropdown) {
+    autocompleteDropdown.classList.remove('active');
+    autocompleteActive = false;
+    autocompleteItems = [];
+    autocompleteSelectedIndex = -1;
+  }
+}
+
+// Update visual selection in autocomplete
+function updateAutocompleteSelection() {
+  if (!autocompleteDropdown) return;
+  
+  autocompleteDropdown.querySelectorAll('.autocomplete-item').forEach((item, index) => {
+    item.classList.toggle('selected', index === autocompleteSelectedIndex);
+  });
+}
+
+// Select an autocomplete item and insert it
+function selectAutocompleteItem(index, textarea) {
+  if (index < 0 || index >= autocompleteItems.length) return;
+  
+  const item = autocompleteItems[index];
+  const value = textarea.value;
+  const cursorPos = textarea.selectionStart;
+  
+  // Find the start of the current word
+  const beforeCursor = value.substring(0, cursorPos);
+  const match = beforeCursor.match(/["']\$?([a-zA-Z_][a-zA-Z0-9_.]*)$/);
+  
+  if (match) {
+    const startPos = cursorPos - match[1].length;
+    const afterCursor = value.substring(cursorPos);
+    
+    // Insert the completion
+    const newValue = value.substring(0, startPos) + item.value + afterCursor;
+    textarea.value = newValue;
+    
+    // Update cursor position
+    const newCursorPos = startPos + item.value.length;
+    textarea.setSelectionRange(newCursorPos, newCursorPos);
+    
+    // Trigger input event to save changes
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  
+  hideAutocomplete();
+  textarea.focus();
+}
+
+// Handle autocomplete keyboard navigation
+function handleAutocompleteKeydown(e, textarea) {
+  if (!autocompleteActive) return false;
+  
+  switch (e.key) {
+    case 'ArrowDown':
+      e.preventDefault();
+      autocompleteSelectedIndex = Math.min(autocompleteSelectedIndex + 1, autocompleteItems.length - 1);
+      updateAutocompleteSelection();
+      return true;
+      
+    case 'ArrowUp':
+      e.preventDefault();
+      autocompleteSelectedIndex = Math.max(autocompleteSelectedIndex - 1, -1);
+      updateAutocompleteSelection();
+      return true;
+      
+    case 'Enter':
+    case 'Tab':
+      if (autocompleteSelectedIndex >= 0) {
+        e.preventDefault();
+        selectAutocompleteItem(autocompleteSelectedIndex, textarea);
+        return true;
+      }
+      break;
+      
+    case 'Escape':
+      e.preventDefault();
+      hideAutocomplete();
+      return true;
+  }
+  
+  return false;
 }
 
 // Process parameter value to support variable references
