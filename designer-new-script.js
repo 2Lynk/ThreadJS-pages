@@ -1,5 +1,140 @@
 // ThreadJS Designer - Enhanced with connections and full API support
 
+// Variable schemas - centralized definition of all variable types and their properties
+const VARIABLE_SCHEMAS = {
+  player: {
+    description: "Player object from join/leave/tick events",
+    properties: {
+      name: { type: "string", description: "Player name" },
+      tick: { type: "number", description: "Player's tick count" },
+      pos: { type: "array", description: "Position array [x, y, z]", example: "player.pos[0]" },
+      dimensionId: { type: "string", description: "Dimension ID", example: "'minecraft:overworld'" },
+      uuid: { type: "string", description: "Player UUID" },
+      health: { type: "number", description: "Current health points" },
+      maxHealth: { type: "number", description: "Maximum health points" },
+      gamemode: { type: "string", description: "Current gamemode" },
+      x: { type: "number", description: "X coordinate (shorthand for pos[0])" },
+      y: { type: "number", description: "Y coordinate (shorthand for pos[1])" },
+      z: { type: "number", description: "Z coordinate (shorthand for pos[2])" }
+    }
+  },
+  
+  "evt.player": {
+    description: "Player object from event context",
+    extends: "player"
+  },
+  
+  "evt.message": {
+    description: "Chat message text",
+    type: "string",
+    properties: {}
+  },
+  
+  evt: {
+    description: "Event object (varies by event type)",
+    properties: {
+      // Chat events
+      player: { type: "object", description: "Player object (chat events)", schema: "player" },
+      message: { type: "string", description: "Chat message text (chat events)" },
+      
+      // Block events
+      playerName: { type: "string", description: "Player name (block/item/entity events)" },
+      blockId: { type: "string", description: "Block ID (block events)", example: "'minecraft:stone'" },
+      x: { type: "number", description: "X coordinate (block events)" },
+      y: { type: "number", description: "Y coordinate (block events)" },
+      z: { type: "number", description: "Z coordinate (block events)" },
+      
+      // Item events
+      itemId: { type: "string", description: "Item ID (useItem event)", example: "'minecraft:diamond_sword'" },
+      itemCount: { type: "number", description: "Item count (useItem event)" },
+      hand: { type: "string", description: "Hand used (useBlock/useItem)", example: "'MAIN_HAND' or 'OFF_HAND'" },
+      
+      // Entity events
+      targetType: { type: "string", description: "Entity type (attackEntity event)" },
+      victimType: { type: "string", description: "Victim entity type (damage/death events)" },
+      sourceType: { type: "string", description: "Damage source type (damage event)" },
+      killedBy: { type: "string", description: "Killer entity type (death event)" },
+      amount: { type: "number", description: "Damage amount (damage event)" }
+    }
+  },
+  
+  ctx: {
+    description: "Command execution context",
+    properties: {
+      player: { type: "object", description: "Player who ran command (null if console)", schema: "player" },
+      source: { type: "string", description: "Command source type" }
+    }
+  },
+  
+  "ctx.player": {
+    description: "Player who executed command (may be null)",
+    extends: "player"
+  },
+  
+  args: {
+    description: "Command arguments array",
+    type: "array",
+    properties: {
+      "[0]": { type: "string", description: "First argument" },
+      "[1]": { type: "string", description: "Second argument" },
+      "[n]": { type: "string", description: "Nth argument" },
+      length: { type: "number", description: "Number of arguments" }
+    }
+  },
+  
+  block: {
+    description: "Block ID from getBlock",
+    type: "string",
+    example: "'minecraft:stone'",
+    properties: {}
+  },
+  
+  data: {
+    description: "Loaded data from loadData (structure varies)",
+    type: "object",
+    properties: {
+      "[key]": { type: "any", description: "Property depends on saved data structure" }
+    }
+  },
+  
+  players: {
+    description: "Array of player objects from getPlayers",
+    type: "array",
+    properties: {
+      "[0]": { type: "object", description: "First player object", schema: "player" },
+      "[n]": { type: "object", description: "Nth player object", schema: "player" },
+      length: { type: "number", description: "Number of players" },
+      forEach: { type: "function", description: "Iterate over players" },
+      map: { type: "function", description: "Map players to new array" },
+      filter: { type: "function", description: "Filter players by condition" }
+    }
+  },
+  
+  entities: {
+    description: "Array of entity objects from findEntities",
+    type: "array",
+    properties: {
+      "[0]": { type: "object", description: "First entity" },
+      "[n]": { type: "object", description: "Nth entity" },
+      length: { type: "number", description: "Number of entities" },
+      uuid: { type: "string", description: "Entity UUID (on array elements)" },
+      type: { type: "string", description: "Entity type (on array elements)" }
+    }
+  },
+  
+  entityId: {
+    description: "UUID of spawned entity",
+    type: "string",
+    properties: {}
+  },
+  
+  item: {
+    description: "Current iteration item in forEach loop (type varies by array)",
+    type: "any",
+    properties: {}
+  }
+};
+
 const canvasWrapper = document.getElementById("canvas-wrapper");
 const canvasEl = document.getElementById("canvas");
 const toolbox = document.getElementById("toolbox");
@@ -531,9 +666,17 @@ function refreshSidebarFields() {
   fieldLabel.value = node.label || "";
   fieldType.value = node.type || "";
   
-  // Show available variables from parent nodes
+  // Show available variables from parent nodes with enhanced info
   const availableVars = getAvailableVariables(node.id);
-  fieldEvent.value = availableVars.length > 0 ? "Available: " + availableVars.join(", ") : "No variables available";
+  if (availableVars.length > 0) {
+    const varDetails = getAvailableVariablesWithSchema(node.id);
+    const summary = availableVars.join(", ");
+    const propCount = varDetails.reduce((sum, v) => sum + v.properties.length, 0);
+    fieldEvent.value = `Available: ${summary} (${propCount} properties) - See Variable Reference below`;
+  } else {
+    fieldEvent.value = "No variables available from parent nodes";
+  }
+  
   fieldMessage.value = JSON.stringify(node.params || {}, null, 2);
   fieldCustom.value = node.customCode || "";
 }
@@ -1060,6 +1203,48 @@ function getAvailableVariables(nodeId) {
   return Array.from(vars).sort();
 }
 
+// Get detailed variable information including all available properties
+function getAvailableVariablesWithSchema(nodeId) {
+  const baseVars = getAvailableVariables(nodeId);
+  const result = [];
+  
+  baseVars.forEach(varName => {
+    const schema = VARIABLE_SCHEMAS[varName];
+    if (!schema) {
+      result.push({ name: varName, properties: [] });
+      return;
+    }
+    
+    // Get properties, handling extends
+    let properties = schema.properties || {};
+    if (schema.extends) {
+      const baseSchema = VARIABLE_SCHEMAS[schema.extends];
+      if (baseSchema && baseSchema.properties) {
+        properties = { ...baseSchema.properties, ...properties };
+      }
+    }
+    
+    // Build list of available properties
+    const props = Object.keys(properties).map(propName => {
+      const fullPath = propName.startsWith('[') ? `${varName}${propName}` : `${varName}.${propName}`;
+      return {
+        path: fullPath,
+        type: properties[propName].type,
+        description: properties[propName].description
+      };
+    });
+    
+    result.push({
+      name: varName,
+      type: schema.type,
+      description: schema.description,
+      properties: props
+    });
+  });
+  
+  return result;
+}
+
 // Process parameter value to support variable references
 function processParamValue(value, availableVars) {
   if (typeof value !== 'string') return value;
@@ -1080,9 +1265,83 @@ function processParamValue(value, availableVars) {
   return JSON.stringify(value);
 }
 
+// Generate variable reference HTML from schemas
+function generateVariableReferenceHTML() {
+  const varRefContainer = document.querySelector('.var-ref-content');
+  if (!varRefContainer) return;
+  
+  let html = '';
+  
+  // Group variables by category
+  const categories = {
+    'Core Variables': ['player', 'evt', 'ctx', 'args'],
+    'Data & Collections': ['block', 'data', 'players', 'entities', 'entityId', 'item']
+  };
+  
+  for (const [categoryName, varNames] of Object.entries(categories)) {
+    html += `<div class="var-ref-category"><strong style="color: #228be6; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">${categoryName}</strong>`;
+    
+    for (const varName of varNames) {
+      const schema = VARIABLE_SCHEMAS[varName];
+      if (!schema) continue;
+      
+      // Handle variables that extend other schemas
+      let properties = schema.properties || {};
+      if (schema.extends) {
+        const baseSchema = VARIABLE_SCHEMAS[schema.extends];
+        if (baseSchema && baseSchema.properties) {
+          properties = { ...baseSchema.properties, ...properties };
+        }
+      }
+      
+      html += '<div class="var-ref-item">';
+      html += `<strong>${varName}</strong>`;
+      
+      if (schema.description) {
+        html += `<div style="font-size: 0.75rem; color: #868e96; margin-bottom: 0.3rem;">${schema.description}</div>`;
+      }
+      
+      if (schema.type && Object.keys(properties).length === 0) {
+        html += `<div style="font-size: 0.76rem;"><code>${varName}</code> - Type: ${schema.type}`;
+        if (schema.example) {
+          html += ` (e.g., ${schema.example})`;
+        }
+        html += '</div>';
+      } else if (Object.keys(properties).length > 0) {
+        html += '<ul>';
+        for (const [propName, propDef] of Object.entries(properties)) {
+          const fullPath = propName.startsWith('[') ? `${varName}${propName}` : `${varName}.${propName}`;
+          html += `<li><code>${fullPath}</code>`;
+          if (propDef.type) html += ` <span style="color: #868e96;">(${propDef.type})</span>`;
+          if (propDef.description) html += ` - ${propDef.description}`;
+          if (propDef.example) html += ` <span style="color: #868e96;">e.g., ${propDef.example}</span>`;
+          html += '</li>';
+        }
+        html += '</ul>';
+      }
+      
+      html += '</div>';
+    }
+    
+    html += '</div>';
+  }
+  
+  // Add usage instructions
+  html += `
+    <p style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #dee2e6; font-size: 0.76rem; color: var(--text-secondary, #495057);">
+      <strong>Usage in parameters:</strong><br>
+      • <code>$variableName</code> for direct reference (e.g., <code>$player</code>)<br>
+      • <code>\${variable.property}</code> for template strings (e.g., <code>Welcome \${player.name}!</code>)
+    </p>
+  `;
+  
+  varRefContainer.innerHTML = html;
+}
+
 // Initial boot
 initSvg();
 attachFieldHandlers();
 modName = fieldModName.value || "designer-mod";
+generateVariableReferenceHTML();
 updatePreview();
 setStatus("Ready. Click nodes from the toolbox to get started.");
