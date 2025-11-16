@@ -1,112 +1,23 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>ThreadJS Mod Designer</title>
+  <title>ThreadJS – Designer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Shared global stylesheet -->
   <link rel="stylesheet" href="https://2lynk.github.io/stylesheet.css">
-  <!-- <style>
-    :root {
-      --bg-primary: #f8f9fa;
-      --bg-secondary: #ffffff;
-      --panel: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-      --text-primary: #1a1d20;
-      --text-secondary: #495057;
-      --border-light: #dee2e6;
-      --border-medium: #adb5bd;
-      --accent: #6c757d;
-      --accent-hover: #495057;
-      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
 
-      --code-bg: #212529;
-      --code-border: #343a40;
-      --code-text: #f8f9fa;
-      --node-bg: #ffffff;
-      --node-border: #adb5bd;
-      --node-selected: #ffd43b;
-    }
-
-    * { box-sizing: border-box; }
+  <style>
+    /* Page-specific layout + node/editor styling.
+       Colors & base typography come from stylesheet.css via CSS variables. */
 
     body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-        "Helvetica Neue", Arial, sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      line-height: 1.6;
       height: 100vh;
       display: flex;
       flex-direction: column;
-    }
-
-    header {
-      padding: 1.1rem 2rem;
-      background: var(--panel);
-      border-bottom: 2px solid var(--border-medium);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: var(--shadow-md);
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 1.4rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    header h1::before {
-      content: "⚡";
-      font-size: 1.75rem;
-      -webkit-text-fill-color: #6c757d;
-    }
-
-    nav {
-      display: flex;
-      gap: 0.75rem;
-    }
-
-    nav a {
+      background: var(--bg-primary);
       color: var(--text-primary);
-      text-decoration: none;
-      font-size: 0.95rem;
-      font-weight: 500;
-      padding: 0.55rem 1.1rem;
-      border-radius: 8px;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-light);
-      box-shadow: var(--shadow-sm);
-      transition: all 0.2s ease;
-      position: relative;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-
-    nav a:hover {
-      background: var(--accent);
-      color: white;
-      border-color: var(--accent-hover);
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-md);
-    }
-
-    nav a[href="designer.html"] {
-      background: var(--accent);
-      color: #ffffff;
-      border-color: var(--accent-hover);
     }
 
     main {
@@ -114,7 +25,6 @@
       display: grid;
       grid-template-columns: 220px minmax(0, 1fr) 320px;
       grid-template-rows: minmax(0, 1fr) 220px;
-      gap: 0;
       border-top: 1px solid var(--border-light);
       min-height: 0;
     }
@@ -124,7 +34,7 @@
       grid-column: 1 / 2;
       grid-row: 1 / 3;
       border-right: 1px solid var(--border-light);
-      background: #f8f9fa;
+      background: var(--bg-secondary);
       padding: 0.75rem;
       display: flex;
       flex-direction: column;
@@ -152,15 +62,30 @@
       padding: 0.35rem 0.45rem;
       border-radius: 6px;
       border: 1px dashed var(--border-medium);
-      background: #ffffff;
+      background: var(--bg-secondary);
       font-size: 0.85rem;
       margin-bottom: 0.25rem;
-      cursor: grab;
+      cursor: pointer;
       user-select: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.4rem;
     }
 
-    .node-type:active {
-      cursor: grabbing;
+    .node-type span.label {
+      flex: 1;
+    }
+
+    .node-type span.small {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .node-type:hover {
+      background: #ffffff;
+      border-style: solid;
     }
 
     /* Center canvas */
@@ -176,27 +101,28 @@
       position: relative;
       width: 2000px;
       height: 1200px;
-      background-image: linear-gradient(#dee2e6 1px, transparent 1px),
-                        linear-gradient(90deg, #dee2e6 1px, transparent 1px);
+      background-image:
+        linear-gradient(#dee2e6 1px, transparent 1px),
+        linear-gradient(90deg, #dee2e6 1px, transparent 1px);
       background-size: 20px 20px;
       background-color: #f1f3f5;
     }
 
     .node {
       position: absolute;
-      min-width: 160px;
+      min-width: 170px;
       max-width: 260px;
       padding: 0.45rem 0.55rem;
       border-radius: 8px;
-      border: 1px solid var(--node-border);
-      background: var(--node-bg);
+      border: 1px solid var(--border-medium);
+      background: #ffffff;
       box-shadow: var(--shadow-sm);
       cursor: move;
       font-size: 0.82rem;
     }
 
     .node.selected {
-      border-color: var(--node-selected);
+      border-color: #ffd43b;
       box-shadow: 0 0 0 2px rgba(255, 212, 59, 0.5);
     }
 
@@ -206,6 +132,12 @@
     }
 
     .node-io {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .node-footer {
+      margin-top: 0.3rem;
       font-size: 0.75rem;
       color: var(--text-secondary);
     }
@@ -242,7 +174,8 @@
     }
 
     .field-input,
-    .field-textarea {
+    .field-textarea,
+    .field-select {
       width: 100%;
       font-size: 0.85rem;
       border-radius: 6px;
@@ -266,10 +199,10 @@
       display: flex;
       flex-wrap: wrap;
       gap: 0.4rem;
-      margin-top: 0.25rem;
+      margin-top: 0.3rem;
     }
 
-    button {
+    .btn-soft {
       padding: 0.35rem 0.7rem;
       border-radius: 6px;
       border: 1px solid var(--border-medium);
@@ -279,7 +212,7 @@
       cursor: pointer;
     }
 
-    button:hover {
+    .btn-soft:hover {
       background: var(--accent);
       color: #ffffff;
       border-color: var(--accent-hover);
@@ -311,7 +244,7 @@
       padding: 0.5rem 0.75rem;
       background: var(--code-bg);
       color: var(--code-text);
-      font-family: "Fira Code", "Courier New", monospace;
+      font-family: "Fira Code", monospace;
       font-size: 0.8rem;
       border-top: 1px solid var(--code-border);
       overflow: auto;
@@ -322,10 +255,19 @@
       display: none;
     }
 
+    .badge-small {
+      font-size: 0.75rem;
+      padding: 0.1rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-light);
+      background: #f8f9fa;
+      color: var(--text-secondary);
+    }
+
     @media (max-width: 1024px) {
       main {
         grid-template-columns: 200px minmax(0, 1fr);
-        grid-template-rows: minmax(0, 1fr) 220px 260px;
+        grid-template-rows: minmax(0, 1fr) 240px 260px;
       }
       #sidebar-right {
         grid-column: 1 / 3;
@@ -340,417 +282,581 @@
         grid-row: 3 / 4;
       }
     }
-  </style> -->
+  </style>
 </head>
+
 <body>
-<header>
-  <h1>ThreadJS API Reference</h1>
-  <nav>
-    <a href="index.html">📚 API Reference</a>
-    <a href="inspector.html">🧪 Inspector</a>
-    <a href="example-mods.html">🧩 Example Mods</a>
-    <a href="designer.html">🛠️ Designer</a>
-  </nav>
-</header>
-
-<main>
-  <!-- LEFT: toolbox -->
-  <aside id="toolbox">
-    <h2>Blueprint Nodes</h2>
-
-    <div class="tool-group">
-      <div class="tool-group-title">Events</div>
-      <div class="node-type" data-node-type="onPlayerJoin">
-        onPlayerJoin
-      </div>
-      <div class="node-type" data-node-type="onChatMessage">
-        onChatMessage
-      </div>
-      <div class="node-type" data-node-type="onServerTick">
-        onServerTick
-      </div>
+  <!-- Shared header / nav, same style as other ThreadJS pages -->
+  <header>
+    <div class="header-inner">
+      <a href="index.html" class="brand">
+        <div class="brand-mark">T</div>
+        <div class="brand-labels">
+          <div class="brand-text-main">ThreadJS</div>
+          <div class="brand-text-sub">Minecraft JS scripting</div>
+        </div>
+      </a>
+      <nav class="nav-links">
+        <a class="nav-pill" href="index.html">Reference</a>
+        <a class="nav-pill" href="inspector.html">Inspector</a>
+        <a class="nav-pill" href="example-mods.html">Example mods</a>
+        <a class="nav-pill nav-pill--accent" href="designer.html">Designer</a>
+      </nav>
     </div>
+  </header>
 
-    <div class="tool-group">
-      <div class="tool-group-title">Actions</div>
-      <div class="node-type" data-node-type="sendMessage">
-        api.sendMessage
+  <main>
+    <!-- LEFT: Toolbox -->
+    <aside id="toolbox">
+      <h2>Nodes</h2>
+
+      <div class="tool-group-title">Core</div>
+      <div class="node-type" data-node-type="log">
+        <span class="label">Log message</span>
+        <span class="small">api.log()</span>
       </div>
-      <div class="node-type" data-node-type="sendMessageTo">
-        api.sendMessageTo
+      <div class="node-type" data-node-type="sendMessage">
+        <span class="label">Broadcast chat</span>
+        <span class="small">api.sendMessage()</span>
+      </div>
+
+      <div class="tool-group-title">Events</div>
+      <div class="node-type" data-node-type="onJoin">
+        <span class="label">On player join</span>
+        <span class="small">api.onPlayerJoin()</span>
+      </div>
+      <div class="node-type" data-node-type="onChat">
+        <span class="label">On chat message</span>
+        <span class="small">api.onChatMessage()</span>
+      </div>
+
+      <div class="tool-group-title">Commands</div>
+      <div class="node-type" data-node-type="command">
+        <span class="label">Custom command</span>
+        <span class="small">api.registerCommand()</span>
+      </div>
+
+      <div class="tool-group-title">World / Players</div>
+      <div class="node-type" data-node-type="giveItem">
+        <span class="label">Give item</span>
+        <span class="small">api.players.giveItem()</span>
       </div>
       <div class="node-type" data-node-type="teleport">
-        api.players.teleport
-      </div>
-      <div class="node-type" data-node-type="log">
-        api.log
-      </div>
-    </div>
-
-    <div class="tool-group">
-      <div class="tool-group-title">Flow</div>
-      <div class="node-type" data-node-type="if">
-        If (condition)
-      </div>
-      <div class="node-type" data-node-type="delay">
-        Delay (ticks)
-      </div>
-    </div>
-
-    <p class="hint">
-      Drag a node into the canvas to start building a mod. This first version
-      just lets you place and move nodes; wiring and advanced options will come next.
-    </p>
-  </aside>
-
-  <!-- CENTER: canvas -->
-  <section id="canvas-wrapper">
-    <div id="canvas"></div>
-  </section>
-
-  <!-- RIGHT: properties / io -->
-  <aside id="sidebar-right">
-    <h2>Node Properties</h2>
-
-    <div id="no-selection" class="hint">
-      Select a node on the canvas to edit its title and notes.
-    </div>
-
-    <div id="selection-panel" style="display:none;">
-      <div class="field-group">
-        <div class="field-label">Node type</div>
-        <div id="prop-type" class="hint"></div>
+        <span class="label">Teleport</span>
+        <span class="small">api.players.teleport()</span>
       </div>
 
-      <div class="field-group">
-        <div class="field-label">Display title</div>
-        <input id="prop-title" class="field-input" type="text" />
+      <div class="tool-group-title">Mod meta</div>
+      <div class="node-type" data-node-type="mod">
+        <span class="label">Mod root</span>
+        <span class="small">api.registerMod()</span>
+      </div>
+    </aside>
+
+    <!-- CENTER: Canvas -->
+    <section id="canvas-wrapper">
+      <div id="canvas"></div>
+    </section>
+
+    <!-- RIGHT: Properties -->
+    <aside id="sidebar-right">
+      <div style="flex: 1; min-width: 0;">
+        <h2>Node properties</h2>
+        <div id="nodePropsEmpty" class="hint">
+          Select a node on the canvas to edit its properties.
+        </div>
+        <div id="nodeProps" style="display:none;">
+          <div class="field-group">
+            <div class="field-label">Node title</div>
+            <input id="propTitle" class="field-input" />
+          </div>
+          <div class="field-group">
+            <div class="field-label">Description (optional)</div>
+            <textarea id="propDescription" class="field-textarea"></textarea>
+          </div>
+          <div class="field-group" id="fieldExtra1" style="display:none;">
+            <div class="field-label" id="fieldExtra1Label"></div>
+            <input id="fieldExtra1Input" class="field-input" />
+          </div>
+          <div class="field-group" id="fieldExtra2" style="display:none;">
+            <div class="field-label" id="fieldExtra2Label"></div>
+            <input id="fieldExtra2Input" class="field-input" />
+          </div>
+        </div>
       </div>
 
-      <div class="field-group">
-        <div class="field-label">Notes (for yourself)</div>
-        <textarea id="prop-notes" class="field-textarea"></textarea>
+      <div style="flex: 0 0 auto;">
+        <h2>Graph</h2>
+        <div class="hint">
+          This editor exports plain <code>.js</code> mods that you can drop into
+          <code>config/jsmods</code>.
+        </div>
+        <div class="button-row">
+          <button type="button" class="btn-soft" id="btnGenerate">Refresh code</button>
+          <button type="button" class="btn-soft" id="btnDownload">Download .js</button>
+          <button type="button" class="btn-soft" id="btnSaveJson">Download blueprint</button>
+          <button type="button" class="btn-soft" id="btnLoadJson">Load blueprint</button>
+        </div>
+        <input type="file" id="upload-input" accept="application/json" />
       </div>
+    </aside>
 
-      <p class="hint">
-        Right now these fields are just metadata. In later steps, they’ll shape
-        the generated JavaScript and function arguments.
-      </p>
-    </div>
-
-    <hr />
-
-    <h2>Blueprint File</h2>
-    <div class="field-group">
-      <div class="field-label">Download / Upload</div>
-      <div class="button-row">
-        <button id="btn-download-blueprint">Download blueprint (.json)</button>
-        <button id="btn-upload-blueprint">Upload blueprint…</button>
-        <input id="upload-input" type="file" accept=".json,application/json" />
+    <!-- BOTTOM: Preview -->
+    <section id="preview-panel">
+      <div id="preview-header">
+        <span>Generated ThreadJS mod</span>
+        <span class="badge-small">Drop into <code>config/jsmods</code> and reload</span>
       </div>
-      <p class="hint">
-        The blueprint file is a JSON representation of your nodes and positions.
-        Later we can also export the generated <code>.js</code> mod file.
-      </p>
-    </div>
-  </aside>
+      <pre id="preview-code">// Your generated JavaScript mod will appear here.</pre>
+    </section>
+  </main>
 
-  <!-- BOTTOM: generated JS preview -->
-  <section id="preview-panel">
-    <div id="preview-header">
-      <span>Generated ThreadJS script preview (read-only for now)</span>
-      <div class="button-row">
-        <button id="btn-download-js">Download mod (.js)</button>
-      </div>
-    </div>
-    <pre id="preview-code">
-// Your generated ThreadJS mod will appear here as you add nodes.
+  <script>
+    // ----- Data model -----
+    let nodes = [];
+    let selectedNodeId = null;
+    let dragState = null;
 
-api.registerMod("my-blueprint-mod", {
-  onInitialize(api) {
-    api.log("Blueprint mod initialized!");
-  }
-});
-    </pre>
-  </section>
-</main>
+    const canvasWrapper = document.getElementById("canvas-wrapper");
+    const canvas = document.getElementById("canvas");
 
-<script>
-  // Very simple in-memory graph model (nodes only for now)
-  const graph = {
-    nodes: [] // { id, type, x, y, title, notes }
-  };
-
-  let nextNodeId = 1;
-  let selectedNodeId = null;
-
-  const canvas = document.getElementById("canvas");
-  const nodeTypeEls = document.querySelectorAll(".node-type");
-
-  const noSelEl = document.getElementById("no-selection");
-  const selPanelEl = document.getElementById("selection-panel");
-  const propTypeEl = document.getElementById("prop-type");
-  const propTitleEl = document.getElementById("prop-title");
-  const propNotesEl = document.getElementById("prop-notes");
-  const previewCodeEl = document.getElementById("preview-code");
-
-  const btnDownloadBlueprint = document.getElementById("btn-download-blueprint");
-  const btnUploadBlueprint = document.getElementById("btn-upload-blueprint");
-  const uploadInput = document.getElementById("upload-input");
-  const btnDownloadJs = document.getElementById("btn-download-js");
-
-  // ----- Node creation -----
-
-  nodeTypeEls.forEach(el => {
-    el.addEventListener("dragstart", ev => {
-      ev.dataTransfer.setData("text/plain", el.dataset.nodeType);
-    });
-
-    // Fallback for browsers with weird drag defaults
-    el.setAttribute("draggable", "true");
-    el.addEventListener("mousedown", () => {
-      // no-op, but keeps cursor visual correct
-    });
-  });
-
-  canvas.addEventListener("dragover", ev => {
-    ev.preventDefault();
-  });
-
-  canvas.addEventListener("drop", ev => {
-    ev.preventDefault();
-    const type = ev.dataTransfer.getData("text/plain");
-    if (!type) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = ev.clientX - rect.left;
-    const y = ev.clientY - rect.top;
-
-    const node = {
-      id: String(nextNodeId++),
-      type,
-      x,
-      y,
-      title: type,
-      notes: ""
+    // Node templates: define extra fields for each type
+    const NODE_TEMPLATES = {
+      mod: {
+        title: "My ThreadJS Mod",
+        description: "Root mod: use this to initialize your logic.",
+        extra1Label: "Mod ID",
+        extra1Key: "modId",
+        extra1Default: "my-mod",
+        extra2Label: "",
+        extra2Key: "",
+        extra2Default: ""
+      },
+      log: {
+        title: "Log message",
+        description: "Write a line to the server console.",
+        extra1Label: "Message",
+        extra1Key: "message",
+        extra1Default: "Hello from ThreadJS!",
+        extra2Label: "",
+        extra2Key: "",
+        extra2Default: ""
+      },
+      sendMessage: {
+        title: "Broadcast chat",
+        description: "Send a chat message to all players.",
+        extra1Label: "Chat message",
+        extra1Key: "message",
+        extra1Default: "Welcome to the server!",
+        extra2Label: "",
+        extra2Key: "",
+        extra2Default: ""
+      },
+      onJoin: {
+        title: "On player join",
+        description: "Runs when a player joins the server.",
+        extra1Label: "Welcome message",
+        extra1Key: "message",
+        extra1Default: "✨ ${player.name} joined the server!",
+        extra2Label: "",
+        extra2Key: "",
+        extra2Default: ""
+      },
+      onChat: {
+        title: "On chat message",
+        description: "Runs on every chat message.",
+        extra1Label: "Filter word (optional)",
+        extra1Key: "filter",
+        extra1Default: "",
+        extra2Label: "",
+        extra2Key: "",
+        extra2Default: ""
+      },
+      command: {
+        title: "Custom command",
+        description: "Create a simple /command.",
+        extra1Label: "Command name",
+        extra1Key: "commandName",
+        extra1Default: "ping",
+        extra2Label: "Reply text",
+        extra2Key: "reply",
+        extra2Default: "Pong!"
+      },
+      giveItem: {
+        title: "Give item",
+        description: "Give an item to a player.",
+        extra1Label: "Item ID",
+        extra1Key: "itemId",
+        extra1Default: "minecraft:diamond_sword",
+        extra2Label: "Count",
+        extra2Key: "count",
+        extra2Default: "1"
+      },
+      teleport: {
+        title: "Teleport",
+        description: "Teleport a player.",
+        extra1Label: "Target X Y Z",
+        extra1Key: "coords",
+        extra1Default: "0 80 0",
+        extra2Label: "",
+        extra2Key: "",
+        extra2Default: ""
+      }
     };
-    graph.nodes.push(node);
-    renderNodes();
-    selectNode(node.id);
-  });
 
-  // ----- Node rendering / dragging -----
+    function createNode(type, x, y) {
+      const tpl = NODE_TEMPLATES[type] || {};
+      const id = "node_" + Math.random().toString(36).slice(2, 9);
+      const node = {
+        id,
+        type,
+        x,
+        y,
+        title: tpl.title || type,
+        description: tpl.description || "",
+        extra: {
+          [tpl.extra1Key || ""]: tpl.extra1Default || "",
+          [tpl.extra2Key || ""]: tpl.extra2Default || ""
+        }
+      };
+      nodes.push(node);
+      renderNodes();
+      selectNode(id);
+    }
 
-  function renderNodes() {
-    canvas.innerHTML = "";
+    // ----- Rendering -----
+    function renderNodes() {
+      canvas.innerHTML = "";
+      nodes.forEach(node => {
+        const div = document.createElement("div");
+        div.className = "node" + (node.id === selectedNodeId ? " selected" : "");
+        div.style.left = node.x + "px";
+        div.style.top = node.y + "px";
+        div.dataset.id = node.id;
 
-    graph.nodes.forEach(node => {
-      const el = document.createElement("div");
-      el.className = "node";
-      el.style.left = node.x + "px";
-      el.style.top = node.y + "px";
-      if (node.id === selectedNodeId) {
-        el.classList.add("selected");
+        const tpl = NODE_TEMPLATES[node.type] || {};
+
+        const title = document.createElement("div");
+        title.className = "node-title";
+        title.textContent = node.title || tpl.title || node.type;
+        div.appendChild(title);
+
+        const io = document.createElement("div");
+        io.className = "node-io";
+        io.textContent = shortNodeLabel(node.type);
+        div.appendChild(io);
+
+        if (node.description) {
+          const footer = document.createElement("div");
+          footer.className = "node-footer";
+          footer.textContent = node.description;
+          div.appendChild(footer);
+        }
+
+        // Drag start
+        div.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          selectNode(node.id);
+          dragState = {
+            nodeId: node.id,
+            startX: e.clientX,
+            startY: e.clientY,
+            nodeStartX: node.x,
+            nodeStartY: node.y
+          };
+        });
+
+        canvas.appendChild(div);
+      });
+    }
+
+    function shortNodeLabel(type) {
+      switch (type) {
+        case "mod": return "api.registerMod()";
+        case "log": return "api.log(message)";
+        case "sendMessage": return "api.sendMessage(message)";
+        case "onJoin": return "api.onPlayerJoin(player => …)";
+        case "onChat": return "api.onChatMessage(evt => …)";
+        case "command": return "api.registerCommand(name, handler)";
+        case "giveItem": return "api.players.giveItem(player, item, count)";
+        case "teleport": return "api.players.teleport(player, x,y,z,dim)";
+        default: return type;
+      }
+    }
+
+    // ----- Selection & properties -----
+    const nodePropsEmpty = document.getElementById("nodePropsEmpty");
+    const nodeProps = document.getElementById("nodeProps");
+    const propTitle = document.getElementById("propTitle");
+    const propDescription = document.getElementById("propDescription");
+    const fieldExtra1 = document.getElementById("fieldExtra1");
+    const fieldExtra2 = document.getElementById("fieldExtra2");
+    const fieldExtra1Label = document.getElementById("fieldExtra1Label");
+    const fieldExtra2Label = document.getElementById("fieldExtra2Label");
+    const fieldExtra1Input = document.getElementById("fieldExtra1Input");
+    const fieldExtra2Input = document.getElementById("fieldExtra2Input");
+
+    function selectNode(id) {
+      selectedNodeId = id;
+      renderNodes();
+      updatePropertyPanel();
+      generateCode();
+    }
+
+    function getSelectedNode() {
+      return nodes.find(n => n.id === selectedNodeId) || null;
+    }
+
+    function updatePropertyPanel() {
+      const node = getSelectedNode();
+      if (!node) {
+        nodePropsEmpty.style.display = "";
+        nodeProps.style.display = "none";
+        return;
+      }
+      const tpl = NODE_TEMPLATES[node.type] || {};
+
+      nodePropsEmpty.style.display = "none";
+      nodeProps.style.display = "";
+
+      propTitle.value = node.title || "";
+      propDescription.value = node.description || "";
+
+      if (tpl.extra1Key) {
+        fieldExtra1.style.display = "";
+        fieldExtra1Label.textContent = tpl.extra1Label || tpl.extra1Key;
+        fieldExtra1Input.value = (node.extra && node.extra[tpl.extra1Key]) || "";
+      } else {
+        fieldExtra1.style.display = "none";
       }
 
-      const titleEl = document.createElement("div");
-      titleEl.className = "node-title";
-      titleEl.textContent = node.title || node.type;
-      el.appendChild(titleEl);
+      if (tpl.extra2Key) {
+        fieldExtra2.style.display = "";
+        fieldExtra2Label.textContent = tpl.extra2Label || tpl.extra2Key;
+        fieldExtra2Input.value = (node.extra && node.extra[tpl.extra2Key]) || "";
+      } else {
+        fieldExtra2.style.display = "none";
+      }
+    }
 
-      const ioEl = document.createElement("div");
-      ioEl.className = "node-io";
-      ioEl.textContent = node.type;
-      el.appendChild(ioEl);
+    propTitle.addEventListener("input", () => {
+      const node = getSelectedNode();
+      if (!node) return;
+      node.title = propTitle.value;
+      renderNodes();
+      generateCode();
+    });
 
-      // Dragging
-      let dragStart = null;
+    propDescription.addEventListener("input", () => {
+      const node = getSelectedNode();
+      if (!node) return;
+      node.description = propDescription.value;
+      renderNodes();
+      generateCode();
+    });
 
-      el.addEventListener("mousedown", e => {
-        e.preventDefault();
-        selectNode(node.id);
-        dragStart = {
-          mouseX: e.clientX,
-          mouseY: e.clientY,
-          x: node.x,
-          y: node.y
-        };
+    fieldExtra1Input.addEventListener("input", () => {
+      const node = getSelectedNode();
+      if (!node) return;
+      const tpl = NODE_TEMPLATES[node.type] || {};
+      if (!tpl.extra1Key) return;
+      node.extra = node.extra || {};
+      node.extra[tpl.extra1Key] = fieldExtra1Input.value;
+      generateCode();
+    });
 
-        const move = e2 => {
-          if (!dragStart) return;
-          const dx = e2.clientX - dragStart.mouseX;
-          const dy = e2.clientY - dragStart.mouseY;
-          node.x = dragStart.x + dx;
-          node.y = dragStart.y + dy;
-          el.style.left = node.x + "px";
-          el.style.top = node.y + "px";
-        };
+    fieldExtra2Input.addEventListener("input", () => {
+      const node = getSelectedNode();
+      if (!node) return;
+      const tpl = NODE_TEMPLATES[node.type] || {};
+      if (!tpl.extra2Key) return;
+      node.extra = node.extra || {};
+      node.extra[tpl.extra2Key] = fieldExtra2Input.value;
+      generateCode();
+    });
 
-        const up = () => {
-          dragStart = null;
-          window.removeEventListener("mousemove", move);
-          window.removeEventListener("mouseup", up);
-        };
+    // ----- Dragging -----
+    document.addEventListener("mousemove", (e) => {
+      if (!dragState) return;
+      const node = nodes.find(n => n.id === dragState.nodeId);
+      if (!node) return;
+      const dx = e.clientX - dragState.startX;
+      const dy = e.clientY - dragState.startY;
+      node.x = dragState.nodeStartX + dx;
+      node.y = dragState.nodeStartY + dy;
+      renderNodes();
+    });
 
-        window.addEventListener("mousemove", move);
-        window.addEventListener("mouseup", up);
+    document.addEventListener("mouseup", () => {
+      dragState = null;
+    });
+
+    // ----- Toolbox handlers -----
+    document.querySelectorAll(".node-type").forEach(el => {
+      el.addEventListener("click", () => {
+        const type = el.dataset.nodeType;
+        const rect = canvasWrapper.getBoundingClientRect();
+        const x = canvasWrapper.scrollLeft + rect.width / 2 - 80;
+        const y = canvasWrapper.scrollTop + rect.height / 2 - 40;
+        createNode(type, x, y);
+      });
+    });
+
+    // ----- Code generation -----
+    const previewCodeEl = document.getElementById("preview-code");
+
+    function generateCode() {
+      if (nodes.length === 0) {
+        previewCodeEl.textContent = `// ThreadJS blueprint
+// Add nodes in the Designer to generate a mod.`;
+        return;
+      }
+
+      const modNode = nodes.find(n => n.type === "mod");
+      const modId = (modNode && modNode.extra && modNode.extra.modId) || "my-mod";
+
+      let lines = [];
+      lines.push(`// Generated by ThreadJS Designer`);
+      lines.push(`// Drop this file into config/jsmods and run /threadjs reload`);
+      lines.push("");
+      lines.push(`api.registerMod("${modId}", {`);
+      lines.push(`  onInitialize(api) {`);
+
+      // log & sendMessage nodes
+      nodes.filter(n => n.type === "log").forEach(n => {
+        const msg = (n.extra && n.extra.message) || "Hello from ThreadJS!";
+        lines.push(`    api.log(${JSON.stringify(msg)});`);
       });
 
-      canvas.appendChild(el);
-    });
+      nodes.filter(n => n.type === "sendMessage").forEach(n => {
+        const msg = (n.extra && n.extra.message) || "Welcome to the server!";
+        lines.push(`    api.sendMessage(${JSON.stringify(msg)});`);
+      });
 
-    updatePreviewCode();
-  }
+      // onJoin
+      if (nodes.some(n => n.type === "onJoin")) {
+        lines.push("");
+        lines.push(`    api.onPlayerJoin(player => {`);
+        nodes.filter(n => n.type === "onJoin").forEach(n => {
+          const msg = (n.extra && n.extra.message) || "✨ ${player.name} joined the server!";
+          lines.push(`      api.sendMessage(\`${msg}\`);`);
+        });
+        lines.push(`    });`);
+      }
 
-  function selectNode(id) {
-    selectedNodeId = id;
-    renderNodes(); // redraw selection highlight
+      // onChat
+      if (nodes.some(n => n.type === "onChat")) {
+        lines.push("");
+        lines.push(`    api.onChatMessage(evt => {`);
+        nodes.filter(n => n.type === "onChat").forEach(n => {
+          const filter = (n.extra && n.extra.filter) || "";
+          if (filter.trim()) {
+            lines.push(`      if (evt.message.includes(${JSON.stringify(filter)})) {`);
+            lines.push(`        api.log("Filtered word in chat: " + evt.message);`);
+            lines.push(`      }`);
+          } else {
+            lines.push(`      // TODO: handle chat: evt.player, evt.message`);
+          }
+        });
+        lines.push(`    });`);
+      }
 
-    const node = graph.nodes.find(n => n.id === id);
-    if (!node) {
-      noSelEl.style.display = "";
-      selPanelEl.style.display = "none";
-      return;
+      // Commands
+      nodes.filter(n => n.type === "command").forEach(n => {
+        const cmd = (n.extra && n.extra.commandName) || "ping";
+        const reply = (n.extra && n.extra.reply) || "Pong!";
+        lines.push("");
+        lines.push(`    api.registerCommand("${cmd}", (ctx, args) => {`);
+        lines.push(`      ctx.reply(${JSON.stringify(reply)});`);
+        lines.push(`    });`);
+      });
+
+      // World / players
+      nodes.filter(n => n.type === "giveItem").forEach(n => {
+        const itemId = (n.extra && n.extra.itemId) || "minecraft:diamond_sword";
+        const count = Number((n.extra && n.extra.count) || "1") || 1;
+        lines.push("");
+        lines.push(`    // Example: give item to the first online player`);
+        lines.push(`    const p = api.players.list()[0];`);
+        lines.push(`    if (p) api.players.giveItem(p.name, "${itemId}", ${count});`);
+      });
+
+      nodes.filter(n => n.type === "teleport").forEach(n => {
+        const coords = (n.extra && n.extra.coords) || "0 80 0";
+        lines.push("");
+        lines.push(`    // Example: teleport the first online player`);
+        lines.push(`    {`);
+        lines.push(`      const p = api.players.list()[0];`);
+        lines.push(`      if (p) {`);
+        lines.push(`        const [x, y, z] = "${coords}".split(" ").map(Number);`);
+        lines.push(`        api.players.teleport(p.name, x || 0, y || 80, z || 0, "minecraft:overworld");`);
+        lines.push(`      }`);
+        lines.push(`    }`);
+      });
+
+      lines.push(`  },`);
+      lines.push(`  onReload(api) {`);
+      lines.push(`    api.log("[${modId}] reloaded from Designer");`);
+      lines.push(`  }`);
+      lines.push(`});`);
+
+      previewCodeEl.textContent = lines.join("\n");
     }
 
-    noSelEl.style.display = "none";
-    selPanelEl.style.display = "";
+    // Buttons
+    document.getElementById("btnGenerate").addEventListener("click", generateCode);
 
-    propTypeEl.textContent = node.type;
-    propTitleEl.value = node.title || "";
-    propNotesEl.value = node.notes || "";
-  }
-
-  propTitleEl.addEventListener("input", () => {
-    const node = graph.nodes.find(n => n.id === selectedNodeId);
-    if (!node) return;
-    node.title = propTitleEl.value;
-    renderNodes();
-  });
-
-  propNotesEl.addEventListener("input", () => {
-    const node = graph.nodes.find(n => n.id === selectedNodeId);
-    if (!node) return;
-    node.notes = propNotesEl.value;
-  });
-
-  // ----- Blueprint JSON upload/download -----
-
-  function downloadFile(filename, contents, mime) {
-    const blob = new Blob([contents], { type: mime || "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-
-  btnDownloadBlueprint.addEventListener("click", () => {
-    const data = {
-      version: 1,
-      nodes: graph.nodes
-    };
-    const json = JSON.stringify(data, null, 2);
-    downloadFile("threadjs-blueprint.json", json, "application/json");
-  });
-
-  btnUploadBlueprint.addEventListener("click", () => {
-    uploadInput.click();
-  });
-
-  uploadInput.addEventListener("change", () => {
-    const file = uploadInput.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const data = JSON.parse(reader.result);
-        graph.nodes = Array.isArray(data.nodes) ? data.nodes : [];
-        nextNodeId =
-          graph.nodes.reduce((max, n) => Math.max(max, Number(n.id) || 0), 0) + 1;
-        selectedNodeId = null;
-        renderNodes();
-        noSelEl.style.display = "";
-        selPanelEl.style.display = "none";
-      } catch (e) {
-        alert("Failed to parse blueprint JSON: " + e);
-      }
-    };
-    reader.readAsText(file);
-    uploadInput.value = "";
-  });
-
-  // ----- JS generation (very simple placeholder) -----
-
-  function updatePreviewCode() {
-    if (!graph.nodes.length) {
-      previewCodeEl.textContent = `// Your generated ThreadJS mod will appear here as you add nodes.
-
-api.registerMod("my-blueprint-mod", {
-  onInitialize(api) {
-    api.log("Blueprint mod initialized!");
-  }
-});`;
-      return;
-    }
-
-    const lines = [];
-    lines.push('api.registerMod("my-blueprint-mod", {');
-    lines.push("  onInitialize(api) {");
-    lines.push("    api.log(\"Blueprint mod initialized!\");");
-    lines.push("  },");
-
-    // Group by event vs actions (very simplistic for now)
-    const eventNodes = graph.nodes.filter(n =>
-      ["onPlayerJoin", "onChatMessage", "onServerTick"].includes(n.type)
-    );
-    const actionNodes = graph.nodes.filter(
-      n => !eventNodes.includes(n)
-    );
-
-    eventNodes.forEach(node => {
-      if (node.type === "onPlayerJoin") {
-        lines.push("");
-        lines.push("  onPlayerJoin(player) {");
-        lines.push("    api.log(`Player joined: ${player.name}`);");
-        lines.push("  },");
-      } else if (node.type === "onChatMessage") {
-        lines.push("");
-        lines.push("  onChatMessage(evt) {");
-        lines.push("    api.log(`[chat] ${evt.player.name}: ${evt.message}`);");
-        lines.push("  },");
-      } else if (node.type === "onServerTick") {
-        lines.push("");
-        lines.push("  onServerTick() {");
-        lines.push("    // TODO: tick logic");
-        lines.push("  },");
-      }
+    document.getElementById("btnDownload").addEventListener("click", () => {
+      const blob = new Blob([previewCodeEl.textContent], { type: "text/javascript" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "threadjs-designer-mod.js";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     });
 
-    lines.push("});");
-    lines.push("");
-    lines.push("// Actions placed on the canvas (not wired yet):");
-    actionNodes.forEach(node => {
-      lines.push(
-        `// - ${node.type} (${node.title || node.type}) at x=${Math.round(
-          node.x
-        )}, y=${Math.round(node.y)}`
-      );
+    document.getElementById("btnSaveJson").addEventListener("click", () => {
+      const data = { nodes };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "threadjs-blueprint.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     });
 
-    previewCodeEl.textContent = lines.join("\n");
-  }
+    const uploadInput = document.getElementById("upload-input");
+    document.getElementById("btnLoadJson").addEventListener("click", () => {
+      uploadInput.click();
+    });
 
-  btnDownloadJs.addEventListener("click", () => {
-    const contents = previewCodeEl.textContent || "";
-    downloadFile("threadjs-blueprint-mod.js", contents, "text/javascript");
-  });
+    uploadInput.addEventListener("change", () => {
+      const file = uploadInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          nodes = Array.isArray(data.nodes) ? data.nodes : [];
+          selectedNodeId = null;
+          renderNodes();
+          updatePropertyPanel();
+          generateCode();
+        } catch {
+          alert("Invalid blueprint JSON");
+        }
+      };
+      reader.readAsText(file);
+    });
 
-  // Initial preview
-  updatePreviewCode();
-</script>
+    // Initial state: one mod node in the middle
+    window.addEventListener("load", () => {
+      const rect = canvasWrapper.getBoundingClientRect();
+      createNode("mod", canvasWrapper.scrollLeft + rect.width / 2 - 100, canvasWrapper.scrollTop + 80);
+      generateCode();
+    });
+  </script>
 </body>
 </html>
