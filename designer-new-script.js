@@ -9,6 +9,7 @@ const fieldType = document.getElementById("field-node-type");
 const fieldEvent = document.getElementById("field-node-event");
 const fieldMessage = document.getElementById("field-node-message");
 const fieldCustom = document.getElementById("field-node-custom");
+const fieldModName = document.getElementById("field-mod-name");
 
 const statusEl = document.getElementById("designer-status");
 const previewCodeEl = document.getElementById("preview-code");
@@ -27,6 +28,7 @@ let nextNodeId = 1;
 let nextConnectionId = 1;
 let selectedNodeId = null;
 let selectedConnectionId = null;
+let modName = "designer-mod";
 
 // Connection drawing state
 let connectionDragStart = null;
@@ -50,63 +52,63 @@ function initSvg() {
 
 // Node type definitions with metadata
 const NODE_DEFINITIONS = {
-  // Events
-  onServerTick: { label: "Server Tick", color: "#845ef7", hasInput: false, hasOutput: true, params: {} },
-  onPlayerJoin: { label: "Player Join", color: "#4c6ef5", hasInput: false, hasOutput: true, params: {} },
-  onPlayerLeave: { label: "Player Leave", color: "#4c6ef5", hasInput: false, hasOutput: true, params: {} },
-  onPlayerTick: { label: "Player Tick", color: "#4c6ef5", hasInput: false, hasOutput: true, params: {} },
-  onChatMessage: { label: "Chat Message", color: "#15aabf", hasInput: false, hasOutput: true, params: {} },
-  onBlockBreak: { label: "Block Break", color: "#74b816", hasInput: false, hasOutput: true, params: {} },
-  onBlockPlace: { label: "Block Place", color: "#74b816", hasInput: false, hasOutput: true, params: {} },
-  onUseBlock: { label: "Use Block", color: "#74b816", hasInput: false, hasOutput: true, params: {} },
-  onUseItem: { label: "Use Item", color: "#f59f00", hasInput: false, hasOutput: true, params: {} },
-  onAttackEntity: { label: "Attack Entity", color: "#f03e3e", hasInput: false, hasOutput: true, params: {} },
-  onEntityDamage: { label: "Entity Damage", color: "#f03e3e", hasInput: false, hasOutput: true, params: {} },
-  onEntityDeath: { label: "Entity Death", color: "#f03e3e", hasInput: false, hasOutput: true, params: {} },
+  // Events (provide variables to child nodes)
+  onServerTick: { label: "Server Tick", color: "#845ef7", hasInput: false, hasOutput: true, params: {}, provides: [] },
+  onPlayerJoin: { label: "Player Join", color: "#4c6ef5", hasInput: false, hasOutput: true, params: {}, provides: ["player"] },
+  onPlayerLeave: { label: "Player Leave", color: "#4c6ef5", hasInput: false, hasOutput: true, params: {}, provides: ["player"] },
+  onPlayerTick: { label: "Player Tick", color: "#4c6ef5", hasInput: false, hasOutput: true, params: {}, provides: ["player"] },
+  onChatMessage: { label: "Chat Message", color: "#15aabf", hasInput: false, hasOutput: true, params: {}, provides: ["evt", "evt.player", "evt.message"] },
+  onBlockBreak: { label: "Block Break", color: "#74b816", hasInput: false, hasOutput: true, params: {}, provides: ["evt", "evt.playerName", "evt.blockId", "evt.x", "evt.y", "evt.z"] },
+  onBlockPlace: { label: "Block Place", color: "#74b816", hasInput: false, hasOutput: true, params: {}, provides: ["evt", "evt.playerName", "evt.blockId", "evt.x", "evt.y", "evt.z"] },
+  onUseBlock: { label: "Use Block", color: "#74b816", hasInput: false, hasOutput: true, params: {}, provides: ["evt", "evt.playerName", "evt.blockId"] },
+  onUseItem: { label: "Use Item", color: "#f59f00", hasInput: false, hasOutput: true, params: {}, provides: ["evt", "evt.playerName", "evt.itemId"] },
+  onAttackEntity: { label: "Attack Entity", color: "#f03e3e", hasInput: false, hasOutput: true, params: {}, provides: ["evt", "evt.playerName", "evt.targetType"] },
+  onEntityDamage: { label: "Entity Damage", color: "#f03e3e", hasInput: false, hasOutput: true, params: {}, provides: ["evt", "evt.victimType", "evt.amount", "evt.sourceType"] },
+  onEntityDeath: { label: "Entity Death", color: "#f03e3e", hasInput: false, hasOutput: true, params: {}, provides: ["evt", "evt.victimType", "evt.killedBy"] },
   
   // Commands
-  registerCommand: { label: "Register Command", color: "#20c997", hasInput: false, hasOutput: true, params: { name: "", permLevel: "0", playerOnly: false } },
+  registerCommand: { label: "Register Command", color: "#20c997", hasInput: false, hasOutput: true, params: { name: "", permLevel: "0", playerOnly: false }, provides: ["ctx", "args", "ctx.player"] },
   
   // Messaging
-  log: { label: "Log", color: "#868e96", hasInput: true, hasOutput: true, params: { message: "" } },
-  broadcast: { label: "Broadcast", color: "#15aabf", hasInput: true, hasOutput: true, params: { message: "" } },
-  sendMessageTo: { label: "Send Message To", color: "#15aabf", hasInput: true, hasOutput: true, params: { player: "", message: "" } },
+  log: { label: "Log", color: "#868e96", hasInput: true, hasOutput: true, params: { message: "" }, provides: [] },
+  broadcast: { label: "Broadcast", color: "#15aabf", hasInput: true, hasOutput: true, params: { message: "" }, provides: [] },
+  sendMessageTo: { label: "Send Message To", color: "#15aabf", hasInput: true, hasOutput: true, params: { player: "", message: "" }, provides: [] },
   
   // World
-  setBlock: { label: "Set Block", color: "#74b816", hasInput: true, hasOutput: true, params: { x: "0", y: "64", z: "0", dimension: "minecraft:overworld", blockId: "minecraft:stone" } },
-  getBlock: { label: "Get Block", color: "#74b816", hasInput: true, hasOutput: true, params: { x: "0", y: "64", z: "0", dimension: "minecraft:overworld" } },
-  fillArea: { label: "Fill Area", color: "#74b816", hasInput: true, hasOutput: true, params: { x1: "0", y1: "64", z1: "0", x2: "10", y2: "74", z2: "10", dimension: "minecraft:overworld", blockId: "minecraft:stone" } },
-  replaceBlocks: { label: "Replace Blocks", color: "#74b816", hasInput: true, hasOutput: true, params: { x1: "0", y1: "64", z1: "0", x2: "10", y2: "74", z2: "10", dimension: "minecraft:overworld", from: "minecraft:dirt", to: "minecraft:grass_block" } },
+  setBlock: { label: "Set Block", color: "#74b816", hasInput: true, hasOutput: true, params: { x: "0", y: "64", z: "0", dimension: "minecraft:overworld", blockId: "minecraft:stone" }, provides: [] },
+  getBlock: { label: "Get Block", color: "#74b816", hasInput: true, hasOutput: true, params: { x: "0", y: "64", z: "0", dimension: "minecraft:overworld" }, provides: ["block"] },
+  fillArea: { label: "Fill Area", color: "#74b816", hasInput: true, hasOutput: true, params: { x1: "0", y1: "64", z1: "0", x2: "10", y2: "74", z2: "10", dimension: "minecraft:overworld", blockId: "minecraft:stone" }, provides: [] },
+  replaceBlocks: { label: "Replace Blocks", color: "#74b816", hasInput: true, hasOutput: true, params: { x1: "0", y1: "64", z1: "0", x2: "10", y2: "74", z2: "10", dimension: "minecraft:overworld", from: "minecraft:dirt", to: "minecraft:grass_block" }, provides: [] },
   
   // Players
-  getPlayers: { label: "Get Players", color: "#4c6ef5", hasInput: true, hasOutput: true, params: {} },
-  teleport: { label: "Teleport", color: "#4c6ef5", hasInput: true, hasOutput: true, params: { player: "", x: "0", y: "64", z: "0", dimension: "minecraft:overworld" } },
-  setGamemode: { label: "Set Gamemode", color: "#4c6ef5", hasInput: true, hasOutput: true, params: { player: "", mode: "SURVIVAL" } },
-  setHealth: { label: "Set Health", color: "#e64980", hasInput: true, hasOutput: true, params: { player: "", health: "20" } },
-  heal: { label: "Heal", color: "#e64980", hasInput: true, hasOutput: true, params: { player: "", amount: "5" } },
-  giveItem: { label: "Give Item", color: "#f59f00", hasInput: true, hasOutput: true, params: { player: "", itemId: "minecraft:diamond", count: "1" } },
+  getPlayers: { label: "Get Players", color: "#4c6ef5", hasInput: true, hasOutput: true, params: {}, provides: ["players"] },
+  teleport: { label: "Teleport", color: "#4c6ef5", hasInput: true, hasOutput: true, params: { player: "", x: "0", y: "64", z: "0", dimension: "minecraft:overworld" }, provides: [] },
+  setGamemode: { label: "Set Gamemode", color: "#4c6ef5", hasInput: true, hasOutput: true, params: { player: "", mode: "SURVIVAL" }, provides: [] },
+  setHealth: { label: "Set Health", color: "#e64980", hasInput: true, hasOutput: true, params: { player: "", health: "20" }, provides: [] },
+  heal: { label: "Heal", color: "#e64980", hasInput: true, hasOutput: true, params: { player: "", amount: "5" }, provides: [] },
+  giveItem: { label: "Give Item", color: "#f59f00", hasInput: true, hasOutput: true, params: { player: "", itemId: "minecraft:diamond", count: "1" }, provides: [] },
   
   // Entities
-  spawnEntity: { label: "Spawn Entity", color: "#37b24d", hasInput: true, hasOutput: true, params: { entityType: "minecraft:cow", x: "0", y: "64", z: "0", dimension: "minecraft:overworld" } },
-  killEntity: { label: "Kill Entity", color: "#f03e3e", hasInput: true, hasOutput: true, params: { entityUuid: "" } },
-  findEntities: { label: "Find Entities", color: "#37b24d", hasInput: true, hasOutput: true, params: { x: "0", y: "64", z: "0", dimension: "minecraft:overworld", radius: "16", type: "" } },
+  spawnEntity: { label: "Spawn Entity", color: "#37b24d", hasInput: true, hasOutput: true, params: { entityType: "minecraft:cow", x: "0", y: "64", z: "0", dimension: "minecraft:overworld" }, provides: ["entityId"] },
+  killEntity: { label: "Kill Entity", color: "#f03e3e", hasInput: true, hasOutput: true, params: { entityUuid: "" }, provides: [] },
+  findEntities: { label: "Find Entities", color: "#37b24d", hasInput: true, hasOutput: true, params: { x: "0", y: "64", z: "0", dimension: "minecraft:overworld", radius: "16", type: "" }, provides: ["entities"] },
   
   // Sound
-  playSound: { label: "Play Sound", color: "#845ef7", hasInput: true, hasOutput: true, params: { soundId: "entity.player.levelup", volume: "1.0", pitch: "1.0" } },
-  playSoundTo: { label: "Play Sound To", color: "#845ef7", hasInput: true, hasOutput: true, params: { player: "", soundId: "entity.player.levelup", volume: "1.0", pitch: "1.0" } },
-  playSoundAt: { label: "Play Sound At", color: "#845ef7", hasInput: true, hasOutput: true, params: { x: "0", y: "64", z: "0", dimension: "minecraft:overworld", soundId: "entity.player.levelup", volume: "1.0", pitch: "1.0" } },
+  playSound: { label: "Play Sound", color: "#845ef7", hasInput: true, hasOutput: true, params: { soundId: "entity.player.levelup", volume: "1.0", pitch: "1.0" }, provides: [] },
+  playSoundTo: { label: "Play Sound To", color: "#845ef7", hasInput: true, hasOutput: true, params: { player: "", soundId: "entity.player.levelup", volume: "1.0", pitch: "1.0" }, provides: [] },
+  playSoundAt: { label: "Play Sound At", color: "#845ef7", hasInput: true, hasOutput: true, params: { x: "0", y: "64", z: "0", dimension: "minecraft:overworld", soundId: "entity.player.levelup", volume: "1.0", pitch: "1.0" }, provides: [] },
   
   // Data
-  loadData: { label: "Load Data", color: "#f59f00", hasInput: true, hasOutput: true, params: { namespace: "", key: "" } },
-  saveData: { label: "Save Data", color: "#f59f00", hasInput: true, hasOutput: true, params: { namespace: "", key: "", value: "{}" } },
+  loadData: { label: "Load Data", color: "#f59f00", hasInput: true, hasOutput: true, params: { namespace: "", key: "" }, provides: ["data"] },
+  saveData: { label: "Save Data", color: "#f59f00", hasInput: true, hasOutput: true, params: { namespace: "", key: "", value: "{}" }, provides: [] },
   
   // Scheduling
-  runLater: { label: "Run Later", color: "#fab005", hasInput: true, hasOutput: true, params: { ticks: "20" } },
-  runRepeating: { label: "Run Repeating", color: "#fab005", hasInput: true, hasOutput: true, params: { interval: "20" } },
+  runLater: { label: "Run Later", color: "#fab005", hasInput: true, hasOutput: true, params: { ticks: "20" }, provides: [] },
+  runRepeating: { label: "Run Repeating", color: "#fab005", hasInput: true, hasOutput: true, params: { interval: "20" }, provides: [] },
   
   // Control
-  if: { label: "If Condition", color: "#868e96", hasInput: true, hasOutput: true, params: { condition: "true" } },
-  forEach: { label: "For Each", color: "#868e96", hasInput: true, hasOutput: true, params: { array: "[]", varName: "item" } }
+  if: { label: "If Condition", color: "#868e96", hasInput: true, hasOutput: true, params: { condition: "true" }, provides: [] },
+  forEach: { label: "For Each", color: "#868e96", hasInput: true, hasOutput: true, params: { array: "[]", varName: "item" }, provides: ["item"] }
 };
 
 function setStatus(text, isError) {
@@ -529,8 +531,9 @@ function refreshSidebarFields() {
   fieldLabel.value = node.label || "";
   fieldType.value = node.type || "";
   
-  // Use params as JSON for now
-  fieldEvent.value = Object.keys(node.params || {}).join(", ");
+  // Show available variables from parent nodes
+  const availableVars = getAvailableVariables(node.id);
+  fieldEvent.value = availableVars.length > 0 ? "Available: " + availableVars.join(", ") : "No variables available";
   fieldMessage.value = JSON.stringify(node.params || {}, null, 2);
   fieldCustom.value = node.customCode || "";
 }
@@ -560,6 +563,11 @@ function attachFieldHandlers() {
     const node = selectedNodeId ? findNode(selectedNodeId) : null;
     if (!node) return;
     node.customCode = fieldCustom.value;
+    updatePreview();
+  });
+
+  fieldModName.addEventListener("input", () => {
+    modName = fieldModName.value || "designer-mod";
     updatePreview();
   });
 }
@@ -605,6 +613,7 @@ btnNewGraph.addEventListener("click", () => {
 btnExportJson.addEventListener("click", () => {
   const data = {
     version: 2,
+    modName,
     nodes,
     connections
   };
@@ -635,6 +644,10 @@ uploadInput.addEventListener("change", async () => {
     if (!parsed || !Array.isArray(parsed.nodes)) {
       throw new Error("JSON has no 'nodes' array");
     }
+    
+    modName = parsed.modName || "designer-mod";
+    fieldModName.value = modName;
+    
     nodes = parsed.nodes.map(n => ({
       id: Number(n.id) || (nextNodeId++),
       type: n.type || "log",
@@ -680,7 +693,8 @@ btnDownloadJs.addEventListener("click", () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "threadjs-designer-mod.js";
+  const filename = (modName || "designer-mod").replace(/[^a-z0-9_-]/gi, '-') + ".js";
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -691,10 +705,11 @@ btnDownloadJs.addEventListener("click", () => {
 // Generate JS from nodes and connections
 function generateJs() {
   const lines = [];
+  const safeName = (modName || "designer-mod").replace(/[^a-z0-9_-]/gi, '-');
   lines.push("// Auto-generated by ThreadJS Designer");
   lines.push("// Edit parameters and add custom logic as needed");
   lines.push("");
-  lines.push("api.registerMod('designer-mod', {");
+  lines.push(`api.registerMod('${safeName}', {`);
   lines.push("  onInitialize(api) {");
 
   // Find all event/command nodes (no input connections)
@@ -806,23 +821,26 @@ function generateNodeCode(node, indentLevel) {
       
     // Messaging
     case "log":
-      const logMsg = p.message || "Log message";
-      lines.push(`${indent}api.log(${JSON.stringify(logMsg)});`);
+      const availableVarsLog = getAvailableVariables(node.id);
+      const logMsg = processParamValue(p.message || "Log message", availableVarsLog);
+      lines.push(`${indent}api.log(${logMsg});`);
       if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
       lines.push(...generateConnectedNodes(node, indentLevel));
       break;
       
     case "broadcast":
-      const bcMsg = p.message || "Broadcast message";
-      lines.push(`${indent}api.sendMessage(${JSON.stringify(bcMsg)});`);
+      const availableVarsBc = getAvailableVariables(node.id);
+      const bcMsg = processParamValue(p.message || "Broadcast message", availableVarsBc);
+      lines.push(`${indent}api.sendMessage(${bcMsg});`);
       if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
       lines.push(...generateConnectedNodes(node, indentLevel));
       break;
       
     case "sendMessageTo":
-      const toPlayer = p.player || "playerName";
-      const toMsg = p.message || "Hello!";
-      lines.push(`${indent}api.sendMessageTo(${JSON.stringify(toPlayer)}, ${JSON.stringify(toMsg)});`);
+      const availableVarsMsg = getAvailableVariables(node.id);
+      const toPlayer = processParamValue(p.player || "playerName", availableVarsMsg);
+      const toMsg = processParamValue(p.message || "Hello!", availableVarsMsg);
+      lines.push(`${indent}api.sendMessageTo(${toPlayer}, ${toMsg});`);
       if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
       lines.push(...generateConnectedNodes(node, indentLevel));
       break;
@@ -1012,8 +1030,59 @@ function indentLines(str, indentLevel) {
     .join("\n");
 }
 
+// Get all available variables for a node based on its parent chain
+function getAvailableVariables(nodeId) {
+  const vars = new Set();
+  const visited = new Set();
+  
+  function collectVarsFromParents(id) {
+    if (visited.has(id)) return;
+    visited.add(id);
+    
+    // Find all incoming connections
+    const incomingConns = connections.filter(c => c.to === id);
+    
+    incomingConns.forEach(conn => {
+      const parentNode = findNode(conn.from);
+      if (!parentNode) return;
+      
+      const def = NODE_DEFINITIONS[parentNode.type];
+      if (def && def.provides) {
+        def.provides.forEach(v => vars.add(v));
+      }
+      
+      // Recursively collect from parent's parents
+      collectVarsFromParents(conn.from);
+    });
+  }
+  
+  collectVarsFromParents(nodeId);
+  return Array.from(vars).sort();
+}
+
+// Process parameter value to support variable references
+function processParamValue(value, availableVars) {
+  if (typeof value !== 'string') return value;
+  
+  // If value starts with $, treat as variable reference
+  if (value.startsWith('$')) {
+    const varName = value.substring(1);
+    if (availableVars.includes(varName) || availableVars.some(v => v.startsWith(varName + '.'))) {
+      return varName; // Return without quotes
+    }
+  }
+  
+  // Template string support: "Welcome ${player.name}!"
+  if (value.includes('${')) {
+    return '`' + value.replace(/\$\{/g, '${') + '`';
+  }
+  
+  return JSON.stringify(value);
+}
+
 // Initial boot
 initSvg();
 attachFieldHandlers();
+modName = fieldModName.value || "designer-mod";
 updatePreview();
 setStatus("Ready. Click nodes from the toolbox to get started.");
