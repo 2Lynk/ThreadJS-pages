@@ -1501,83 +1501,9 @@ function processParamValue(value, availableVars) {
   return JSON.stringify(value);
 }
 
-// Generate variable reference HTML from schemas
-function generateVariableReferenceHTML() {
-  const varRefContainer = document.querySelector('.var-ref-content');
-  if (!varRefContainer) return;
-  
-  let html = '';
-  
-  // Group variables by category
-  const categories = {
-    'Core Variables': ['player', 'evt', 'ctx', 'args'],
-    'Data & Collections': ['block', 'data', 'players', 'entities', 'entityId', 'item']
-  };
-  
-  for (const [categoryName, varNames] of Object.entries(categories)) {
-    html += `<div class="var-ref-category"><strong style="color: #228be6; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">${categoryName}</strong>`;
-    
-    for (const varName of varNames) {
-      const schema = VARIABLE_SCHEMAS[varName];
-      if (!schema) continue;
-      
-      // Handle variables that extend other schemas
-      let properties = schema.properties || {};
-      if (schema.extends) {
-        const baseSchema = VARIABLE_SCHEMAS[schema.extends];
-        if (baseSchema && baseSchema.properties) {
-          properties = { ...baseSchema.properties, ...properties };
-        }
-      }
-      
-      html += '<div class="var-ref-item">';
-      html += `<strong>${varName}</strong>`;
-      
-      if (schema.description) {
-        html += `<div style="font-size: 0.75rem; color: #868e96; margin-bottom: 0.3rem;">${schema.description}</div>`;
-      }
-      
-      if (schema.type && Object.keys(properties).length === 0) {
-        html += `<div style="font-size: 0.76rem;"><code>${varName}</code> - Type: ${schema.type}`;
-        if (schema.example) {
-          html += ` (e.g., ${schema.example})`;
-        }
-        html += '</div>';
-      } else if (Object.keys(properties).length > 0) {
-        html += '<ul>';
-        for (const [propName, propDef] of Object.entries(properties)) {
-          const fullPath = propName.startsWith('[') ? `${varName}${propName}` : `${varName}.${propName}`;
-          html += `<li><code>${fullPath}</code>`;
-          if (propDef.type) html += ` <span style="color: #868e96;">(${propDef.type})</span>`;
-          if (propDef.description) html += ` - ${propDef.description}`;
-          if (propDef.example) html += ` <span style="color: #868e96;">e.g., ${propDef.example}</span>`;
-          html += '</li>';
-        }
-        html += '</ul>';
-      }
-      
-      html += '</div>';
-    }
-    
-    html += '</div>';
-  }
-  
-  // Add usage instructions
-  html += `
-    <p style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #dee2e6; font-size: 0.76rem; color: var(--text-secondary, #495057);">
-      <strong>Usage in parameters:</strong><br>
-      • <code>$variableName</code> for direct reference (e.g., <code>$player</code>)<br>
-      • <code>\${variable.property}</code> for template strings (e.g., <code>Welcome \${player.name}!</code>)
-    </p>
-  `;
-  
-  varRefContainer.innerHTML = html;
-}
-
 // Initial boot
 initSvg();
 attachFieldHandlers();
 modName = fieldModName.value || "designer-mod";
-generateVariableReferenceHTML();
 updatePreview();
 setStatus("Ready. Click nodes from the toolbox to get started.");
