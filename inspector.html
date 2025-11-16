@@ -2,359 +2,269 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>ThreadJS Inspector</title>
+  <title>ThreadJS Example Mods</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Shared global stylesheet -->
   <link rel="stylesheet" href="https://2lynk.github.io/stylesheet.css">
 
+  <!-- YAML & Markdown (for any descriptions you want to render later) -->
   <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
+  <!-- Version helper (same as API Reference / Inspector) -->
   <script src="version.js"></script>
 </head>
 <body>
+  <header>
+    <div class="header-inner">
 
-<header>
-  <div class="header-inner">
-    
-    <!-- Left: Brand + Lynk shortcut -->
-    <div style="display:flex; align-items:center; gap:0.75rem;">
-      <a href="../" class="brand">
-        <div class="brand-mark">T</div>
-        <div class="brand-labels">
-          <div class="brand-text-main">ThreadJS</div>
-          <div class="brand-text-sub">Minecraft JS scripting</div>
-        </div>
-      </a>
+      <!-- Left: brand + Lynk pill -->
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <a href="../" class="brand">
+          <div class="brand-mark">T</div>
+          <div class="brand-labels">
+            <div class="brand-text-main">ThreadJS</div>
+            <div class="brand-text-sub">Minecraft JS scripting</div>
+          </div>
+        </a>
 
-      <!-- 🔗 Back to homepage -->
-      <a class="nav-pill" href="https://2lynk.github.io/">Lynk</a>
+        <!-- Back to main homepage -->
+        <a class="nav-pill" href="https://2lynk.github.io/">Lynk</a>
+      </div>
+
+      <!-- Right: ThreadJS section navigation -->
+      <nav class="nav-links">
+        <a class="nav-pill" href="index.html">API Reference</a>
+        <a class="nav-pill" href="inspector.html">Inspector</a>
+        <a class="nav-pill nav-pill--accent" href="example-mods.html">Example Mods</a>
+        <a class="nav-pill" href="designer.html">Designer</a>
+      </nav>
+
     </div>
+  </header>
 
-    <!-- Right navigation -->
-    <nav class="nav-links">
-      <a class="nav-pill" href="index.html">API Reference</a>
-      <a class="nav-pill nav-pill--accent" href="inspector.html">Inspector</a>
-      <a class="nav-pill" href="example-mods.html">Example Mods</a>
-      <a class="nav-pill" href="designer.html">Designer</a>
-    </nav>
-
+  <!-- Version bar: wired to version.js, but used for example-mods -->
+  <div class="version-bar">
+    <label for="versionSelectMods">Version:</label>
+    <select id="versionSelectMods" class="version-select"></select>
+    <span id="versionNoteMods" class="version-note"></span>
   </div>
-</header>
 
-<div class="version-bar">
-  <label for="versionSelectInspector">Version:</label>
-  <select id="versionSelectInspector" class="version-select"></select>
-  <span id="versionNoteInspector" class="version-note"></span>
-</div>
+  <main>
+    <div class="page-inner">
+      <div class="page-heading">
+        <h2>Example Mods</h2>
+        <p>
+          These example ThreadJS mods live in the
+          <code>example-mods/&lt;version&gt;/</code> folder and are meant as
+          copy-pasteable starting points. Pick a version in the bar above to see
+          the examples that shipped with that API.
+        </p>
+      </div>
 
-<main>
-  <aside id="sidebar">
-    <h2>Modules</h2>
-    <ul id="tag-list"></ul>
-  </aside>
+      <p class="hint">
+        <strong>Tip:</strong> Click a filename link in a card to open the raw file on GitHub.
+        You can drop these into your server’s <code>mods/threadjs</code> (or whatever path
+        you use) and tweak them.
+      </p>
 
-  <section id="content-panel">
-    <div id="intro" class="intro"></div>
-    <div id="sections"></div>
-  </section>
-</main>
+      <div id="mods-grid" class="mods-grid"></div>
 
-<script>
-/* -----------------------------
-   Same inspector logic as before
-   ----------------------------- */
+      <div id="mods-status" class="status">
+        <span class="spinner"></span>
+        Loading example mods…
+      </div>
+    </div>
+  </main>
 
-const tagListEl = document.getElementById("tag-list");
-const sectionsEl = document.getElementById("sections");
-const introEl = document.getElementById("intro");
-const contentPanel = document.getElementById("content-panel");
+  <script>
+    // --- Configuration for where example mods live ---
+    const EXAMPLES_OWNER = "2Lynk";
+    const EXAMPLES_REPO  = "ThreadJS-pages";  // repo that holds /example-mods
+    const EXAMPLES_DIR   = "example-mods";    // root folder in that repo
 
-const tagLinksByName = {};
-const tagLisByName = {};
-const sectionEls = [];
-let tagsGlobal = [];
+    const modsGrid   = document.getElementById("mods-grid");
+    const statusEl   = document.getElementById("mods-status");
+    const noteElMods = document.getElementById("versionNoteMods");
 
-function scrollToSectionId(id) {
-  const el = document.getElementById(id);
-  if (!el || !contentPanel) return;
-  const contentRect = contentPanel.getBoundingClientRect();
-  const elRect = el.getBoundingClientRect();
-  const offset = elRect.top - contentRect.top + contentPanel.scrollTop - 10;
-  contentPanel.scrollTo({ top: offset, behavior: "smooth" });
-}
-
-function setActiveTag(tagName) {
-  Object.values(tagLinksByName).forEach((l) => l.classList.remove("active"));
-  Object.values(tagLisByName).forEach((li) => li.classList.remove("active-tag"));
-
-  const l = tagLinksByName[tagName];
-  const li = tagLisByName[tagName];
-
-  if (l) l.classList.add("active");
-  if (li) li.classList.add("active-tag");
-}
-
-function makeDomId(tag, summary) {
-  const safe = String(summary || "")
-    .toLowerCase()
-    .replace(/[^\w]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return "func-" + tag.toLowerCase() + "-" + safe;
-}
-
-function showLoading(msg) {
-  sectionsEl.innerHTML =
-    '<div class="loading-msg">' + (msg || "Loading…") + "</div>";
-}
-
-function showError(msg) {
-  sectionsEl.innerHTML =
-    '<div class="error-msg">' + (msg || "Error loading spec.") + "</div>";
-}
-
-function renderOpenApiFromText(yamlText) {
-  let spec;
-  try {
-    spec = jsyaml.load(yamlText);
-  } catch (e) {
-    introEl.innerHTML = "";
-    showError("Invalid YAML: " + e);
-    return;
-  }
-
-  if (spec.info && spec.info.description) {
-    introEl.innerHTML = marked.parse(spec.info.description);
-  } else {
-    introEl.textContent = "Inspector view for ThreadJS API.";
-  }
-
-  const tags = (spec.tags || []).map((t) => t.name);
-  tagsGlobal = tags;
-
-  const operationsByTag = {};
-  const paths = spec.paths || {};
-
-  for (const p in paths) {
-    const op = paths[p];
-    if (!op || !op.tags) continue;
-
-    const summary = op.summary || p;
-    const description = op.description || "";
-    const samples = op["x-codeSamples"] || [];
-
-    op.tags.forEach((tag) => {
-      if (!operationsByTag[tag]) operationsByTag[tag] = [];
-      operationsByTag[tag].push({
-        path: p,
-        tag,
-        summary,
-        description,
-        samples,
-      });
-    });
-  }
-
-  // assign DOM ids
-  Object.keys(operationsByTag).forEach((tag) => {
-    operationsByTag[tag].forEach((fn) => {
-      fn.domId = makeDomId(tag, fn.summary);
-    });
-  });
-
-  // Sidebar
-  tagListEl.innerHTML = "";
-  Object.keys(tagLinksByName).forEach((k) => delete tagLinksByName[k]);
-  Object.keys(tagLisByName).forEach((k) => delete tagLisByName[k]);
-
-  tags.forEach((tag, idx) => {
-    const funcs = operationsByTag[tag] || [];
-
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    a.className = "tag-link" + (idx === 0 ? " active" : "");
-    a.textContent = tag;
-    a.href = "javascript:void(0)";
-
-    tagLinksByName[tag] = a;
-    tagLisByName[tag] = li;
-
-    a.onclick = () => {
-      scrollToSectionId("tag-" + tag);
-      setActiveTag(tag);
+    // Optional: per-file friendly descriptions
+    const EXAMPLE_DESCRIPTIONS = {
+      "admin-tools.js": "Admin-focused helpers: quick moderation commands, announcements, and small quality-of-life tools.",
+      "hello-world.js": "Minimal ‘hello world’ style mod to show the basic ThreadJS lifecycle.",
+      "events-demo.js": "Showcases event hooks and logging patterns in ThreadJS.",
+      // Add more here as your example set grows
     };
 
-    li.appendChild(a);
-
-    if (funcs.length > 0) {
-      const funcList = document.createElement("ul");
-      funcList.className = "tag-func-list";
-
-      funcs.forEach((fn) => {
-        const li2 = document.createElement("li");
-        const b = document.createElement("button");
-        b.className = "tag-func-link";
-        b.type = "button";
-        b.textContent = fn.summary;
-        b.onclick = () => {
-          scrollToSectionId(fn.domId);
-          setActiveTag(tag);
-        };
-
-        li2.appendChild(b);
-        funcList.appendChild(li2);
-      });
-
-      li.appendChild(funcList);
+    function setStatus(text, isError) {
+      if (!statusEl) return;
+      statusEl.textContent = text;
+      statusEl.classList.toggle("error", !!isError);
     }
 
-    tagListEl.appendChild(li);
-    if (idx === 0) li.classList.add("active-tag");
-  });
+    function createElement(tag, className, text) {
+      const el = document.createElement(tag);
+      if (className) el.className = className;
+      if (typeof text === "string") el.textContent = text;
+      return el;
+    }
 
-  // Main content
-  sectionsEl.innerHTML = "";
-  sectionEls.length = 0;
+    function clearGrid() {
+      if (!modsGrid) return;
+      modsGrid.innerHTML = "";
+    }
 
-  tags.forEach((tag) => {
-    const funcs = operationsByTag[tag] || [];
-    if (funcs.length === 0) return;
+    function renderExampleCard(versionId, fileMeta, fileText) {
+      const fileName = fileMeta.name || "unknown.js";
+      const path = fileMeta.path || "";
+      const downloadUrl = fileMeta.download_url;
 
-    const sec = document.createElement("section");
-    sec.className = "tag-section";
-    sec.id = "tag-" + tag;
-    sec.dataset.tag = tag;
+      const card = createElement("article", "mod-card");
 
-    const h2 = document.createElement("h2");
-    h2.textContent = tag;
-    sec.appendChild(h2);
+      const header = createElement("div", "mod-card-header");
+      const titleRow = createElement("div", "mod-title-row");
 
-    funcs.forEach((fn) => {
-      const card = document.createElement("article");
-      card.className = "function-card";
-      card.id = fn.domId;
+      const nameEl = createElement("div", "mod-name", fileName);
+      titleRow.appendChild(nameEl);
 
-      const head = document.createElement("div");
-      head.className = "function-header";
+      const badge = createElement("div", "mod-badge", versionId);
+      titleRow.appendChild(badge);
 
-      const name = document.createElement("div");
-      name.className = "function-name";
-      name.textContent = fn.summary;
+      header.appendChild(titleRow);
 
-      const tagLabel = document.createElement("div");
-      tagLabel.className = "function-tag-label";
-      tagLabel.textContent = tag;
+      const pathEl = createElement("div", "mod-path", path);
+      header.appendChild(pathEl);
 
-      head.appendChild(name);
-      head.appendChild(tagLabel);
-      card.appendChild(head);
+      card.appendChild(header);
 
-      const body = document.createElement("div");
-      body.className = "function-body";
+      const body = createElement("div", "mod-body");
 
-      const desc = document.createElement("div");
-      desc.className = "func-description";
-      desc.innerHTML = fn.description
-        ? marked.parse(fn.description)
-        : "No description provided.";
-
-      const samples = document.createElement("div");
-      samples.className = "func-samples";
-
-      if (fn.samples && fn.samples.length > 0) {
-        const t = document.createElement("div");
-        t.className = "func-samples-title";
-        t.textContent = "Examples";
-        samples.appendChild(t);
-
-        fn.samples.forEach((s) => {
-          const block = document.createElement("div");
-          block.className = "sample-block";
-
-          const lab = document.createElement("div");
-          lab.className = "sample-label";
-          lab.textContent =
-            (s.label || s.lang || "Example") +
-            (s.lang ? " — " + s.lang : "");
-          block.appendChild(lab);
-
-          const pre = document.createElement("pre");
-          const code = document.createElement("code");
-          code.textContent = s.source || "";
-          pre.appendChild(code);
-          block.appendChild(pre);
-
-          samples.appendChild(block);
-        });
-      }
-
+      const desc = createElement(
+        "div",
+        "mod-description" + (EXAMPLE_DESCRIPTIONS[fileName] ? "" : " empty"),
+        EXAMPLE_DESCRIPTIONS[fileName] || "No description yet for this example."
+      );
       body.appendChild(desc);
-      body.appendChild(samples);
-      card.appendChild(body);
-      sec.appendChild(card);
-    });
 
-    sectionsEl.appendChild(sec);
-    sectionEls.push(sec);
-  });
+      const codeWrapper = createElement("div", "mod-code-wrapper");
+      const snippet = (fileText || "").trim();
 
-  if (!sectionsEl.innerHTML.trim()) {
-    showError("No functions found in this version.");
-  }
+      const pre = document.createElement("pre");
+      pre.textContent = snippet;
+      codeWrapper.appendChild(pre);
 
-  if (tags.length > 0) {
-    scrollToSectionId("tag-" + tags[0]);
-    setActiveTag(tags[0]);
-  }
+      body.appendChild(codeWrapper);
 
-  contentPanel.addEventListener("scroll", () => {
-    if (sectionEls.length === 0) return;
+      const footer = createElement("div", "mod-footer");
 
-    const rect = contentPanel.getBoundingClientRect();
-    let best = tags[0];
-    let bestDelta = Infinity;
-
-    sectionEls.forEach((sec) => {
-      const r = sec.getBoundingClientRect();
-      const delta = r.top - rect.top;
-      if (delta <= 40 && Math.abs(delta) < bestDelta) {
-        bestDelta = Math.abs(delta);
-        best = sec.dataset.tag;
+      if (downloadUrl) {
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        link.textContent = "View raw on GitHub";
+        footer.appendChild(link);
       }
+
+      const meta = createElement(
+        "div",
+        "mod-meta",
+        "Size: " + (fileMeta.size != null ? fileMeta.size + " bytes" : "unknown")
+      );
+      footer.appendChild(meta);
+
+      body.appendChild(footer);
+
+      card.appendChild(body);
+
+      modsGrid.appendChild(card);
+    }
+
+    async function fetchExamplesForVersion(versionId) {
+      clearGrid();
+      setStatus("Loading example mods for " + versionId + "…");
+
+      const apiUrl =
+        "https://api.github.com/repos/" +
+        encodeURIComponent(EXAMPLES_OWNER) + "/" +
+        encodeURIComponent(EXAMPLES_REPO) + "/contents/" +
+        encodeURIComponent(EXAMPLES_DIR) + "/" +
+        encodeURIComponent(versionId);
+
+      const res = await fetch(apiUrl);
+      if (!res.ok) {
+        throw new Error("GitHub API " + res.status + " for " + apiUrl);
+      }
+
+      const files = await res.json();
+      if (!Array.isArray(files) || !files.length) {
+        setStatus("No example mods found for " + versionId + ".", false);
+        return;
+      }
+
+      // Only JS files
+      const jsFiles = files.filter((f) =>
+        f.type === "file" && /\.js$/i.test(f.name || "")
+      );
+
+      if (!jsFiles.length) {
+        setStatus("No .js example mods found for " + versionId + ".", false);
+        return;
+      }
+
+      // Fetch each file's content via download_url
+      for (const fileMeta of jsFiles) {
+        try {
+          const url = fileMeta.download_url;
+          if (!url) continue;
+
+          const fileRes = await fetch(url);
+          if (!fileRes.ok) {
+            console.warn("Failed to fetch file", fileMeta.name, fileRes.status);
+            continue;
+          }
+          const text = await fileRes.text();
+          renderExampleCard(versionId, fileMeta, text);
+        } catch (err) {
+          console.warn("Error fetching example file", fileMeta.name, err);
+        }
+      }
+
+      setStatus("Loaded " + jsFiles.length + " example mod(s) for " + versionId + ".", false);
+    }
+
+    // Wire the selector using version.js, but repurpose it for example-mods
+    document.addEventListener("DOMContentLoaded", () => {
+      if (!window.ThreadJsVersion || !window.ThreadJsVersion.initSelector) {
+        setStatus("version.js not available – cannot pick version.", true);
+        return;
+      }
+
+      ThreadJsVersion.initSelector({
+        selectId: "versionSelectMods",
+        noteId: "versionNoteMods",
+        onReady(entry) {
+          if (noteElMods) {
+            noteElMods.textContent = "Showing example mods for " + entry.id;
+          }
+          fetchExamplesForVersion(entry.id)
+            .catch((err) => {
+              console.error(err);
+              setStatus("Failed to load examples: " + err.message, true);
+            });
+        },
+        onChange(entry) {
+          if (noteElMods) {
+            noteElMods.textContent = "Showing example mods for " + entry.id;
+          }
+          fetchExamplesForVersion(entry.id)
+            .catch((err) => {
+              console.error(err);
+              setStatus("Failed to load examples: " + err.message, true);
+            });
+        }
+      });
     });
-
-    setActiveTag(best);
-  });
-}
-
-function loadYamlAndRender(path) {
-  showLoading("Loading spec: " + path);
-  fetch(path)
-    .then((r) => {
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      return r.text();
-    })
-    .then(renderOpenApiFromText)
-    .catch((e) => {
-      introEl.innerHTML = "";
-      showError("Failed: " + e);
-    });
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  ThreadJsVersion.initSelector({
-    selectId: "versionSelectInspector",
-    noteId: "versionNoteInspector",
-    onReady(entry) {
-      loadYamlAndRender(entry.yamlPath);
-    },
-    onChange(entry) {
-      loadYamlAndRender(entry.yamlPath);
-    },
-  });
-});
-</script>
-
+  </script>
 </body>
 </html>
