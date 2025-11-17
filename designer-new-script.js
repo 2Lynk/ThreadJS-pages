@@ -1506,12 +1506,12 @@ function selectAutocompleteItem(index, textarea) {
     const newCursorPos = startPos + item.value.length;
     textarea.setSelectionRange(newCursorPos, newCursorPos);
     
-    // Trigger input event to save changes
+    // Hide autocomplete first
+    hideAutocomplete();
+    
+    // Then trigger input event to save changes (after hiding to avoid re-showing)
     textarea.dispatchEvent(new Event('input', { bubbles: true }));
   }
-  
-  hideAutocomplete();
-  // Don't call textarea.focus() here - let the click handler do it
 }
 
 // Handle autocomplete keyboard navigation
