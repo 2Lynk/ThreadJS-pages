@@ -823,38 +823,40 @@ function attachFieldHandlers() {
     const textBeforeCursor = fieldCustom.value.substring(0, cursorPos);
     const availableVars = getAvailableVariables(node.id);
     
-    // Same logic as fieldMessage: search backwards for $ or ${
+    // For JS code, search backwards for a valid identifier (no $ needed)
+    // Stop at: whitespace, operators, parentheses, brackets, quotes, semicolons, etc.
     let searchPos = cursorPos - 1;
-    let dollarPos = -1;
-    let hasBrace = false;
+    let startPos = -1;
     
     while (searchPos >= 0) {
       const char = textBeforeCursor[searchPos];
       
-      // Check for $ first before stopping
-      if (char === '$') {
-        dollarPos = searchPos;
-        if (searchPos + 1 < cursorPos && textBeforeCursor[searchPos + 1] === '{') {
-          hasBrace = true;
-        }
-        break;
-      }
-      
-      // Stop at: }, quote (end of previous template/string)
-      // For JS code, we're more permissive - only stop at } or quotes
-      if (char === '}' || char === '"' || char === "'" || char === '`') {
+      // Stop at delimiters that mark the start of a new token
+      if (char === ' ' || char === '\t' || char === '\n' || 
+          char === '(' || char === ')' || char === '[' || char === ']' || 
+          char === '{' || char === '}' || char === ';' || char === ',' ||
+          char === '=' || char === '+' || char === '-' || char === '*' || 
+          char === '/' || char === '<' || char === '>' || char === '!' ||
+          char === '"' || char === "'" || char === '`' || char === '&' ||
+          char === '|' || char === '^' || char === '%') {
+        startPos = searchPos + 1;
         break;
       }
       
       searchPos--;
     }
     
-    if (dollarPos !== -1) {
-      const startPos = hasBrace ? dollarPos + 2 : dollarPos + 1;
-      const varPart = textBeforeCursor.substring(startPos, cursorPos);
-      
-      if (/^[a-zA-Z_][a-zA-Z0-9_.]*$/.test(varPart) || varPart === '') {
-        const suggestions = getAutocompleteSuggestions(textBeforeCursor, availableVars);
+    // If we didn't find a delimiter, start from beginning
+    if (startPos === -1) {
+      startPos = 0;
+    }
+    
+    const partial = textBeforeCursor.substring(startPos, cursorPos);
+    
+    // Check if it looks like a valid identifier (variable.property)
+    if (/^[a-zA-Z_][a-zA-Z0-9_.]*$/.test(partial) && partial.length > 0) {
+      const suggestions = getAutocompleteSuggestionsJS(partial, availableVars);
+      if (suggestions.length > 0) {
         showAutocomplete(suggestions, fieldCustom);
       } else {
         hideAutocomplete();
@@ -1468,7 +1470,67 @@ function getAvailableVariablesWithSchema(nodeId) {
   return result;
 }
 
-// Get autocomplete suggestions based on current input
+// Get autocomplete suggestions for JS code (no $ prefix)
+function getAutocompleteSuggestionsJS(partial, availableVars) {
+  const suggestions = [];
+  const parts = partial.split('.');
+  
+  if (parts.length === 1) {
+    // Suggesting base variable names
+    const prefix = parts[0].toLowerCase();
+    availableVars.forEach(varName => {
+      const baseName = varName.split('.')[0];
+      if (baseName.toLowerCase().startsWith(prefix) && !suggestions.some(s => s.value === baseName)) {
+        const schema = VARIABLE_SCHEMAS[varName] || VARIABLE_SCHEMAS[baseName];
+        suggestions.push({
+          value: baseName,
+          type: schema?.type || 'variable',
+          description: schema?.description || 'Available variable'
+        });
+      }
+    });
+  } else {
+    // Suggesting properties of a variable
+    const varName = parts[0];
+    const propPrefix = parts[parts.length - 1].toLowerCase();
+    
+    // Find schema for this variable
+    let schema = VARIABLE_SCHEMAS[varName];
+    if (!schema) {
+      // Try to find in available vars
+      const fullVar = availableVars.find(v => v.startsWith(varName));
+      if (fullVar) schema = VARIABLE_SCHEMAS[fullVar];
+    }
+    
+    if (schema) {
+      // Handle extends
+      let properties = schema.properties || {};
+      if (schema.extends) {
+        const baseSchema = VARIABLE_SCHEMAS[schema.extends];
+        if (baseSchema && baseSchema.properties) {
+          properties = { ...baseSchema.properties, ...properties };
+        }
+      }
+      
+      // Filter properties by prefix
+      Object.entries(properties).forEach(([propName, propDef]) => {
+        if (propName.startsWith('[')) return; // Skip array accessors
+        if (propName.toLowerCase().startsWith(propPrefix)) {
+          suggestions.push({
+            value: propName, // Just the property name, not the full path
+            type: propDef.type,
+            description: propDef.description,
+            example: propDef.example
+          });
+        }
+      });
+    }
+  }
+  
+  return suggestions;
+}
+
+// Get autocomplete suggestions based on current input (for template strings with $)
 function getAutocompleteSuggestions(textBeforeCursor, availableVars) {
   const suggestions = [];
   
@@ -1649,51 +1711,102 @@ function selectAutocompleteItem(index, textarea) {
   const cursorPos = textarea.selectionStart;
   const beforeCursor = value.substring(0, cursorPos);
   
-  // Find the start of the current variable using backward search
-  let searchPos = cursorPos - 1;
-  let dollarPos = -1;
-  let hasBrace = false;
+  // Check if this is the Custom JS field (no $ prefix) or Parameters field (with $ prefix)
+  const isJSField = textarea === fieldCustom;
   
-  while (searchPos >= 0) {
-    const char = beforeCursor[searchPos];
+  if (isJSField) {
+    // For JS code: find start of identifier (no $)
+    let searchPos = cursorPos - 1;
+    let startPos = -1;
     
-    // Stop at delimiters
-    if (char === '}' || char === '"' || char === "'" || char === ' ' || 
-        char === ';' || char === '\n' || char === '(' || char === '[' || 
-        char === ',' || char === '\t') {
-      break;
-    }
-    
-    if (char === '$') {
-      dollarPos = searchPos;
-      if (searchPos + 1 < cursorPos && beforeCursor[searchPos + 1] === '{') {
-        hasBrace = true;
+    while (searchPos >= 0) {
+      const char = beforeCursor[searchPos];
+      
+      // Stop at delimiters
+      if (char === ' ' || char === '\t' || char === '\n' || 
+          char === '(' || char === ')' || char === '[' || char === ']' || 
+          char === '{' || char === '}' || char === ';' || char === ',' ||
+          char === '=' || char === '+' || char === '-' || char === '*' || 
+          char === '/' || char === '<' || char === '>' || char === '!' ||
+          char === '"' || char === "'" || char === '`' || char === '&' ||
+          char === '|' || char === '^' || char === '%') {
+        startPos = searchPos + 1;
+        break;
       }
-      break;
+      
+      searchPos--;
     }
     
-    searchPos--;
-  }
-  
-  if (dollarPos !== -1) {
-    // Calculate start position after $ or ${
-    const startPos = hasBrace ? dollarPos + 2 : dollarPos + 1;
-    const afterCursor = value.substring(cursorPos);
+    if (startPos === -1) startPos = 0;
     
-    // Insert the completion
-    const newValue = value.substring(0, startPos) + item.value + afterCursor;
+    // Extract the partial identifier we're replacing
+    const partial = beforeCursor.substring(startPos, cursorPos);
+    const parts = partial.split('.');
+    
+    let replacement;
+    if (parts.length === 1) {
+      // Replacing whole variable name
+      replacement = item.value;
+    } else {
+      // Replacing just the property name
+      parts[parts.length - 1] = item.value;
+      replacement = parts.join('.');
+    }
+    
+    const afterCursor = value.substring(cursorPos);
+    const newValue = value.substring(0, startPos) + replacement + afterCursor;
     textarea.value = newValue;
     
-    // Update cursor position
-    const newCursorPos = startPos + item.value.length;
+    const newCursorPos = startPos + replacement.length;
     textarea.setSelectionRange(newCursorPos, newCursorPos);
     
-    // Hide autocomplete first
-    hideAutocomplete();
+  } else {
+    // For template strings: find $ or ${
+    let searchPos = cursorPos - 1;
+    let dollarPos = -1;
+    let hasBrace = false;
     
-    // Then trigger input event to save changes (after hiding to avoid re-showing)
-    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    while (searchPos >= 0) {
+      const char = beforeCursor[searchPos];
+      
+      // Stop at delimiters
+      if (char === '}' || char === '"' || char === "'" || char === ' ' || 
+          char === ';' || char === '\n' || char === '(' || char === '[' || 
+          char === ',' || char === '\t') {
+        break;
+      }
+      
+      if (char === '$') {
+        dollarPos = searchPos;
+        if (searchPos + 1 < cursorPos && beforeCursor[searchPos + 1] === '{') {
+          hasBrace = true;
+        }
+        break;
+      }
+      
+      searchPos--;
+    }
+    
+    if (dollarPos !== -1) {
+      // Calculate start position after $ or ${
+      const startPos = hasBrace ? dollarPos + 2 : dollarPos + 1;
+      const afterCursor = value.substring(cursorPos);
+      
+      // Insert the completion
+      const newValue = value.substring(0, startPos) + item.value + afterCursor;
+      textarea.value = newValue;
+      
+      // Update cursor position
+      const newCursorPos = startPos + item.value.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }
   }
+  
+  // Hide autocomplete first
+  hideAutocomplete();
+  
+  // Then trigger input event to save changes (after hiding to avoid re-showing)
+  textarea.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
 // Handle autocomplete keyboard navigation
