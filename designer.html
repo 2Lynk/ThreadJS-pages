@@ -570,89 +570,18 @@
     </div>
   </header>
 
+  <!-- Version bar -->
+  <div class="version-bar" style="padding: 0.5rem 2rem; background: #f1f3f5; border-bottom: 1px solid var(--border-light, #dee2e6); display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-secondary, #495057);">
+    <label for="versionSelectNodes" style="font-weight: 500;">Node Version:</label>
+    <select id="versionSelectNodes" style="padding: 0.25rem 0.6rem; border-radius: 6px; border: 1px solid var(--border-medium, #adb5bd); background: var(--bg-secondary, #ffffff); font-size: 0.9rem;"></select>
+    <span id="versionNoteNodes" style="font-size: 0.85rem; color: var(--text-secondary, #495057);"></span>
+  </div>
+
   <main class="designer-main">
     <!-- Toolbox -->
     <aside id="toolbox">
       <h2>Nodes</h2>
-
-      <div class="tool-group">
-        <div class="tool-group-title">Events</div>
-        <div class="node-type" data-node-type="onServerTick"><div class="node-type-icon" style="background:#845ef7"></div>Server Tick</div>
-        <div class="node-type" data-node-type="onPlayerJoin"><div class="node-type-icon" style="background:#4c6ef5"></div>Player Join</div>
-        <div class="node-type" data-node-type="onPlayerLeave"><div class="node-type-icon" style="background:#4c6ef5"></div>Player Leave</div>
-        <div class="node-type" data-node-type="onPlayerTick"><div class="node-type-icon" style="background:#4c6ef5"></div>Player Tick</div>
-        <div class="node-type" data-node-type="onChatMessage"><div class="node-type-icon" style="background:#15aabf"></div>Chat Message</div>
-        <div class="node-type" data-node-type="onBlockBreak"><div class="node-type-icon" style="background:#74b816"></div>Block Break</div>
-        <div class="node-type" data-node-type="onBlockPlace"><div class="node-type-icon" style="background:#74b816"></div>Block Place</div>
-        <div class="node-type" data-node-type="onUseBlock"><div class="node-type-icon" style="background:#74b816"></div>Use Block</div>
-        <div class="node-type" data-node-type="onUseItem"><div class="node-type-icon" style="background:#f59f00"></div>Use Item</div>
-        <div class="node-type" data-node-type="onAttackEntity"><div class="node-type-icon" style="background:#f03e3e"></div>Attack Entity</div>
-        <div class="node-type" data-node-type="onEntityDamage"><div class="node-type-icon" style="background:#f03e3e"></div>Entity Damage</div>
-        <div class="node-type" data-node-type="onEntityDeath"><div class="node-type-icon" style="background:#f03e3e"></div>Entity Death</div>
-      </div>
-
-      <div class="tool-group">
-        <div class="tool-group-title">Commands</div>
-        <div class="node-type" data-node-type="registerCommand"><div class="node-type-icon" style="background:#20c997"></div>Register Command</div>
-      </div>
-
-      <div class="tool-group">
-        <div class="tool-group-title">Messaging</div>
-        <div class="node-type" data-node-type="log"><div class="node-type-icon" style="background:#868e96"></div>Log</div>
-        <div class="node-type" data-node-type="broadcast"><div class="node-type-icon" style="background:#15aabf"></div>Broadcast</div>
-        <div class="node-type" data-node-type="sendMessageTo"><div class="node-type-icon" style="background:#15aabf"></div>Send Message To</div>
-      </div>
-
-      <div class="tool-group">
-        <div class="tool-group-title">World</div>
-        <div class="node-type" data-node-type="setBlock"><div class="node-type-icon" style="background:#74b816"></div>Set Block</div>
-        <div class="node-type" data-node-type="getBlock"><div class="node-type-icon" style="background:#74b816"></div>Get Block</div>
-        <div class="node-type" data-node-type="fillArea"><div class="node-type-icon" style="background:#74b816"></div>Fill Area</div>
-        <div class="node-type" data-node-type="replaceBlocks"><div class="node-type-icon" style="background:#74b816"></div>Replace Blocks</div>
-      </div>
-
-      <div class="tool-group">
-        <div class="tool-group-title">Players</div>
-        <div class="node-type" data-node-type="getPlayers"><div class="node-type-icon" style="background:#4c6ef5"></div>Get Players</div>
-        <div class="node-type" data-node-type="teleport"><div class="node-type-icon" style="background:#4c6ef5"></div>Teleport</div>
-        <div class="node-type" data-node-type="setGamemode"><div class="node-type-icon" style="background:#4c6ef5"></div>Set Gamemode</div>
-        <div class="node-type" data-node-type="setHealth"><div class="node-type-icon" style="background:#e64980"></div>Set Health</div>
-        <div class="node-type" data-node-type="heal"><div class="node-type-icon" style="background:#e64980"></div>Heal</div>
-        <div class="node-type" data-node-type="giveItem"><div class="node-type-icon" style="background:#f59f00"></div>Give Item</div>
-      </div>
-
-      <div class="tool-group">
-        <div class="tool-group-title">Entities</div>
-        <div class="node-type" data-node-type="spawnEntity"><div class="node-type-icon" style="background:#37b24d"></div>Spawn Entity</div>
-        <div class="node-type" data-node-type="killEntity"><div class="node-type-icon" style="background:#f03e3e"></div>Kill Entity</div>
-        <div class="node-type" data-node-type="findEntities"><div class="node-type-icon" style="background:#37b24d"></div>Find Entities</div>
-      </div>
-
-      <div class="tool-group">
-        <div class="tool-group-title">Sound</div>
-        <div class="node-type" data-node-type="playSound"><div class="node-type-icon" style="background:#845ef7"></div>Play Sound</div>
-        <div class="node-type" data-node-type="playSoundTo"><div class="node-type-icon" style="background:#845ef7"></div>Play Sound To</div>
-        <div class="node-type" data-node-type="playSoundAt"><div class="node-type-icon" style="background:#845ef7"></div>Play Sound At</div>
-      </div>
-
-      <div class="tool-group">
-        <div class="tool-group-title">Data</div>
-        <div class="node-type" data-node-type="loadData"><div class="node-type-icon" style="background:#f59f00"></div>Load Data</div>
-        <div class="node-type" data-node-type="saveData"><div class="node-type-icon" style="background:#f59f00"></div>Save Data</div>
-      </div>
-
-      <div class="tool-group">
-        <div class="tool-group-title">Scheduling</div>
-        <div class="node-type" data-node-type="runLater"><div class="node-type-icon" style="background:#fab005"></div>Run Later</div>
-        <div class="node-type" data-node-type="runRepeating"><div class="node-type-icon" style="background:#fab005"></div>Run Repeating</div>
-      </div>
-
-      <div class="tool-group">
-        <div class="tool-group-title">Control Flow</div>
-        <div class="node-type" data-node-type="if"><div class="node-type-icon" style="background:#868e96"></div>If Condition</div>
-        <div class="node-type" data-node-type="forEach"><div class="node-type-icon" style="background:#868e96"></div>For Each</div>
-      </div>
-
+      <!-- Generated dynamically from YAML -->
       <p class="hint" style="font-size: 0.75rem; margin-top: auto;">
         Click to add nodes. Drag to move. Click ports to connect nodes. Right-click connections to delete.
       </p>
