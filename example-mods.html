@@ -547,6 +547,7 @@
       ThreadJsVersion.initSelector({
         selectId: "versionSelectExamples",
         noteId: "versionNoteExamples",
+        filePattern: /^v[\d.]+\.(yaml|yml)$/,
         onReady(entry) {
           // entry.id is "v1.0.0", "v2.0.0", etc.
           fetchModsForVersion(entry.id);
