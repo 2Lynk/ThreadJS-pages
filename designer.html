@@ -160,6 +160,23 @@
       color: var(--text-secondary, #495057);
       margin-bottom: 0.25rem;
     }
+    
+    .node-provides {
+      font-size: 0.72rem;
+      color: #1971c2;
+      background: #e7f5ff;
+      padding: 0.25rem 0.4rem;
+      border-radius: 4px;
+      margin-top: 0.4rem;
+      display: inline-block;
+      font-family: "Fira Code", monospace;
+    }
+    
+    .node-provides::before {
+      content: "→ ";
+      color: #1864ab;
+      font-weight: bold;
+    }
 
     .node-ports {
       margin-top: 0.5rem;
