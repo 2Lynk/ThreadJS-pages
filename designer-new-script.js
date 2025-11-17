@@ -103,6 +103,7 @@ const modalCloseBtn = document.getElementById("modal-close-btn");
 let autocompleteItems = [];
 let autocompleteSelectedIndex = -1;
 let autocompleteActive = false;
+let autocompleteTargetTextarea = null;
 
 const statusEl = document.getElementById("designer-status");
 const previewCodeEl = document.getElementById("preview-code");
@@ -1633,6 +1634,7 @@ function showAutocomplete(suggestions, textarea) {
   
   autocompleteItems = suggestions;
   autocompleteSelectedIndex = -1;
+  autocompleteTargetTextarea = textarea; // Store the current textarea
   
   // Build HTML
   let html = '';
@@ -1688,11 +1690,11 @@ function showAutocomplete(suggestions, textarea) {
   if (!autocompleteDropdown.onclick) {
     autocompleteDropdown.onclick = (e) => {
       const item = e.target.closest('.autocomplete-item');
-      if (item) {
+      if (item && autocompleteTargetTextarea) {
         const index = parseInt(item.dataset.index);
-        selectAutocompleteItem(index, textarea);
+        selectAutocompleteItem(index, autocompleteTargetTextarea);
         // Refocus textarea to allow continued typing
-        setTimeout(() => textarea.focus(), 0);
+        setTimeout(() => autocompleteTargetTextarea.focus(), 0);
       }
     };
   }
@@ -1716,6 +1718,7 @@ function hideAutocomplete() {
     autocompleteActive = false;
     autocompleteItems = [];
     autocompleteSelectedIndex = -1;
+    autocompleteTargetTextarea = null;
   }
 }
 
