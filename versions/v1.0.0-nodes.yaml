@@ -1,0 +1,436 @@
+# ThreadJS Designer Node Definitions
+# Version 1.0.0
+#
+# This file defines all available nodes in the ThreadJS Designer,
+# their parameters, and how they connect.
+
+version: "1.0.0"
+description: "Node definitions for ThreadJS Designer v1.0.0"
+
+categories:
+  - name: "Events"
+    description: "Event listeners that trigger when specific actions occur"
+    color: "#4c6ef5"
+    nodes:
+      - type: "onServerTick"
+        label: "Server Tick"
+        color: "#845ef7"
+        hasInput: false
+        hasOutput: true
+        provides: []
+        params: {}
+
+      - type: "onPlayerJoin"
+        label: "Player Join"
+        color: "#4c6ef5"
+        hasInput: false
+        hasOutput: true
+        provides: ["player"]
+        params: {}
+
+      - type: "onPlayerLeave"
+        label: "Player Leave"
+        color: "#4c6ef5"
+        hasInput: false
+        hasOutput: true
+        provides: ["player"]
+        params: {}
+
+      - type: "onPlayerTick"
+        label: "Player Tick"
+        color: "#4c6ef5"
+        hasInput: false
+        hasOutput: true
+        provides: ["player"]
+        params: {}
+
+      - type: "onChatMessage"
+        label: "Chat Message"
+        color: "#15aabf"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.player", "evt.message"]
+        params: {}
+
+      - type: "onBlockBreak"
+        label: "Block Break"
+        color: "#74b816"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.playerName", "evt.blockId", "evt.x", "evt.y", "evt.z"]
+        params: {}
+
+      - type: "onBlockPlace"
+        label: "Block Place"
+        color: "#74b816"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.playerName", "evt.blockId", "evt.x", "evt.y", "evt.z"]
+        params: {}
+
+      - type: "onUseBlock"
+        label: "Use Block"
+        color: "#74b816"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.playerName", "evt.blockId"]
+        params: {}
+
+      - type: "onUseItem"
+        label: "Use Item"
+        color: "#f59f00"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.playerName", "evt.itemId"]
+        params: {}
+
+      - type: "onAttackEntity"
+        label: "Attack Entity"
+        color: "#f03e3e"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.playerName", "evt.targetType"]
+        params: {}
+
+      - type: "onEntityDamage"
+        label: "Entity Damage"
+        color: "#f03e3e"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.victimType", "evt.amount", "evt.sourceType"]
+        params: {}
+
+      - type: "onEntityDeath"
+        label: "Entity Death"
+        color: "#f03e3e"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.victimType", "evt.killedBy"]
+        params: {}
+
+  - name: "Commands"
+    description: "Register custom chat commands"
+    color: "#20c997"
+    nodes:
+      - type: "registerCommand"
+        label: "Register Command"
+        color: "#20c997"
+        hasInput: false
+        hasOutput: true
+        provides: ["ctx", "args", "ctx.player"]
+        params:
+          name: ""
+          permLevel: "0"
+          playerOnly: false
+
+  - name: "Messaging"
+    description: "Send messages and logs"
+    color: "#15aabf"
+    nodes:
+      - type: "log"
+        label: "Log"
+        color: "#868e96"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          message: ""
+
+      - type: "broadcast"
+        label: "Broadcast"
+        color: "#15aabf"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          message: ""
+
+      - type: "sendMessageTo"
+        label: "Send Message To"
+        color: "#15aabf"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          player: ""
+          message: ""
+
+  - name: "World"
+    description: "Interact with blocks and terrain"
+    color: "#74b816"
+    nodes:
+      - type: "setBlock"
+        label: "Set Block"
+        color: "#74b816"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          x: "0"
+          y: "64"
+          z: "0"
+          dimension: "minecraft:overworld"
+          blockId: "minecraft:stone"
+
+      - type: "getBlock"
+        label: "Get Block"
+        color: "#74b816"
+        hasInput: true
+        hasOutput: true
+        provides: ["block"]
+        params:
+          x: "0"
+          y: "64"
+          z: "0"
+          dimension: "minecraft:overworld"
+
+      - type: "fillArea"
+        label: "Fill Area"
+        color: "#74b816"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          x1: "0"
+          y1: "64"
+          z1: "0"
+          x2: "10"
+          y2: "74"
+          z2: "10"
+          dimension: "minecraft:overworld"
+          blockId: "minecraft:stone"
+
+      - type: "replaceBlocks"
+        label: "Replace Blocks"
+        color: "#74b816"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          x1: "0"
+          y1: "64"
+          z1: "0"
+          x2: "10"
+          y2: "74"
+          z2: "10"
+          dimension: "minecraft:overworld"
+          from: "minecraft:dirt"
+          to: "minecraft:grass_block"
+
+  - name: "Players"
+    description: "Manage player state and inventory"
+    color: "#4c6ef5"
+    nodes:
+      - type: "getPlayers"
+        label: "Get Players"
+        color: "#4c6ef5"
+        hasInput: true
+        hasOutput: true
+        provides: ["players"]
+        params: {}
+
+      - type: "teleport"
+        label: "Teleport"
+        color: "#4c6ef5"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          player: ""
+          x: "0"
+          y: "64"
+          z: "0"
+          dimension: "minecraft:overworld"
+
+      - type: "setGamemode"
+        label: "Set Gamemode"
+        color: "#4c6ef5"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          player: ""
+          mode: "SURVIVAL"
+
+      - type: "setHealth"
+        label: "Set Health"
+        color: "#e64980"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          player: ""
+          health: "20"
+
+      - type: "heal"
+        label: "Heal"
+        color: "#e64980"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          player: ""
+          amount: "5"
+
+      - type: "giveItem"
+        label: "Give Item"
+        color: "#f59f00"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          player: ""
+          itemId: "minecraft:diamond"
+          count: "1"
+
+  - name: "Entities"
+    description: "Spawn and manage entities"
+    color: "#37b24d"
+    nodes:
+      - type: "spawnEntity"
+        label: "Spawn Entity"
+        color: "#37b24d"
+        hasInput: true
+        hasOutput: true
+        provides: ["entityId"]
+        params:
+          entityType: "minecraft:cow"
+          x: "0"
+          y: "64"
+          z: "0"
+          dimension: "minecraft:overworld"
+
+      - type: "killEntity"
+        label: "Kill Entity"
+        color: "#f03e3e"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          entityUuid: ""
+
+      - type: "findEntities"
+        label: "Find Entities"
+        color: "#37b24d"
+        hasInput: true
+        hasOutput: true
+        provides: ["entities"]
+        params:
+          x: "0"
+          y: "64"
+          z: "0"
+          dimension: "minecraft:overworld"
+          radius: "16"
+          type: ""
+
+  - name: "Sound"
+    description: "Play sounds and music"
+    color: "#845ef7"
+    nodes:
+      - type: "playSound"
+        label: "Play Sound"
+        color: "#845ef7"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          soundId: "entity.player.levelup"
+          volume: "1.0"
+          pitch: "1.0"
+
+      - type: "playSoundTo"
+        label: "Play Sound To"
+        color: "#845ef7"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          player: ""
+          soundId: "entity.player.levelup"
+          volume: "1.0"
+          pitch: "1.0"
+
+      - type: "playSoundAt"
+        label: "Play Sound At"
+        color: "#845ef7"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          x: "0"
+          y: "64"
+          z: "0"
+          dimension: "minecraft:overworld"
+          soundId: "entity.player.levelup"
+          volume: "1.0"
+          pitch: "1.0"
+
+  - name: "Data"
+    description: "Save and load persistent data"
+    color: "#f59f00"
+    nodes:
+      - type: "loadData"
+        label: "Load Data"
+        color: "#f59f00"
+        hasInput: true
+        hasOutput: true
+        provides: ["data"]
+        params:
+          namespace: ""
+          key: ""
+
+      - type: "saveData"
+        label: "Save Data"
+        color: "#f59f00"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          namespace: ""
+          key: ""
+          value: "{}"
+
+  - name: "Scheduling"
+    description: "Delay and repeat execution"
+    color: "#fab005"
+    nodes:
+      - type: "runLater"
+        label: "Run Later"
+        color: "#fab005"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          ticks: "20"
+
+      - type: "runRepeating"
+        label: "Run Repeating"
+        color: "#fab005"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          interval: "20"
+
+  - name: "Control"
+    description: "Flow control and loops"
+    color: "#868e96"
+    nodes:
+      - type: "if"
+        label: "If Condition"
+        color: "#868e96"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          condition: "true"
+
+      - type: "forEach"
+        label: "For Each"
+        color: "#868e96"
+        hasInput: true
+        hasOutput: true
+        provides: ["item"]
+        params:
+          array: "[]"
+          varName: "item"
