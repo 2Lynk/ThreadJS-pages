@@ -1649,11 +1649,37 @@ function showAutocomplete(suggestions, textarea) {
   
   autocompleteDropdown.innerHTML = html;
   
-  // Position dropdown
+  // Position dropdown using fixed positioning
   const rect = textarea.getBoundingClientRect();
-  const parentRect = textarea.parentElement.getBoundingClientRect();
-  autocompleteDropdown.style.left = '0';
-  autocompleteDropdown.style.top = (rect.bottom - parentRect.top + 2) + 'px';
+  const viewportHeight = window.innerHeight;
+  const viewportWidth = window.innerWidth;
+  const dropdownMaxHeight = 250;
+  
+  // Calculate available space below and above
+  const spaceBelow = viewportHeight - rect.bottom;
+  const spaceAbove = rect.top;
+  
+  // Position horizontally - align with textarea left edge
+  let left = rect.left;
+  const dropdownWidth = 280; // min-width from CSS
+  
+  // Adjust if it would overflow the right edge
+  if (left + dropdownWidth > viewportWidth) {
+    left = viewportWidth - dropdownWidth - 10;
+  }
+  
+  // Position vertically - prefer below, but show above if not enough space
+  let top;
+  if (spaceBelow >= Math.min(dropdownMaxHeight, 150) || spaceBelow > spaceAbove) {
+    // Show below
+    top = rect.bottom + 2;
+  } else {
+    // Show above
+    top = rect.top - Math.min(dropdownMaxHeight, 150) - 2;
+  }
+  
+  autocompleteDropdown.style.left = left + 'px';
+  autocompleteDropdown.style.top = top + 'px';
   autocompleteDropdown.classList.add('active');
   autocompleteActive = true;
   
