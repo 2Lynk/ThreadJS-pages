@@ -70,8 +70,10 @@
    * Fetch version files from GitHub /contents API.
    * Returns a Promise<VersionEntry[]>, where each entry is:
    *   { id, label, yamlPath, semver }
+   * 
+   * @param {RegExp} [filePattern] - Optional regex to filter files (e.g., /^v[\d.]+\-variables\.(yaml|yml)$/)
    */
-  async function loadVersionsFromGithub() {
+  async function loadVersionsFromGithub(filePattern) {
     const apiUrl =
       "https://api.github.com/repos/" +
       encodeURIComponent(GITHUB_OWNER) +
@@ -92,6 +94,9 @@
       if (item.type !== "file") continue;
       const name = item.name || "";
       if (!/\.ya?ml$/i.test(name)) continue;
+      
+      // Apply optional file pattern filter
+      if (filePattern && !filePattern.test(name)) continue;
 
       const label = name.replace(/\.ya?ml$/i, ""); // e.g. "v1.0.0"
       const semver = parseSemver(label);
@@ -136,6 +141,7 @@
    * options:
    *   - selectId:  id of <select>
    *   - noteId:    id of an optional element to show a small note (optional)
+   *   - filePattern: optional RegExp to filter which files to load (e.g., /^v[\d.]+\-variables\.(yaml|yml)$/)
    *   - onReady(entry): called once initial version is chosen
    *   - onChange(entry): called on user change
    *
@@ -158,7 +164,7 @@
       ? document.getElementById(options.noteId) || null
       : null;
 
-    loadVersionsFromGithub()
+    loadVersionsFromGithub(options.filePattern)
       .then((versions) => {
         if (!versions.length) {
           console.warn("[ThreadJS] No version YAMLs found in /versions");
