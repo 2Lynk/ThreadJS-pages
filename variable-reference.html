@@ -7,6 +7,9 @@
 
   <!-- Shared global stylesheet -->
   <link rel="stylesheet" href="https://2lynk.github.io/stylesheet.css">
+  
+  <!-- YAML parsing library -->
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
 
   <style>
     main {
@@ -237,6 +240,12 @@
     <a href="designer.html" class="back-link">← Back to Designer</a>
 
     <h1>Variable Reference</h1>
+    
+    <div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+      <label for="versionSelectVar" style="font-weight: 600; color: #495057;">Version:</label>
+      <select id="versionSelectVar" style="padding: 0.5rem; border: 1px solid #dee2e6; border-radius: 6px; font-size: 0.95rem;"></select>
+      <span id="versionNoteVar" style="color: #6c757d; font-size: 0.9rem;"></span>
+    </div>
 
     <div class="intro">
       <h2>💡 How to Use Variables in the Designer</h2>
@@ -254,216 +263,93 @@
     </div>
   </main>
 
+  <script src="version.js"></script>
   <script>
-    // Import the variable schemas from the designer
-    const VARIABLE_SCHEMAS = {
-      player: {
-        description: "Player object from join/leave/tick events",
-        properties: {
-          name: { type: "string", description: "Player name" },
-          tick: { type: "number", description: "Player's tick count" },
-          pos: { type: "array", description: "Position array [x, y, z]", example: "player.pos[0]" },
-          dimensionId: { type: "string", description: "Dimension ID", example: "'minecraft:overworld'" },
-          uuid: { type: "string", description: "Player UUID" },
-          health: { type: "number", description: "Current health points" },
-          maxHealth: { type: "number", description: "Maximum health points" },
-          gamemode: { type: "string", description: "Current gamemode" },
-          x: { type: "number", description: "X coordinate (shorthand for pos[0])" },
-          y: { type: "number", description: "Y coordinate (shorthand for pos[1])" },
-          z: { type: "number", description: "Z coordinate (shorthand for pos[2])" }
-        }
-      },
-      
-      "evt.player": {
-        description: "Player object from event context",
-        extends: "player"
-      },
-      
-      "evt.message": {
-        description: "Chat message text",
-        type: "string",
-        properties: {}
-      },
-      
-      evt: {
-        description: "Event object (varies by event type)",
-        properties: {
-          player: { type: "object", description: "Player object (chat events)", schema: "player" },
-          message: { type: "string", description: "Chat message text (chat events)" },
-          playerName: { type: "string", description: "Player name (block/item/entity events)" },
-          blockId: { type: "string", description: "Block ID (block events)", example: "'minecraft:stone'" },
-          x: { type: "number", description: "X coordinate (block events)" },
-          y: { type: "number", description: "Y coordinate (block events)" },
-          z: { type: "number", description: "Z coordinate (block events)" },
-          itemId: { type: "string", description: "Item ID (useItem event)", example: "'minecraft:diamond_sword'" },
-          itemCount: { type: "number", description: "Item count (useItem event)" },
-          hand: { type: "string", description: "Hand used (useBlock/useItem)", example: "'MAIN_HAND' or 'OFF_HAND'" },
-          targetType: { type: "string", description: "Entity type (attackEntity event)" },
-          victimType: { type: "string", description: "Victim entity type (damage/death events)" },
-          sourceType: { type: "string", description: "Damage source type (damage event)" },
-          killedBy: { type: "string", description: "Killer entity type (death event)" },
-          amount: { type: "number", description: "Damage amount (damage event)" }
-        }
-      },
-      
-      ctx: {
-        description: "Command execution context",
-        properties: {
-          player: { type: "object", description: "Player who ran command (null if console)", schema: "player" },
-          source: { type: "string", description: "Command source type" }
-        }
-      },
-      
-      "ctx.player": {
-        description: "Player who executed command (may be null)",
-        extends: "player"
-      },
-      
-      args: {
-        description: "Command arguments array",
-        type: "array",
-        properties: {
-          "[0]": { type: "string", description: "First argument" },
-          "[1]": { type: "string", description: "Second argument" },
-          "[n]": { type: "string", description: "Nth argument" },
-          length: { type: "number", description: "Number of arguments" }
-        }
-      },
-      
-      block: {
-        description: "Block ID from getBlock",
-        type: "string",
-        example: "'minecraft:stone'",
-        properties: {}
-      },
-      
-      data: {
-        description: "Loaded data from loadData (structure varies)",
-        type: "object",
-        properties: {
-          "[key]": { type: "any", description: "Property depends on saved data structure" }
-        }
-      },
-      
-      players: {
-        description: "Array of player objects from getPlayers",
-        type: "array",
-        properties: {
-          "[0]": { type: "object", description: "First player object", schema: "player" },
-          "[n]": { type: "object", description: "Nth player object", schema: "player" },
-          length: { type: "number", description: "Number of players" },
-          forEach: { type: "function", description: "Iterate over players" },
-          map: { type: "function", description: "Map players to new array" },
-          filter: { type: "function", description: "Filter players by condition" }
-        }
-      },
-      
-      entities: {
-        description: "Array of entity objects from findEntities",
-        type: "array",
-        properties: {
-          "[0]": { type: "object", description: "First entity" },
-          "[n]": { type: "object", description: "Nth entity" },
-          length: { type: "number", description: "Number of entities" },
-          uuid: { type: "string", description: "Entity UUID (on array elements)" },
-          type: { type: "string", description: "Entity type (on array elements)" }
-        }
-      },
-      
-      entityId: {
-        description: "UUID of spawned entity",
-        type: "string",
-        properties: {}
-      },
-      
-      item: {
-        description: "Current iteration item in forEach loop (type varies by array)",
-        type: "any",
-        properties: {}
+    // Load variable schemas from versioned YAML files
+    let currentVariableData = null;
+
+    async function loadVariableSchema(yamlPath) {
+      try {
+        const response = await fetch(yamlPath);
+        const yamlText = await response.text();
+        const data = jsyaml.load(yamlText);
+        currentVariableData = data;
+        generateReferencePage(data);
+      } catch (error) {
+        console.error('Error loading variable schema:', error);
+        document.getElementById('variables-content').innerHTML = 
+          '<div style="color: red; padding: 2rem;">Error loading variable definitions. Please refresh the page.</div>';
       }
-    };
+    }
 
     // Generate the reference page content
-    function generateReferencePage() {
+    function generateReferencePage(data) {
+      if (!data || !data.categories) {
+        console.error('Invalid variable data:', data);
+        return;
+      }
       const container = document.getElementById('variables-content');
       let html = '';
 
-      const categories = {
-        'Core Variables': ['player', 'evt', 'ctx', 'args'],
-        'Data & Collections': ['block', 'data', 'players', 'entities', 'entityId', 'item']
-      };
+      // Build variables lookup for extends
+      const allVariables = {};
+      for (const category of data.categories) {
+        for (const variable of category.variables) {
+          allVariables[variable.name] = variable;
+        }
+      }
 
-      for (const [categoryName, varNames] of Object.entries(categories)) {
+      for (const category of data.categories) {
         html += `<div class="category">`;
-        html += `<h2 class="category-title">${categoryName}</h2>`;
+        html += `<h2 class="category-title">${category.name}</h2>`;
+        if (category.description) {
+          html += `<p style="color: #6c757d; margin-bottom: 1.5rem;">${category.description}</p>`;
+        }
 
-        for (const varName of varNames) {
-          const schema = VARIABLE_SCHEMAS[varName];
-          if (!schema) continue;
-
+        for (const variable of category.variables) {
           // Handle extends
-          let properties = schema.properties || {};
-          if (schema.extends) {
-            const baseSchema = VARIABLE_SCHEMAS[schema.extends];
-            if (baseSchema && baseSchema.properties) {
-              properties = { ...baseSchema.properties, ...properties };
+          let properties = variable.properties || [];
+          if (variable.extends) {
+            const baseVariable = allVariables[variable.extends];
+            if (baseVariable && baseVariable.properties) {
+              properties = [...baseVariable.properties, ...properties];
             }
           }
 
           html += `<div class="var-item">`;
-          html += `<h3>${varName}</h3>`;
+          html += `<h3>${variable.name}</h3>`;
           
-          if (schema.description) {
-            html += `<div class="var-desc">${schema.description}</div>`;
+          if (variable.description) {
+            html += `<div class="var-desc">${variable.description}</div>`;
           }
 
-          if (schema.type) {
-            html += `<div class="var-type">Type: ${schema.type}</div>`;
+          if (variable.type) {
+            html += `<div class="var-type">Type: ${variable.type}</div>`;
           }
 
-          if (Object.keys(properties).length > 0) {
+          if (properties.length > 0) {
             html += '<ul class="properties-list">';
-            for (const [propName, propDef] of Object.entries(properties)) {
-              const fullPath = propName.startsWith('[') ? `${varName}${propName}` : `${varName}.${propName}`;
+            for (const prop of properties) {
+              const fullPath = prop.name.startsWith('[') ? `${variable.name}${prop.name}` : `${variable.name}.${prop.name}`;
               html += '<li>';
               html += `<span class="prop-name">${fullPath}</span>`;
-              if (propDef.type) html += `<span class="prop-type">${propDef.type}</span>`;
-              if (propDef.description) html += `<span class="prop-desc">${propDef.description}</span>`;
+              if (prop.type) html += `<span class="prop-type">${prop.type}</span>`;
+              if (prop.description) html += `<span class="prop-desc">${prop.description}</span>`;
               html += '</li>';
             }
             html += '</ul>';
           }
 
-          // Add example usage
-          if (varName === 'player') {
-            html += `
-              <div class="example-box">
-<span class="comment">// Broadcast player's name when they join</span>
-api.onPlayerJoin((player) => {
-  api.sendMessage(<span class="string">\`Welcome \${player.name}!\`</span>);
-});
-              </div>
-            `;
-          } else if (varName === 'evt') {
-            html += `
-              <div class="example-box">
-<span class="comment">// Log block break events</span>
-api.onBlockBreak((evt) => {
-  api.log(<span class="string">\`\${evt.playerName} broke \${evt.blockId}\`</span>);
-});
-              </div>
-            `;
-          } else if (varName === 'ctx') {
-            html += `
-              <div class="example-box">
-<span class="comment">// Check if command was run by a player</span>
-api.registerCommand(<span class="string">"info"</span>, (ctx, args) => {
-  <span class="keyword">if</span> (ctx.player) {
-    api.sendMessageTo(ctx.player.name, <span class="string">"Hello!"</span>);
-  }
-});
-              </div>
-            `;
+          // Add examples if provided
+          if (variable.examples && variable.examples.length > 0) {
+            for (const example of variable.examples) {
+              html += `<div class="example-box">`;
+              if (example.label) {
+                html += `<span class="comment">// ${example.label}</span>\n`;
+              }
+              html += example.code.trim();
+              html += `</div>`;
+            }
           }
 
           html += `</div>`;
@@ -475,11 +361,30 @@ api.registerCommand(<span class="string">"info"</span>, (ctx, args) => {
       container.innerHTML = html;
     }
 
-    // Wait for DOM to be ready
+    // Initialize version selector
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', generateReferencePage);
+      document.addEventListener('DOMContentLoaded', initVariableReference);
     } else {
-      generateReferencePage();
+      initVariableReference();
+    }
+
+    function initVariableReference() {
+      if (window.ThreadJsVersion && window.ThreadJsVersion.initSelector) {
+        ThreadJsVersion.initSelector({
+          selectId: "versionSelectVar",
+          noteId: "versionNoteVar",
+          filePattern: /^v[\d.]+\-variables\.(yaml|yml)$/,
+          onReady(entry) {
+            loadVariableSchema(entry.yamlPath);
+          },
+          onChange(entry) {
+            loadVariableSchema(entry.yamlPath);
+          }
+        });
+      } else {
+        // Fallback: load default version
+        loadVariableSchema('versions/v1.0.0-variables.yaml');
+      }
     }
   </script>
 </body>
