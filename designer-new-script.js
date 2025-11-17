@@ -1345,11 +1345,11 @@ function getAvailableVariablesWithSchema(nodeId) {
 function getAutocompleteSuggestions(input, availableVars) {
   const suggestions = [];
   
-  // Check if typing a variable name (starts with $ or contains variable reference)
-  const varMatch = input.match(/["']\$?([a-zA-Z_][a-zA-Z0-9_.]*)$/);
+  // Check if typing a variable name (supports: "player", "$player", "${player", "${player.name")
+  const varMatch = input.match(/["']\$?(\{)?([a-zA-Z_][a-zA-Z0-9_.]*)$/);
   if (!varMatch) return suggestions;
   
-  const partial = varMatch[1];
+  const partial = varMatch[2]; // Get the actual variable/property path
   const parts = partial.split('.');
   
   if (parts.length === 1) {
