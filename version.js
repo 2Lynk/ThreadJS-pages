@@ -36,7 +36,16 @@
   const GITHUB_OWNER = "2Lynk";
   const GITHUB_REPO = "ThreadJS";
   const VERSIONS_DIR = "versions";
-  const STORAGE_KEY = "threadjs-doc-version-id";
+
+  /**
+   * Extract version from filename like "v1.0.0.yaml" or "v1.0.1-nodes.yaml"
+   * Returns the version string (e.g., "1.0.1") or null
+   */
+  function extractVersion(filename) {
+    // Match patterns like: v1.0.0.yaml, v1.0.1-nodes.yaml, v2.3.4-variables.yml
+    const match = /^v?(\d+\.\d+\.\d+)/.exec(filename);
+    return match ? match[1] : null;
+  }
 
   /**
    * Parse "v1.2.3" or "1.2.3" -> { major, minor, patch }
@@ -98,11 +107,14 @@
       // Apply optional file pattern filter
       if (filePattern && !filePattern.test(name)) continue;
 
-      const label = name.replace(/\.ya?ml$/i, ""); // e.g. "v1.0.0"
-      const semver = parseSemver(label);
+      // Extract version number from filename (works with v1.0.0.yaml and v1.0.1-nodes.yaml)
+      const versionStr = extractVersion(name);
+      const label = name.replace(/\.ya?ml$/i, ""); // e.g. "v1.0.0" or "v1.0.1-nodes"
+      const semver = versionStr ? parseSemver(versionStr) : null;
 
       versions.push({
-        id: label,                  // "v1.0.0"
+        id: label,                  // "v1.0.0" or "v1.0.1-nodes"
+        version: versionStr,        // "1.0.1" (for display)
         label: label,               // displayed in dropdown
         yamlPath: VERSIONS_DIR + "/" + name,  // e.g. "versions/v1.0.0.yaml"
         semver: semver,             // parsed semver or null
@@ -119,17 +131,17 @@
     return semverEntries.concat(otherEntries);
   }
 
-  function readStoredVersionId() {
+  function readStoredVersionId(storageKey) {
     try {
-      return localStorage.getItem(STORAGE_KEY) || null;
+      return localStorage.getItem(storageKey) || null;
     } catch {
       return null;
     }
   }
 
-  function storeVersionId(id) {
+  function storeVersionId(storageKey, id) {
     try {
-      localStorage.setItem(STORAGE_KEY, id);
+      localStorage.setItem(storageKey, id);
     } catch {
       /* ignore */
     }
@@ -164,6 +176,9 @@
       ? document.getElementById(options.noteId) || null
       : null;
 
+    // Create unique storage key for this selector
+    const storageKey = "threadjs-version-" + options.selectId;
+
     loadVersionsFromGithub(options.filePattern)
       .then((versions) => {
         if (!versions.length) {
@@ -189,7 +204,7 @@
         //  - If we have a stored version and it exists, use that
         //  - Otherwise, use the first entry (which is highest semver)
         let selectedEntry = versions[0];
-        const storedId = readStoredVersionId();
+        const storedId = readStoredVersionId(storageKey);
         if (storedId) {
           const found = versions.find((v) => v.id === storedId);
           if (found) selectedEntry = found;
@@ -210,7 +225,7 @@
           const entry = versions.find((v) => v.id === id);
           if (!entry) return;
 
-          storeVersionId(entry.id);
+          storeVersionId(storageKey, entry.id);
 
           if (noteEl) {
             noteEl.textContent = "Using spec: " + entry.yamlPath;
