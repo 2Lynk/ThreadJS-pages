@@ -1,139 +1,87 @@
 // ThreadJS Designer - Enhanced with connections and full API support
 
-// Variable schemas - centralized definition of all variable types and their properties
-const VARIABLE_SCHEMAS = {
-  player: {
-    description: "Player object from join/leave/tick events",
-    properties: {
-      name: { type: "string", description: "Player name" },
-      tick: { type: "number", description: "Player's tick count" },
-      pos: { type: "array", description: "Position array [x, y, z]", example: "player.pos[0]" },
-      dimensionId: { type: "string", description: "Dimension ID", example: "'minecraft:overworld'" },
-      uuid: { type: "string", description: "Player UUID" },
-      health: { type: "number", description: "Current health points" },
-      maxHealth: { type: "number", description: "Maximum health points" },
-      gamemode: { type: "string", description: "Current gamemode" },
-      x: { type: "number", description: "X coordinate (shorthand for pos[0])" },
-      y: { type: "number", description: "Y coordinate (shorthand for pos[1])" },
-      z: { type: "number", description: "Z coordinate (shorthand for pos[2])" }
-    }
-  },
+// Variable schemas - loaded from versioned YAML files
+let VARIABLE_SCHEMAS = {};
+
+// Function to convert YAML variable data to the VARIABLE_SCHEMAS format
+function loadVariableSchemasFromYaml(yamlData) {
+  const schemas = {};
   
-  "evt.player": {
-    description: "Player object from event context",
-    extends: "player"
-  },
-  
-  "evt.message": {
-    description: "Chat message text",
-    type: "string",
-    properties: {}
-  },
-  
-  evt: {
-    description: "Event object (varies by event type)",
-    properties: {
-      // Chat events
-      player: { type: "object", description: "Player object (chat events)", schema: "player" },
-      message: { type: "string", description: "Chat message text (chat events)" },
-      
-      // Block events
-      playerName: { type: "string", description: "Player name (block/item/entity events)" },
-      blockId: { type: "string", description: "Block ID (block events)", example: "'minecraft:stone'" },
-      x: { type: "number", description: "X coordinate (block events)" },
-      y: { type: "number", description: "Y coordinate (block events)" },
-      z: { type: "number", description: "Z coordinate (block events)" },
-      
-      // Item events
-      itemId: { type: "string", description: "Item ID (useItem event)", example: "'minecraft:diamond_sword'" },
-      itemCount: { type: "number", description: "Item count (useItem event)" },
-      hand: { type: "string", description: "Hand used (useBlock/useItem)", example: "'MAIN_HAND' or 'OFF_HAND'" },
-      
-      // Entity events
-      targetType: { type: "string", description: "Entity type (attackEntity event)" },
-      victimType: { type: "string", description: "Victim entity type (damage/death events)" },
-      sourceType: { type: "string", description: "Damage source type (damage event)" },
-      killedBy: { type: "string", description: "Killer entity type (death event)" },
-      amount: { type: "number", description: "Damage amount (damage event)" }
-    }
-  },
-  
-  ctx: {
-    description: "Command execution context",
-    properties: {
-      player: { type: "object", description: "Player who ran command (null if console)", schema: "player" },
-      source: { type: "string", description: "Command source type" }
-    }
-  },
-  
-  "ctx.player": {
-    description: "Player who executed command (may be null)",
-    extends: "player"
-  },
-  
-  args: {
-    description: "Command arguments array",
-    type: "array",
-    properties: {
-      "[0]": { type: "string", description: "First argument" },
-      "[1]": { type: "string", description: "Second argument" },
-      "[n]": { type: "string", description: "Nth argument" },
-      length: { type: "number", description: "Number of arguments" }
-    }
-  },
-  
-  block: {
-    description: "Block ID from getBlock",
-    type: "string",
-    example: "'minecraft:stone'",
-    properties: {}
-  },
-  
-  data: {
-    description: "Loaded data from loadData (structure varies)",
-    type: "object",
-    properties: {
-      "[key]": { type: "any", description: "Property depends on saved data structure" }
-    }
-  },
-  
-  players: {
-    description: "Array of player objects from getPlayers",
-    type: "array",
-    properties: {
-      "[0]": { type: "object", description: "First player object", schema: "player" },
-      "[n]": { type: "object", description: "Nth player object", schema: "player" },
-      length: { type: "number", description: "Number of players" },
-      forEach: { type: "function", description: "Iterate over players" },
-      map: { type: "function", description: "Map players to new array" },
-      filter: { type: "function", description: "Filter players by condition" }
-    }
-  },
-  
-  entities: {
-    description: "Array of entity objects from findEntities",
-    type: "array",
-    properties: {
-      "[0]": { type: "object", description: "First entity" },
-      "[n]": { type: "object", description: "Nth entity" },
-      length: { type: "number", description: "Number of entities" },
-      uuid: { type: "string", description: "Entity UUID (on array elements)" },
-      type: { type: "string", description: "Entity type (on array elements)" }
-    }
-  },
-  
-  entityId: {
-    description: "UUID of spawned entity",
-    type: "string",
-    properties: {}
-  },
-  
-  item: {
-    description: "Current iteration item in forEach loop (type varies by array)",
-    type: "any",
-    properties: {}
+  if (!yamlData || !yamlData.categories) {
+    console.error('Invalid YAML data for variable schemas');
+    return schemas;
   }
-};
+  
+  // Build variables from all categories
+  for (const category of yamlData.categories) {
+    for (const variable of category.variables) {
+      const schema = {
+        description: variable.description || "",
+        type: variable.type || "object",
+        properties: {}
+      };
+      
+      // Add extends if present
+      if (variable.extends) {
+        schema.extends = variable.extends;
+      }
+      
+      // Convert properties array to object format
+      if (variable.properties) {
+        for (const prop of variable.properties) {
+          schema.properties[prop.name] = {
+            type: prop.type,
+            description: prop.description
+          };
+          if (prop.example) {
+            schema.properties[prop.name].example = prop.example;
+          }
+          if (prop.schema) {
+            schema.properties[prop.name].schema = prop.schema;
+          }
+        }
+      }
+      
+      // Add example if it's a simple string
+      if (variable.example) {
+        schema.example = variable.example;
+      }
+      
+      schemas[variable.name] = schema;
+    }
+  }
+  
+  return schemas;
+}
+
+// Load variable schemas from YAML on page load
+async function initializeVariableSchemas() {
+  try {
+    // Try to use version selector if available
+    if (window.ThreadJsVersion && window.ThreadJsVersion.loadVersions) {
+      const versions = await window.ThreadJsVersion.loadVersions(/^v[\d.]+\-variables\.(yaml|yml)$/);
+      if (versions && versions.length > 0) {
+        const latestVersion = versions[0];
+        const response = await fetch(latestVersion.yamlPath);
+        const yamlText = await response.text();
+        const yamlData = jsyaml.load(yamlText);
+        VARIABLE_SCHEMAS = loadVariableSchemasFromYaml(yamlData);
+        console.log('Loaded variable schemas from', latestVersion.yamlPath);
+        return;
+      }
+    }
+    
+    // Fallback to direct load
+    const response = await fetch('versions/v1.0.0-variables.yaml');
+    const yamlText = await response.text();
+    const yamlData = jsyaml.load(yamlText);
+    VARIABLE_SCHEMAS = loadVariableSchemasFromYaml(yamlData);
+    console.log('Loaded variable schemas from fallback path');
+  } catch (error) {
+    console.error('Error loading variable schemas:', error);
+    // Continue with empty schemas - designer will still work, just without autocomplete
+  }
+}
 
 const canvasWrapper = document.getElementById("canvas-wrapper");
 const canvasEl = document.getElementById("canvas");
@@ -1513,8 +1461,17 @@ function processParamValue(value, availableVars) {
 }
 
 // Initial boot
-initSvg();
-attachFieldHandlers();
-modName = fieldModName.value || "designer-mod";
-updatePreview();
-setStatus("Ready. Click nodes from the toolbox to get started.");
+async function initializeDesigner() {
+  // Load variable schemas first
+  await initializeVariableSchemas();
+  
+  // Then initialize the designer
+  initSvg();
+  attachFieldHandlers();
+  modName = fieldModName.value || "designer-mod";
+  updatePreview();
+  setStatus("Ready. Click nodes from the toolbox to get started.");
+}
+
+// Start initialization
+initializeDesigner();
