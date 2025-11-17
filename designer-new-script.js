@@ -810,17 +810,14 @@ function attachFieldHandlers() {
     }, 150);
   });
 
-  fieldCustom.addEventListener("input", () => {
-    const node = selectedNodeId ? findNode(selectedNodeId) : null;
-    if (!node) return;
-    node.customCode = fieldCustom.value;
-    updatePreview();
-  });
-  
   // Add autocomplete to Custom JS code field
   fieldCustom.addEventListener("input", (e) => {
     const node = selectedNodeId ? findNode(selectedNodeId) : null;
     if (!node) return;
+    
+    // Update customCode
+    node.customCode = fieldCustom.value;
+    updatePreview();
     
     const cursorPos = fieldCustom.selectionStart;
     const textBeforeCursor = fieldCustom.value.substring(0, cursorPos);
