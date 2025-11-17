@@ -748,7 +748,8 @@ function attachFieldHandlers() {
     const availableVars = getAvailableVariables(node.id);
     
     // Trigger autocomplete if typing variable or property
-    if (textBeforeCursor.match(/["']\$?([a-zA-Z_][a-zA-Z0-9_.]*)$/)) {
+    // Supports: "player", "$player", "${player", "${player.name"
+    if (textBeforeCursor.match(/["']\$?(\{)?([a-zA-Z_][a-zA-Z0-9_.]*)$/)) {
       const suggestions = getAutocompleteSuggestions(textBeforeCursor, availableVars);
       showAutocomplete(suggestions, fieldMessage);
     } else {
@@ -1482,11 +1483,12 @@ function selectAutocompleteItem(index, textarea) {
   const cursorPos = textarea.selectionStart;
   
   // Find the start of the current word
+  // Match patterns: "player, "$player, "${player, "${player.name
   const beforeCursor = value.substring(0, cursorPos);
-  const match = beforeCursor.match(/["']\$?([a-zA-Z_][a-zA-Z0-9_.]*)$/);
+  const match = beforeCursor.match(/["']\$?(\{)?([a-zA-Z_][a-zA-Z0-9_.]*)$/);
   
   if (match) {
-    const startPos = cursorPos - match[1].length;
+    const startPos = cursorPos - match[2].length;
     const afterCursor = value.substring(cursorPos);
     
     // Insert the completion
