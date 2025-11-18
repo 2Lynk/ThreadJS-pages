@@ -34,7 +34,7 @@ paths:
       2. Drop the ThreadJS mod jar into your `mods` folder.  
       3. Start the game/server once to generate the `/jsmods` directory.  
       4. Create a new file in `/jsmods/`, e.g. `hello.js`.  
-      5. Use ```/threadjs reload``` in-game or in the console to hot-reload scripts.  
+      5. Use `/threadjs reload` in-game or in the console to hot-reload scripts.  
       6. Make yourself an operator to run admin commands and test features.
 
       Anything that the mod should do while running you declare inside of the  ```onInitialize(api) { ... } ``` function. 
@@ -471,6 +471,149 @@ paths:
             }
           });
 
+  /api/events/blockInteract:
+    tags: [Events]
+    summary: api.onBlockInteract(callback)
+    description: |
+      Runs `callback(event)` when a player right-clicks (interacts with) a block.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Custom door lock
+        source: |
+          api.onBlockInteract(evt => {
+            if (evt.blockId.includes("door")) {
+              api.sendMessageTo(evt.player.name, "This door is locked!");
+              evt.cancel && evt.cancel();
+            }
+          });
+
+  /api/events/blockClick:
+    tags: [Events]
+    summary: api.onBlockClick(callback)
+    description: |
+      Runs `callback(event)` when a player left-clicks a block.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Block info tool
+        source: |
+          api.onBlockClick(evt => {
+            api.sendMessageTo(evt.player.name, 
+              `Block: ${evt.blockId} at ${evt.x}, ${evt.y}, ${evt.z}`);
+          });
+
+  /api/events/itemDrop:
+    tags: [Events]
+    summary: api.onItemDrop(callback)
+    description: |
+      Runs `callback(event)` when a player drops an item.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Prevent dropping diamonds
+        source: |
+          api.onItemDrop(evt => {
+            if (evt.itemId === "minecraft:diamond") {
+              evt.cancel && evt.cancel();
+              api.sendMessageTo(evt.player.name, "You cannot drop diamonds!");
+            }
+          });
+
+  /api/events/itemPickup:
+    tags: [Events]
+    summary: api.onItemPickup(callback)
+    description: |
+      Runs `callback(event)` when a player picks up an item.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Track resource collection
+        source: |
+          api.onItemPickup(evt => {
+            if (evt.itemId === "minecraft:diamond") {
+              api.log(`${evt.player.name} found a diamond!`);
+            }
+          });
+
+  /api/events/itemCraft:
+    tags: [Events]
+    summary: api.onItemCraft(callback)
+    description: |
+      Runs `callback(event)` when a player crafts an item.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Achievement system
+        source: |
+          api.onItemCraft(evt => {
+            if (evt.itemId === "minecraft:diamond_pickaxe") {
+              api.sendMessage(`${evt.player.name} crafted their first diamond pickaxe!`);
+            }
+          });
+
+  /api/events/itemConsume:
+    tags: [Events]
+    summary: api.onItemConsume(callback)
+    description: |
+      Runs `callback(event)` when a player eats or drinks an item.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Food tracking
+        source: |
+          api.onItemConsume(evt => {
+            api.log(`${evt.player.name} consumed ${evt.itemId}`);
+          });
+
+  /api/events/playerRespawn:
+    tags: [Events]
+    summary: api.onPlayerRespawn(callback)
+    description: |
+      Runs `callback(event)` when a player respawns after death.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Welcome back message
+        source: |
+          api.onPlayerRespawn(evt => {
+            api.sendMessageTo(evt.player.name, "Welcome back! Be more careful this time.");
+          });
+
+  /api/events/playerDimensionChange:
+    tags: [Events]
+    summary: api.onPlayerDimensionChange(callback)
+    description: |
+      Runs `callback(event)` when a player changes dimension (Overworld/Nether/End).
+    x-codeSamples:
+      - lang: JavaScript
+        label: Dimension announcements
+        source: |
+          api.onPlayerDimensionChange(evt => {
+            api.sendMessage(`${evt.player.name} entered the ${evt.toDimension}!`);
+          });
+
+  /api/events/playerGamemodeChange:
+    tags: [Events]
+    summary: api.onPlayerGamemodeChange(callback)
+    description: |
+      Runs `callback(event)` when a player's gamemode changes.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Log gamemode changes
+        source: |
+          api.onPlayerGamemodeChange(evt => {
+            api.log(`${evt.player.name} changed to ${evt.newGamemode}`);
+          });
+
+  /api/events/playerSleep:
+    tags: [Events]
+    summary: api.onPlayerSleep(callback)
+    description: |
+      Runs `callback(event)` when a player sleeps in a bed.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Sleep announcements
+        source: |
+          api.onPlayerSleep(evt => {
+            const sleeping = api.data.load("server", "sleeping") || 0;
+            api.data.save("server", "sleeping", sleeping + 1);
+            api.sendMessage(`${sleeping + 1} players are sleeping...`);
+          });
+
   #################
   ##   WORLD
   #################
@@ -525,6 +668,108 @@ paths:
             "minecraft:dirt",
             "minecraft:grass_block"
           );
+
+  /api/world/spawnParticle:
+    tags: [World]
+    summary: api.world.spawnParticle(x, y, z, dimensionId, particleId, count, speed, offsetX, offsetY, offsetZ)
+    description: |
+      Spawns particles at a location.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Heart particles
+        source: |
+          api.world.spawnParticle(0, 65, 0, "minecraft:overworld", "minecraft:heart", 10, 0.1, 0.5, 0.5, 0.5);
+
+  /api/world/spawnParticleLine:
+    tags: [World]
+    summary: api.world.spawnParticleLine(x1, y1, z1, x2, y2, z2, dimensionId, particleId, points)
+    description: |
+      Spawns a line of particles between two points.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Laser beam effect
+        source: |
+          api.world.spawnParticleLine(0, 65, 0, 10, 65, 10, "minecraft:overworld", "minecraft:flame", 20);
+
+  /api/world/spawnParticleCircle:
+    tags: [World]
+    summary: api.world.spawnParticleCircle(x, y, z, dimensionId, particleId, radius, points)
+    description: |
+      Spawns particles in a circle pattern.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Magic circle
+        source: |
+          api.world.spawnParticleCircle(0, 65, 0, "minecraft:overworld", "minecraft:enchant", 3, 30);
+
+  /api/world/setWeather:
+    tags: [World]
+    summary: api.world.setWeather(dimensionId, weather)
+    description: |
+      Sets the weather in a dimension. Weather can be "CLEAR", "RAIN", or "THUNDER".
+    x-codeSamples:
+      - lang: JavaScript
+        label: Clear skies
+        source: |
+          api.world.setWeather("minecraft:overworld", "CLEAR");
+
+  /api/world/setTime:
+    tags: [World]
+    summary: api.world.setTime(dimensionId, time)
+    description: |
+      Sets the time of day (0 = dawn, 6000 = noon, 12000 = dusk, 18000 = midnight).
+    x-codeSamples:
+      - lang: JavaScript
+        label: Set to noon
+        source: |
+          api.world.setTime("minecraft:overworld", 6000);
+
+  /api/world/getTime:
+    tags: [World]
+    summary: api.world.getTime(dimensionId)
+    description: |
+      Gets the current time of day.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Check if night
+        source: |
+          const time = api.world.getTime("minecraft:overworld");
+          if (time > 13000 && time < 23000) {
+            api.log("It's nighttime!");
+          }
+
+  /api/world/createExplosion:
+    tags: [World]
+    summary: api.world.createExplosion(x, y, z, dimensionId, power, fire, breaks)
+    description: |
+      Creates an explosion at a location.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Fireworks explosion
+        source: |
+          api.world.createExplosion(0, 70, 0, "minecraft:overworld", 2.0, false, false);
+
+  /api/world/spawnLightning:
+    tags: [World]
+    summary: api.world.spawnLightning(x, y, z, dimensionId, visualOnly)
+    description: |
+      Spawns a lightning bolt. Set visualOnly to true for effect without damage.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Visual lightning
+        source: |
+          api.world.spawnLightning(0, 64, 0, "minecraft:overworld", true);
+
+  /api/world/setSpawn:
+    tags: [World]
+    summary: api.world.setSpawn(dimensionId, x, y, z)
+    description: |
+      Sets the world spawn point.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Move spawn
+        source: |
+          api.world.setSpawn("minecraft:overworld", 100, 64, 100);
 
   #################
   ##   PLAYERS
@@ -699,6 +944,136 @@ paths:
             });
           });
 
+  /api/players/getInventory:
+    tags: [Players]
+    summary: api.players.getInventory(playerName)
+    description: |
+      Returns a player's inventory contents with size and items array.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Check inventory
+        source: |
+          const inv = api.players.getInventory("Steve");
+          api.log(`Steve has ${inv.items.length} items`);
+
+  /api/players/clearInventory:
+    tags: [Players]
+    summary: api.players.clearInventory(playerName)
+    description: |
+      Clears all items from a player's inventory.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Clear on death
+        source: |
+          api.onEntityDeath(evt => {
+            if (evt.victimType === "PLAYER") {
+              api.players.clearInventory(evt.victimName);
+            }
+          });
+
+  /api/players/hasItem:
+    tags: [Players]
+    summary: api.players.hasItem(playerName, itemId, count)
+    description: |
+      Checks if a player has at least the specified count of an item.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Check for diamonds
+        source: |
+          if (api.players.hasItem("Steve", "minecraft:diamond", 5)) {
+            api.log("Steve has at least 5 diamonds!");
+          }
+
+  /api/players/removeItem:
+    tags: [Players]
+    summary: api.players.removeItem(playerName, itemId, count)
+    description: |
+      Removes a specified count of an item from a player's inventory.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Currency system
+        source: |
+          if (api.players.removeItem("Steve", "minecraft:diamond", 1)) {
+            api.sendMessageTo("Steve", "Purchase successful!");
+          }
+
+  /api/players/showTitle:
+    tags: [Players]
+    summary: api.players.showTitle(playerName, title, subtitle, fadeIn, stay, fadeOut)
+    description: |
+      Shows a title and subtitle to a player with fade timing (in ticks).
+    x-codeSamples:
+      - lang: JavaScript
+        label: Welcome title
+        source: |
+          api.players.showTitle("Steve", "Welcome!", "To our server", 10, 70, 20);
+
+  /api/players/showActionbar:
+    tags: [Players]
+    summary: api.players.showActionbar(playerName, message)
+    description: |
+      Shows a message on the player's actionbar (above hotbar).
+    x-codeSamples:
+      - lang: JavaScript
+        label: Health warning
+        source: |
+          api.onPlayerTick(player => {
+            if (player.health < 5) {
+              api.players.showActionbar(player.name, "⚠ Low Health!");
+            }
+          });
+
+  /api/players/showBossbar:
+    tags: [Players]
+    summary: api.players.showBossbar(playerName, text, color, style, progress)
+    description: |
+      Shows a bossbar to a player. Returns a bossbar ID for updates. Progress is 0.0 to 1.0.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Event countdown
+        source: |
+          const barId = api.players.showBossbar("Steve", "Event starts in 60s", "RED", "PROGRESS", 1.0);
+
+  /api/players/raycast:
+    tags: [Players]
+    summary: api.players.raycast(playerName, maxDistance)
+    description: |
+      Raycasts from a player's eyes to find the block they're looking at.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Block info tool
+        source: |
+          const block = api.players.raycast("Steve", 10);
+          if (block) {
+            api.log(`Looking at ${block.blockId}`);
+          }
+
+  /api/players/raycastEntity:
+    tags: [Players]
+    summary: api.players.raycastEntity(playerName, maxDistance)
+    description: |
+      Raycasts to find the entity a player is looking at.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Entity scanner
+        source: |
+          const result = api.players.raycastEntity("Steve", 20);
+          if (result.hit) {
+            api.log(`Looking at ${result.type}`);
+          }
+
+  /api/players/getPlayerNBT:
+    tags: [Players]
+    summary: api.players.getPlayerNBT(playerName)
+    description: |
+      Returns player NBT data (simplified in 1.21+). Contains basic player info.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Check player data
+        source: |
+          const nbt = api.players.getPlayerNBT("Steve");
+          api.log(`XP Level: ${nbt.experienceLevel}`);
+
   #################
   ##   ENTITIES
   #################
@@ -746,6 +1121,80 @@ paths:
           const mobs = api.entities.find({ center, radius: 32 });
           api.log(`There are ${mobs.length} entities near spawn`);
 
+  /api/entities/setVelocity:
+    tags: [Entities]
+    summary: api.entities.setVelocity(entityUuid, vx, vy, vz)
+    description: |
+      Sets an entity's velocity vector.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Launch entity upward
+        source: |
+          const sheepId = api.entities.spawn("minecraft:sheep", 0, 64, 0, "minecraft:overworld");
+          api.entities.setVelocity(sheepId, 0, 2, 0);
+
+  /api/entities/teleport:
+    tags: [Entities]
+    summary: api.entities.teleport(entityUuid, x, y, z, dimensionId)
+    description: |
+      Teleports an entity to a new position.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Teleport entity
+        source: |
+          api.entities.teleport(zombieId, 100, 64, 100, "minecraft:overworld");
+
+  /api/entities/getNearestEntity:
+    tags: [Entities]
+    summary: api.entities.getNearestEntity(x, y, z, dimensionId, radius, typeFilter?)
+    description: |
+      Finds the nearest entity to a position within radius. Optional type filter.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Find nearest player
+        source: |
+          const nearest = api.entities.getNearestEntity(0, 64, 0, "minecraft:overworld", 50, "minecraft:player");
+          if (nearest) {
+            api.log(`Nearest player is ${nearest.distance} blocks away`);
+          }
+
+  /api/entities/applyEffect:
+    tags: [Entities]
+    summary: api.entities.applyEffect(entityUuid, effectId, duration, amplifier)
+    description: |
+      Applies a status effect to an entity. Duration in ticks, amplifier is effect level (0 = I, 1 = II, etc).
+    x-codeSamples:
+      - lang: JavaScript
+        label: Speed boost
+        source: |
+          api.entities.applyEffect(entityId, "minecraft:speed", 600, 1); // Speed II for 30 seconds
+
+  /api/entities/getEntityNBT:
+    tags: [Entities]
+    summary: api.entities.getEntityNBT(entityUuid)
+    description: |
+      Returns entity NBT data (simplified in 1.21+). Contains basic entity info like position, health, type.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Check entity health
+        source: |
+          const nbt = api.entities.getEntityNBT(mobId);
+          api.log(`Entity health: ${nbt.health}`);
+
+  /api/entities/getBlockNBT:
+    tags: [Entities]
+    summary: api.entities.getBlockNBT(x, y, z, dimensionId)
+    description: |
+      Returns NBT data from a block entity (chest, furnace, sign, etc).
+    x-codeSamples:
+      - lang: JavaScript
+        label: Read chest contents
+        source: |
+          const chestNBT = api.entities.getBlockNBT(10, 64, 10, "minecraft:overworld");
+          if (chestNBT) {
+            api.log("Found a chest with data");
+          }
+
   #################
   ##   DATA
   #################
@@ -778,6 +1227,57 @@ paths:
             deaths: 2
           });
 
+  /api/data/exists:
+    tags: [Data]
+    summary: api.data.exists(namespace, key)
+    description: |
+      Checks if data exists for the given namespace/key pair.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Check if player has stats
+        source: |
+          if (!api.data.exists("stats", "Steve")) {
+            api.data.save("stats", "Steve", { kills: 0, deaths: 0 });
+          }
+
+  /api/data/delete:
+    tags: [Data]
+    summary: api.data.delete(namespace, key)
+    description: |
+      Deletes saved data for the given namespace/key pair.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Reset player stats
+        source: |
+          api.data.delete("stats", "Steve");
+          api.sendMessageTo("Steve", "Your stats have been reset.");
+
+  /api/data/increment:
+    tags: [Data]
+    summary: api.data.increment(namespace, key, amount?)
+    description: |
+      Increments a numeric value. If the value doesn't exist, it's initialized to 0 first.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Track kills
+        source: |
+          api.onEntityDeath(evt => {
+            if (evt.killedBy) {
+              api.data.increment("kills", evt.killedBy, 1);
+            }
+          });
+
+  /api/data/decrement:
+    tags: [Data]
+    summary: api.data.decrement(namespace, key, amount?)
+    description: |
+      Decrements a numeric value. If the value doesn't exist, it's initialized to 0 first.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Currency system
+        source: |
+          api.data.decrement("currency", "Steve", 10);
+
   #################
   ##   SCHEDULING
   #################
@@ -806,6 +1306,55 @@ paths:
         source: |
           api.scheduling.runRepeating(20 * 60, () => {
             api.sendMessage("Remember to join our Discord!");
+          });
+
+  /api/scheduling/runLaterWithId:
+    tags: [Scheduling]
+    summary: api.scheduling.runLaterWithId(ticks, callback)
+    description: |
+      Runs `callback()` once after the given number of ticks. Returns a task ID that can be used to cancel it.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Cancellable timer
+        source: |
+          const taskId = api.scheduling.runLaterWithId(200, () => {
+            api.sendMessage("Timer complete!");
+          });
+          // Cancel if needed:
+          // api.scheduling.cancelTask(taskId);
+
+  /api/scheduling/runRepeatingWithId:
+    tags: [Scheduling]
+    summary: api.scheduling.runRepeatingWithId(intervalTicks, callback)
+    description: |
+      Runs `callback()` repeatedly every `intervalTicks`. Returns a task ID that can be used to cancel it.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Cancellable repeating task
+        source: |
+          const taskId = api.scheduling.runRepeatingWithId(100, () => {
+            api.sendMessage("Tick!");
+          });
+          // Stop after 10 seconds:
+          api.scheduling.runLater(200, () => {
+            api.scheduling.cancelTask(taskId);
+          });
+
+  /api/scheduling/cancelTask:
+    tags: [Scheduling]
+    summary: api.scheduling.cancelTask(taskId)
+    description: |
+      Cancels a scheduled task by its ID. Returns true if the task was found and cancelled.
+    x-codeSamples:
+      - lang: JavaScript
+        label: Cancel task
+        source: |
+          const taskId = api.scheduling.runRepeatingWithId(20, () => {
+            api.log("Repeating...");
+          });
+          // Cancel after some condition:
+          api.onPlayerJoin(player => {
+            api.scheduling.cancelTask(taskId);
           });
 
   #################
