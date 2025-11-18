@@ -108,6 +108,86 @@ categories:
         provides: ["evt", "evt.victimType", "evt.killedBy"]
         params: {}
 
+      - type: "onBlockInteract"
+        label: "Block Interact (Right-Click)"
+        color: "#74b816"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.player", "evt.blockId", "evt.x", "evt.y", "evt.z"]
+        params: {}
+
+      - type: "onBlockClick"
+        label: "Block Click (Left-Click)"
+        color: "#74b816"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.player", "evt.blockId", "evt.x", "evt.y", "evt.z"]
+        params: {}
+
+      - type: "onItemDrop"
+        label: "Item Drop"
+        color: "#f59f00"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.player", "evt.itemId", "evt.count"]
+        params: {}
+
+      - type: "onItemPickup"
+        label: "Item Pickup"
+        color: "#f59f00"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.player", "evt.itemId", "evt.count"]
+        params: {}
+
+      - type: "onItemCraft"
+        label: "Item Craft"
+        color: "#f59f00"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.player", "evt.itemId", "evt.count"]
+        params: {}
+
+      - type: "onItemConsume"
+        label: "Item Consume"
+        color: "#f59f00"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.player", "evt.itemId"]
+        params: {}
+
+      - type: "onPlayerRespawn"
+        label: "Player Respawn"
+        color: "#4c6ef5"
+        hasInput: false
+        hasOutput: true
+        provides: ["player"]
+        params: {}
+
+      - type: "onPlayerDimensionChange"
+        label: "Dimension Change"
+        color: "#4c6ef5"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.player", "evt.fromDimension", "evt.toDimension"]
+        params: {}
+
+      - type: "onPlayerGamemodeChange"
+        label: "Gamemode Change"
+        color: "#4c6ef5"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.player", "evt.oldGamemode", "evt.newGamemode"]
+        params: {}
+
+      - type: "onPlayerSleep"
+        label: "Player Sleep"
+        color: "#4c6ef5"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.player", "evt.isEntering"]
+        params: {}
+
   - name: "Commands"
     description: "Register custom chat commands"
     color: "#20c997"
@@ -217,6 +297,256 @@ categories:
           from: "minecraft:dirt"
           to: "minecraft:grass_block"
 
+      - type: "getBlockNBT"
+        label: "Get Block NBT"
+        color: "#74b816"
+        hasInput: true
+        hasOutput: true
+        provides: ["nbt"]
+        params:
+          x: "0"
+          y: "64"
+          z: "0"
+          dimension: "minecraft:overworld"
+
+      - type: "setWeather"
+        label: "Set Weather"
+        color: "#74b816"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          dimension: "minecraft:overworld"
+          weather: "CLEAR"
+
+      - type: "setTime"
+        label: "Set Time"
+        color: "#74b816"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          dimension: "minecraft:overworld"
+          time: "1000"
+
+      - type: "getTime"
+        label: "Get Time"
+        color: "#74b816"
+        hasInput: true
+        hasOutput: true
+        provides: ["time"]
+        params:
+          dimension: "minecraft:overworld"
+
+      - type: "createExplosion"
+        label: "Create Explosion"
+        color: "#f03e3e"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          x: "0"
+          y: "64"
+          z: "0"
+          dimension: "minecraft:overworld"
+          power: "4"
+          fire: "false"
+          breaks: "true"
+
+      - type: "spawnLightning"
+        label: "Spawn Lightning"
+        color: "#fab005"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          x: "0"
+          y: "64"
+          z: "0"
+          dimension: "minecraft:overworld"
+          visual: "false"
+
+      - type: "setSpawn"
+        label: "Set Spawn Point"
+        color: "#74b816"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          dimension: "minecraft:overworld"
+          x: "0"
+          y: "64"
+          z: "0"
+
+  - name: "Particles"
+    description: "Spawn particle effects"
+    color: "#cc5de8"
+    nodes:
+      - type: "spawnParticle"
+        label: "Spawn Particle"
+        color: "#cc5de8"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          x: "0"
+          y: "64"
+          z: "0"
+          dimension: "minecraft:overworld"
+          particle: "minecraft:flame"
+          count: "10"
+          speed: "0.1"
+          offsetX: "0.5"
+          offsetY: "0.5"
+          offsetZ: "0.5"
+
+      - type: "spawnParticleLine"
+        label: "Spawn Particle Line"
+        color: "#cc5de8"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          x1: "0"
+          y1: "64"
+          z1: "0"
+          x2: "10"
+          y2: "64"
+          z2: "10"
+          dimension: "minecraft:overworld"
+          particle: "minecraft:flame"
+          density: "10"
+
+      - type: "spawnParticleCircle"
+        label: "Spawn Particle Circle"
+        color: "#cc5de8"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          x: "0"
+          y: "64"
+          z: "0"
+          dimension: "minecraft:overworld"
+          particle: "minecraft:flame"
+          radius: "3"
+          points: "20"
+
+      - type: "spawnParticleTrail"
+        label: "Spawn Particle Trail (Entity)"
+        color: "#cc5de8"
+        hasInput: true
+        hasOutput: true
+        provides: ["trailId"]
+        params:
+          entityUuid: "$player.uuid"
+          particle: "minecraft:flame"
+          duration: "60"
+
+  - name: "Scoreboard"
+    description: "Manage scoreboards and objectives"
+    color: "#15aabf"
+    nodes:
+      - type: "createScoreboard"
+        label: "Create Scoreboard"
+        color: "#15aabf"
+        hasInput: true
+        hasOutput: true
+        provides: ["scoreboard"]
+        params:
+          name: "my_scoreboard"
+          displayName: "My Scoreboard"
+
+      - type: "setScore"
+        label: "Set Score"
+        color: "#15aabf"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          scoreboard: "my_scoreboard"
+          player: "$player.name"
+          objective: "points"
+          score: "100"
+
+      - type: "getScore"
+        label: "Get Score"
+        color: "#15aabf"
+        hasInput: true
+        hasOutput: true
+        provides: ["score"]
+        params:
+          scoreboard: "my_scoreboard"
+          player: "$player.name"
+          objective: "points"
+
+      - type: "incrementScore"
+        label: "Increment Score"
+        color: "#15aabf"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          scoreboard: "my_scoreboard"
+          player: "$player.name"
+          objective: "points"
+          amount: "1"
+
+      - type: "displayScoreboard"
+        label: "Display Scoreboard"
+        color: "#15aabf"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          scoreboard: "my_scoreboard"
+          slot: "SIDEBAR"
+
+  - name: "Teams"
+    description: "Create and manage player teams"
+    color: "#f59f00"
+    nodes:
+      - type: "createTeam"
+        label: "Create Team"
+        color: "#f59f00"
+        hasInput: true
+        hasOutput: true
+        provides: ["team"]
+        params:
+          name: "red_team"
+          displayName: "Red Team"
+          color: "RED"
+          friendlyFire: "false"
+
+      - type: "addToTeam"
+        label: "Add to Team"
+        color: "#f59f00"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          team: "red_team"
+          player: "$player.name"
+
+      - type: "removeFromTeam"
+        label: "Remove from Team"
+        color: "#f59f00"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          team: "red_team"
+          player: "$player.name"
+
+      - type: "getPlayerTeam"
+        label: "Get Player Team"
+        color: "#f59f00"
+        hasInput: true
+        hasOutput: true
+        provides: ["team"]
+        params:
+          player: "$player.name"
+
   - name: "Players"
     description: "Manage player state and inventory"
     color: "#4c6ef5"
@@ -283,6 +613,112 @@ categories:
           itemId: "minecraft:diamond"
           count: "1"
 
+      - type: "getInventory"
+        label: "Get Inventory"
+        color: "#4c6ef5"
+        hasInput: true
+        hasOutput: true
+        provides: ["inventory"]
+        params:
+          player: ""
+
+      - type: "clearInventory"
+        label: "Clear Inventory"
+        color: "#4c6ef5"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          player: ""
+
+      - type: "hasItem"
+        label: "Has Item"
+        color: "#f59f00"
+        hasInput: true
+        hasOutput: true
+        provides: ["hasItem"]
+        params:
+          player: ""
+          itemId: "minecraft:diamond"
+          count: "1"
+
+      - type: "removeItem"
+        label: "Remove Item"
+        color: "#f59f00"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          player: ""
+          itemId: "minecraft:diamond"
+          count: "1"
+
+      - type: "showTitle"
+        label: "Show Title"
+        color: "#15aabf"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          player: ""
+          title: "Title"
+          subtitle: "Subtitle"
+          fadeIn: "10"
+          stay: "70"
+          fadeOut: "20"
+
+      - type: "showActionbar"
+        label: "Show Actionbar"
+        color: "#15aabf"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          player: ""
+          message: "Actionbar text"
+
+      - type: "showBossbar"
+        label: "Show Bossbar"
+        color: "#15aabf"
+        hasInput: true
+        hasOutput: true
+        provides: ["bossbarId"]
+        params:
+          player: ""
+          text: "Boss Bar"
+          color: "RED"
+          style: "PROGRESS"
+          progress: "1.0"
+
+      - type: "raycast"
+        label: "Raycast Block"
+        color: "#4c6ef5"
+        hasInput: true
+        hasOutput: true
+        provides: ["raycastResult"]
+        params:
+          player: ""
+          maxDistance: "5"
+
+      - type: "raycastEntity"
+        label: "Raycast Entity"
+        color: "#4c6ef5"
+        hasInput: true
+        hasOutput: true
+        provides: ["raycastEntity"]
+        params:
+          player: ""
+          maxDistance: "5"
+
+      - type: "getPlayerNBT"
+        label: "Get Player NBT"
+        color: "#4c6ef5"
+        hasInput: true
+        hasOutput: true
+        provides: ["nbt"]
+        params:
+          player: "$player.name"
+
   - name: "Entities"
     description: "Spawn and manage entities"
     color: "#37b24d"
@@ -322,6 +758,66 @@ categories:
           dimension: "minecraft:overworld"
           radius: "16"
           type: ""
+
+      - type: "setVelocity"
+        label: "Set Velocity"
+        color: "#37b24d"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          entityUuid: ""
+          x: "0"
+          y: "1"
+          z: "0"
+
+      - type: "teleportEntity"
+        label: "Teleport Entity"
+        color: "#37b24d"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          entityUuid: ""
+          x: "0"
+          y: "64"
+          z: "0"
+          dimension: "minecraft:overworld"
+
+      - type: "getNearestEntity"
+        label: "Get Nearest Entity"
+        color: "#37b24d"
+        hasInput: true
+        hasOutput: true
+        provides: ["nearestEntity"]
+        params:
+          x: "0"
+          y: "64"
+          z: "0"
+          dimension: "minecraft:overworld"
+          radius: "16"
+          type: ""
+
+      - type: "applyEffect"
+        label: "Apply Effect"
+        color: "#e64980"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          entityUuid: ""
+          effect: "minecraft:speed"
+          duration: "200"
+          amplifier: "1"
+
+      - type: "getEntityNBT"
+        label: "Get Entity NBT"
+        color: "#37b24d"
+        hasInput: true
+        hasOutput: true
+        provides: ["nbt"]
+        params:
+          entityUuid: ""
 
   - name: "Sound"
     description: "Play sounds and music"
@@ -390,6 +886,251 @@ categories:
           key: ""
           value: "{}"
 
+      - type: "dataExists"
+        label: "Data Exists"
+        color: "#f59f00"
+        hasInput: true
+        hasOutput: true
+        provides: ["exists"]
+        params:
+          namespace: ""
+          key: ""
+
+      - type: "deleteData"
+        label: "Delete Data"
+        color: "#f59f00"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          namespace: ""
+          key: ""
+
+      - type: "incrementData"
+        label: "Increment Data"
+        color: "#f59f00"
+        hasInput: true
+        hasOutput: true
+        provides: ["value"]
+        params:
+          namespace: ""
+          key: ""
+          amount: "1"
+
+      - type: "decrementData"
+        label: "Decrement Data"
+        color: "#f59f00"
+        hasInput: true
+        hasOutput: true
+        provides: ["value"]
+        params:
+          namespace: ""
+          key: ""
+          amount: "1"
+
+  - name: "Permissions"
+    description: "Manage player permissions"
+    color: "#f03e3e"
+    nodes:
+      - type: "hasPermission"
+        label: "Has Permission"
+        color: "#f03e3e"
+        hasInput: true
+        hasOutput: true
+        provides: ["hasPermission"]
+        params:
+          player: "$player.name"
+          permission: "mymod.admin"
+
+      - type: "addPermission"
+        label: "Add Permission"
+        color: "#f03e3e"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          player: "$player.name"
+          permission: "mymod.admin"
+
+      - type: "removePermission"
+        label: "Remove Permission"
+        color: "#f03e3e"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          player: "$player.name"
+          permission: "mymod.admin"
+
+      - type: "getPlayerPermissions"
+        label: "Get Player Permissions"
+        color: "#f03e3e"
+        hasInput: true
+        hasOutput: true
+        provides: ["permissions"]
+        params:
+          player: "$player.name"
+
+  - name: "Structures"
+    description: "Place and save structures"
+    color: "#74b816"
+    nodes:
+      - type: "placeStructure"
+        label: "Place Structure"
+        color: "#74b816"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          x: "0"
+          y: "64"
+          z: "0"
+          dimension: "minecraft:overworld"
+          structure: "minecraft:village/plains/houses/plains_small_house_1"
+          rotation: "NONE"
+          mirror: "NONE"
+
+      - type: "saveStructure"
+        label: "Save Structure"
+        color: "#74b816"
+        hasInput: true
+        hasOutput: true
+        provides: ["structureName"]
+        params:
+          x1: "0"
+          y1: "64"
+          z1: "0"
+          x2: "10"
+          y2: "74"
+          z2: "10"
+          dimension: "minecraft:overworld"
+          name: "my_structure"
+
+  - name: "Forms"
+    description: "Create custom GUI forms"
+    color: "#15aabf"
+    nodes:
+      - type: "showSimpleForm"
+        label: "Show Simple Form"
+        color: "#15aabf"
+        hasInput: true
+        hasOutput: true
+        provides: ["formResponse"]
+        params:
+          player: "$player.name"
+          title: "Choose an option"
+          content: "Select one:"
+          buttons: '["Option 1", "Option 2", "Option 3"]'
+
+      - type: "showModalForm"
+        label: "Show Modal Form"
+        color: "#15aabf"
+        hasInput: true
+        hasOutput: true
+        provides: ["formResponse"]
+        params:
+          player: "$player.name"
+          title: "Confirm Action"
+          content: "Are you sure?"
+          button1: "Yes"
+          button2: "No"
+
+      - type: "showCustomForm"
+        label: "Show Custom Form"
+        color: "#15aabf"
+        hasInput: true
+        hasOutput: true
+        provides: ["formResponse"]
+        params:
+          player: "$player.name"
+          title: "Custom Form"
+          inputs: '[{"type":"input","label":"Name","placeholder":"Enter name"},{"type":"slider","label":"Amount","min":0,"max":100,"default":50}]'
+
+  - name: "Zones"
+    description: "Create and manage zones"
+    color: "#e64980"
+    nodes:
+      - type: "createZone"
+        label: "Create Zone"
+        color: "#e64980"
+        hasInput: true
+        hasOutput: true
+        provides: ["zone"]
+        params:
+          name: "spawn_zone"
+          x1: "0"
+          y1: "64"
+          z1: "0"
+          x2: "100"
+          y2: "100"
+          z2: "100"
+          dimension: "minecraft:overworld"
+
+      - type: "isInZone"
+        label: "Is In Zone"
+        color: "#e64980"
+        hasInput: true
+        hasOutput: true
+        provides: ["isInZone"]
+        params:
+          zone: "spawn_zone"
+          x: "$player.x"
+          y: "$player.y"
+          z: "$player.z"
+
+      - type: "onZoneEnter"
+        label: "On Zone Enter"
+        color: "#e64980"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.player", "evt.zone"]
+        params:
+          zone: "spawn_zone"
+
+      - type: "onZoneLeave"
+        label: "On Zone Leave"
+        color: "#e64980"
+        hasInput: false
+        hasOutput: true
+        provides: ["evt", "evt.player", "evt.zone"]
+        params:
+          zone: "spawn_zone"
+
+      - type: "deleteZone"
+        label: "Delete Zone"
+        color: "#e64980"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          zone: "spawn_zone"
+
+  - name: "Recipes"
+    description: "Add and remove custom recipes"
+    color: "#f59f00"
+    nodes:
+      - type: "addRecipe"
+        label: "Add Crafting Recipe"
+        color: "#f59f00"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          id: "my_recipe"
+          result: "minecraft:diamond"
+          resultCount: "1"
+          pattern: '["AAA","ABA","AAA"]'
+          ingredients: '{"A":"minecraft:iron_ingot","B":"minecraft:stick"}'
+
+      - type: "removeRecipe"
+        label: "Remove Recipe"
+        color: "#f59f00"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          id: "my_recipe"
+
   - name: "Scheduling"
     description: "Delay and repeat execution"
     color: "#fab005"
@@ -399,7 +1140,7 @@ categories:
         color: "#fab005"
         hasInput: true
         hasOutput: true
-        provides: []
+        provides: ["taskId"]
         params:
           ticks: "20"
 
@@ -408,9 +1149,38 @@ categories:
         color: "#fab005"
         hasInput: true
         hasOutput: true
-        provides: []
+        provides: ["taskId"]
         params:
           interval: "20"
+
+      - type: "cancelTask"
+        label: "Cancel Task"
+        color: "#fab005"
+        hasInput: true
+        hasOutput: true
+        provides: []
+        params:
+          taskId: ""
+
+      - type: "runAt"
+        label: "Run At Time"
+        color: "#fab005"
+        hasInput: true
+        hasOutput: true
+        provides: ["taskId"]
+        params:
+          dimension: "minecraft:overworld"
+          time: "1000"
+
+      - type: "runDaily"
+        label: "Run Daily At Time"
+        color: "#fab005"
+        hasInput: true
+        hasOutput: true
+        provides: ["taskId"]
+        params:
+          dimension: "minecraft:overworld"
+          time: "1000"
 
   - name: "Control"
     description: "Flow control and loops"
