@@ -19,11 +19,11 @@
 //   - getBlock          - Read block at coordinates
 //
 // Commands:
-//   /js placestructure <name>            - Place a structure
-//   /js savestructure <name> <size>      - Save region as structure
-//   /js customrecipe                     - Add diamond from coal recipe
-//   /js explode <power>                  - Create explosion at your feet
-//   /js build_platform                   - Build a 9x9 platform
+//   /placestructure <name>            - Place a structure
+//   /savestructure <name> <size>      - Save region as structure
+//   /customrecipe                     - Add diamond from coal recipe
+//   /explode <power>                  - Create explosion at your feet
+//   /build_platform                   - Build a 9x9 platform
 //
 // This mod showcases:
 //   - Structure placement and saving

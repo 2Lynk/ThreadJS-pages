@@ -10,11 +10,11 @@
 //   - listPermissions     - Get all permissions for a player
 //
 // Commands:
-//   /js grantperm <player> <permission>   - Grant a permission
-//   /js revokeperm <player> <permission>  - Revoke a permission
-//   /js checkperm <permission>            - Check if you have permission
-//   /js mypermissions                     - List your permissions
-//   /js myrank                            - Display your rank
+//   /grantperm <player> <permission>   - Grant a permission
+//   /revokeperm <player> <permission>  - Revoke a permission
+//   /checkperm <permission>            - Check if you have permission
+//   /mypermissions                     - List your permissions
+//   /myrank                            - Display your rank
 //
 // This mod showcases:
 //   - Hierarchical permission system (admin.all > mod.all > vip.access)

@@ -13,11 +13,11 @@
 //   - killEntity     - Remove an entity
 //
 // Commands:
-//   /js pillar [height]           - Build a stone pillar (default: 5 blocks)
-//   /js clear_pillar [height]     - Remove a pillar of blocks
-//   /js fill_box <w> <h> <d>      - Fill a box with stone
-//   /js spawn_zombies [count]     - Spawn zombies nearby
-//   /js kill_nearby [radius]      - Kill entities within radius
+//   /pillar [height]           - Build a stone pillar (default: 5 blocks)
+//   /clear_pillar [height]     - Remove a pillar of blocks
+//   /fill_box <w> <h> <d>      - Fill a box with stone
+//   /spawn_zombies [count]     - Spawn zombies nearby
+//   /kill_nearby [radius]      - Kill entities within radius
 //
 // This mod showcases:
 //   - Raycasting to target blocks
@@ -29,7 +29,7 @@
 api.registerMod("world_tools", {
     onInitialize: function (api) {
 
-        // /js pillar <height>
+        // /pillar <height>
         api.registerCommand("pillar", function (ctx, args) {
             if (!ctx.player) {
                 ctx.reply("Only players can use this.");
@@ -55,7 +55,7 @@ api.registerMod("world_tools", {
             ctx.reply("Built a stone pillar of height " + height + " at " + x + "," + y + "," + z + ".");
         }, 0, false, ["int"]);
 
-        // /js clear_pillar <height>
+        // /clear_pillar <height>
         api.registerCommand("clear_pillar", function (ctx, args) {
             if (!ctx.player) {
                 ctx.reply("Only players can use this.");
@@ -81,14 +81,14 @@ api.registerMod("world_tools", {
             ctx.reply("Cleared pillar of height " + height + " at " + x + "," + y + "," + z + ".");
         }, 0, false, ["int"]);
 
-        // /js fill_box <dx> <dy> <dz> <blockId>
+        // /fill_box <dx> <dy> <dz> <blockId>
         api.registerCommand("fill_box", function (ctx, args) {
             if (!ctx.player) {
                 ctx.reply("Only players can use this.");
                 return;
             }
             if (args.length < 4) {
-                ctx.reply("Usage: /js fill_box <dx> <dy> <dz> <blockId>");
+                ctx.reply("Usage: /fill_box <dx> <dy> <dz> <blockId>");
                 return;
             }
 
@@ -110,7 +110,7 @@ api.registerMod("world_tools", {
             ctx.reply("Filled " + placed + " blocks of " + blockId + ".");
         }, 0, false, ["int", "int", "int", "word"]);
 
-        // /js spawn_zombies <count> <radius>
+        // /spawn_zombies <count> <radius>
         api.registerCommand("spawn_zombies", function (ctx, args) {
             if (!ctx.player) {
                 ctx.reply("Only players can use this.");
@@ -133,7 +133,7 @@ api.registerMod("world_tools", {
             ctx.reply("Spawned " + count + " zombies.");
         }, 0, false, ["int", "int"]);
 
-        // /js kill_nearby <radius>
+        // /kill_nearby <radius>
         api.registerCommand("kill_nearby", function (ctx, args) {
             if (!ctx.player) {
                 ctx.reply("Only players can use this.");

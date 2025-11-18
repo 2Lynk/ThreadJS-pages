@@ -62,11 +62,9 @@ api.registerCommand("stats", (ctx, args) => {
 api.registerCommand("showscoreboard", (ctx, args) => {
   if (!ctx.player || args.length < 1) return;
   
-    const board = args[0]; // "pvp" or "mining"
-    api.displayScoreboard(board, "SIDEBAR");
-    api.sendMessageTo(ctx.player.name, `§aShowing ${board} scoreboard`);
-    });
-  }
+  const board = args[0]; // "pvp" or "mining"
+  api.displayScoreboard(board, "SIDEBAR");
+  api.sendMessageTo(ctx.player.name, `§aShowing ${board} scoreboard`);
 });
   }
 });

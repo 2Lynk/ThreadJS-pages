@@ -42,7 +42,7 @@ api.registerMod("designer-example", {
       api.log("Block broken: " + evt.blockId + " at (" + evt.x + ", " + evt.y + ", " + evt.z + ") by " + evt.playerName);
     });
     
-    // Command: /js example
+    // Command: /example
     // A simple command that sends a message and plays a sound
     api.registerCommand("example", (ctx, args) => {
       if (ctx.player) {

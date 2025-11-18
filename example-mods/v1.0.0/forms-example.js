@@ -9,11 +9,11 @@
 //   3. Custom Form    - Multi-input forms with various field types
 //
 // Commands:
-//   /js shop       - Item shop with button selections (Simple Form)
-//   /js clearinv   - Inventory clear with confirmation (Modal Form)
-//   /js teleport   - Teleport with coordinate inputs (Custom Form)
-//   /js settings   - Player settings panel (Advanced Custom Form)
-//   /js kit        - Kit selection menu (Simple Form with logic)
+//   /shop       - Item shop with button selections (Simple Form)
+//   /clearinv   - Inventory clear with confirmation (Modal Form)
+//   /teleport   - Teleport with coordinate inputs (Custom Form)
+//   /settings   - Player settings panel (Advanced Custom Form)
+//   /kit        - Kit selection menu (Simple Form with logic)
 //
 // Form Field Types (Custom Forms):
 //   - input      - Text input field
@@ -34,7 +34,7 @@ api.registerMod("forms_example", {
     // ========================================================================
     // SIMPLE FORM EXAMPLE: Button Selection
     // ========================================================================
-    // Command: /js shop
+    // Command: /shop
     // Description: Shows an item shop with selectable options
     // Form Type: Simple Form (showSimpleForm)
     // Use Case: Menu navigation, shop interfaces, option selection
@@ -74,7 +74,7 @@ api.registerMod("forms_example", {
     // ========================================================================
     // MODAL FORM EXAMPLE: Yes/No Confirmation
     // ========================================================================
-    // Command: /js clearinv
+    // Command: /clearinv
     // Description: Confirms before clearing inventory
     // Form Type: Modal Form (showModalForm)
     // Use Case: Confirmations, binary choices, dangerous actions
@@ -100,7 +100,7 @@ api.registerMod("forms_example", {
     // ========================================================================
     // CUSTOM FORM EXAMPLE: Multi-Input Form
     // ========================================================================
-    // Command: /js teleport
+    // Command: /teleport
     // Description: Teleport using coordinate inputs
     // Form Type: Custom Form (showCustomForm)
     // Use Case: Data collection, multi-field input, complex forms
@@ -159,7 +159,7 @@ api.registerMod("forms_example", {
     // ========================================================================
     // ADVANCED CUSTOM FORM: Settings Panel
     // ========================================================================
-    // Command: /js settings
+    // Command: /settings
     // Description: Player preferences with multiple field types
     // Form Type: Custom Form (showCustomForm)
     // Fields: 2 toggles, 1 slider, 1 dropdown, 1 text input
@@ -228,7 +228,7 @@ api.registerMod("forms_example", {
     // ========================================================================
     // SIMPLE FORM WITH LOGIC: Kit Selection
     // ========================================================================
-    // Command: /js kit
+    // Command: /kit
     // Description: Choose from different starter kits
     // Form Type: Simple Form with conditional logic based on selection
     // Demonstrates: Branching logic based on button selection
