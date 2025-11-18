@@ -1,5 +1,30 @@
-// world-tools.js
-// Simple world manipulation and entity utilities, Rhino-friendly (ES5).
+// ============================================================================
+// World Tools Mod
+// ============================================================================
+// Basic world manipulation utilities (ES5 compatible for older engines)
+//
+// Block Functions:
+//   - setBlock       - Place a block at coordinates
+//   - raycastBlock   - Get the block a player is looking at
+//
+// Entity Functions:
+//   - spawnEntity    - Spawn mobs or entities
+//   - getEntitiesNear - Get entities within radius
+//   - killEntity     - Remove an entity
+//
+// Commands:
+//   /js pillar [height]           - Build a stone pillar (default: 5 blocks)
+//   /js clear_pillar [height]     - Remove a pillar of blocks
+//   /js fill_box <w> <h> <d>      - Fill a box with stone
+//   /js spawn_zombies [count]     - Spawn zombies nearby
+//   /js kill_nearby [radius]      - Kill entities within radius
+//
+// This mod showcases:
+//   - Raycasting to target blocks
+//   - Loop-based block placement
+//   - Entity spawning and removal
+//   - ES5 syntax (var, function) for compatibility
+// ============================================================================
 
 api.registerMod("world_tools", {
     onInitialize: function (api) {

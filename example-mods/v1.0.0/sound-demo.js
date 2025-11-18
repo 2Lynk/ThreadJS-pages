@@ -1,5 +1,31 @@
-// sound-demo.js
-// Demonstrates the ThreadJS sound system with various examples
+// ============================================================================
+// Sound Demo Mod
+// ============================================================================
+// Comprehensive demonstration of the ThreadJS sound system
+//
+// Sound Functions:
+//   - playSound       - Play sound to all players at their location
+//   - playSoundTo     - Play sound to specific player
+//   - playSoundAt     - Play sound at specific coordinates
+//
+// Commands:
+//   /js play_sound <id> [vol] [pitch]  - Play any Minecraft sound
+//   /js sound_alert                     - Example alert sound
+//   /js spawn_firework_sound            - Firework explosion effect
+//   /js victory_sound                   - Victory fanfare
+//   /js music_note                      - Musical note chime
+//
+// Sound Parameters:
+//   - soundId: Minecraft sound identifier (e.g., "entity.player.levelup")
+//   - volume: 0.0 to 1.0 (and beyond for louder sounds)
+//   - pitch: 0.5 to 2.0 (lower = deeper, higher = sharper)
+//
+// This mod showcases:
+//   - Playing built-in Minecraft sounds
+//   - Volume and pitch control
+//   - Positional vs player-targeted sounds
+//   - Ambient sound effects (cave sounds in darkness)
+// ============================================================================
 
 api.registerMod("sound_demo", {
     onInitialize(api) {

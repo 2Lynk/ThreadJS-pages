@@ -1,17 +1,37 @@
-// debug-tools.js
-// Utilities that make the WebSocket debugger very useful.
+// ============================================================================
+// Debug Tools Mod
+// ============================================================================
+// Utilities for debugging ThreadJS mods using the WebSocket debugger
+//
+// Commands:
+//   /js start_debugger [port]      - Start WebSocket debugger (default: 31337)
+//   /js debug_local <true|false>   - Toggle debug log mirroring to chat
+//   /js describe_me                - Dump your player state to debugger
+//   /js inspect_api                - Print the API schema to log
+//   /js list_players               - Describe all online players
+//
+// This mod showcases:
+//   - WebSocket debugger integration
+//   - Runtime object inspection
+//   - Debug logging and state introspection
+//   - Optional command arguments
+// ============================================================================
 
 api.registerMod("debug_tools", {
     onInitialize(api) {
-
-        // /js start_debugger [port]
+        // Command: /js start_debugger [port]
+        // Description: Start the WebSocket debugger server
+        // Arguments: Optional port number (default: 31337)
+        // Usage: Open examples/debugger-client.htm after running this
         api.registerCommand("start_debugger", (ctx, args) => {
             const port = args.length > 0 ? Number(args[0]) || 31337 : 31337;
             api.startDebugger(port);
             ctx.reply(`Debugger requested on ws://127.0.0.1:${port}/. Open debugger-client.htm.`);
         }, 0, false, ["int"]);
 
-        // /js debug_local [player?]
+        // Command: /js debug_local <true|false> [player]
+        // Description: Toggle debug log mirroring to in-game chat
+        // Arguments: true/false to enable/disable, optional player name
         api.registerCommand("debug_local", (ctx, args) => {
             if(args.length === 1 && args[0] === "true"){
                 api.setDebugLocal(true, true, ctx.player);
@@ -40,7 +60,8 @@ api.registerMod("debug_tools", {
             }
         });
 
-        // /js describe_me
+        // Command: /js describe_me
+        // Description: Output your complete player state to the debugger/log
         api.registerCommand("describe_me", (ctx, args) => {
             if (!ctx.player) {
                 ctx.reply("Console has no player state.");
@@ -50,13 +71,15 @@ api.registerMod("debug_tools", {
             ctx.reply("Described your player state in the debugger/log.");
         });
 
-        // /js inspect_api
+        // Command: /js inspect_api
+        // Description: Print the complete API schema to the log for reference
         api.registerCommand("inspect_api", (ctx, args) => {
             api.inspect(api);
             ctx.reply("Printed api schema to the log.");
         });
 
-        // /js list_players (logs to debugger)
+        // Command: /js list_players
+        // Description: Describe all currently online players in the debugger/log
         api.registerCommand("list_players", (ctx, args) => {
             const players = api.listPlayers();
             api.describe(players);
