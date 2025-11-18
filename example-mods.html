@@ -181,11 +181,15 @@
     .mod-description {
       font-size: 0.9rem;
       color: var(--text-primary);
+      white-space: pre-wrap;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
     }
 
     .mod-description.empty {
       font-style: italic;
       color: var(--text-secondary);
+      white-space: normal;
     }
 
     .mod-code-wrapper {
@@ -452,7 +456,7 @@
     footer.className = "mod-footer";
 
     const link = document.createElement("a");
-    link.href = mod.rawUrl;
+    link.href = mod.githubUrl;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
     link.textContent = "View full source on GitHub";
@@ -510,6 +514,7 @@
       for (const file of files) {
         try {
           const rawUrl = file.download_url;
+          const githubUrl = `https://github.com/${OWNER}/${REPO}/blob/main/${file.path}`;
           const srcRes = await fetch(rawUrl);
           const src = await srcRes.text();
 
@@ -521,6 +526,7 @@
             name: file.name,
             path: file.path,
             rawUrl,
+            githubUrl,
             description,
             preview,
             lines: src.split(/\r?\n/).length,
