@@ -578,9 +578,10 @@ function onPortMouseDown(e) {
 
 function onConnectionDrag(e) {
   if (!connectionDragStart) return;
+  const canvasRect = canvasEl.getBoundingClientRect();
   tempConnectionEnd = { 
-    x: e.clientX - canvasEl.getBoundingClientRect().left + canvasWrapper.scrollLeft, 
-    y: e.clientY - canvasEl.getBoundingClientRect().top + canvasWrapper.scrollTop 
+    x: e.clientX - canvasRect.left, 
+    y: e.clientY - canvasRect.top 
   };
   renderConnections();
 }
@@ -628,10 +629,13 @@ function renderConnections() {
     const toRect = toPort.getBoundingClientRect();
     const canvasRect = canvasEl.getBoundingClientRect();
 
-    const x1 = fromRect.left + fromRect.width / 2 - canvasRect.left + canvasWrapper.scrollLeft;
-    const y1 = fromRect.top + fromRect.height / 2 - canvasRect.top + canvasWrapper.scrollTop;
-    const x2 = toRect.left + toRect.width / 2 - canvasRect.left + canvasWrapper.scrollLeft;
-    const y2 = toRect.top + toRect.height / 2 - canvasRect.top + canvasWrapper.scrollTop;
+    // Calculate positions relative to the canvas element
+    // getBoundingClientRect() gives viewport coordinates, so we just need to
+    // subtract the canvas position to get coordinates within the canvas
+    const x1 = fromRect.left + fromRect.width / 2 - canvasRect.left;
+    const y1 = fromRect.top + fromRect.height / 2 - canvasRect.top;
+    const x2 = toRect.left + toRect.width / 2 - canvasRect.left;
+    const y2 = toRect.top + toRect.height / 2 - canvasRect.top;
 
     const path = createCubicBezierPath(x1, y1, x2, y2);
     path.setAttribute("class", "connection-line");
@@ -671,8 +675,8 @@ function renderConnections() {
         const fromRect = fromPort.getBoundingClientRect();
         const canvasRect = canvasEl.getBoundingClientRect();
         
-        const x1 = fromRect.left + fromRect.width / 2 - canvasRect.left + canvasWrapper.scrollLeft;
-        const y1 = fromRect.top + fromRect.height / 2 - canvasRect.top + canvasWrapper.scrollTop;
+        const x1 = fromRect.left + fromRect.width / 2 - canvasRect.left;
+        const y1 = fromRect.top + fromRect.height / 2 - canvasRect.top;
         
         const path = createCubicBezierPath(x1, y1, tempConnectionEnd.x, tempConnectionEnd.y);
         path.setAttribute("class", "connection-line");
