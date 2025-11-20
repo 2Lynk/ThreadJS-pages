@@ -1,5 +1,4 @@
 // ThreadJS Designer - Enhanced with connections and full API support
-// Updated for ThreadJS v1.0.0+ API structure
 
 // Variable schemas - loaded from versioned YAML files
 let VARIABLE_SCHEMAS = {};
@@ -1155,332 +1154,61 @@ function generateNodeCode(node, indentLevel) {
   const lines = [];
   const p = node.params || {};
 
-  switch (node.type) {
-    // Events
-    case "onServerTick":
-      lines.push(`${indent}api.onServerTick(() => {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}});`);
-      break;
-    case "onPlayerJoin":
-      lines.push(`${indent}api.onPlayerJoin((player) => {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}});`);
-      break;
-    case "onPlayerLeave":
-      lines.push(`${indent}api.onPlayerLeave((player) => {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}});`);
-      break;
-    case "onPlayerTick":
-      lines.push(`${indent}api.onPlayerTick((player) => {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}});`);
-      break;
-    case "onChatMessage":
-      lines.push(`${indent}api.onChatMessage((evt) => {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}});`);
-      break;
-    case "onBlockBreak":
-      lines.push(`${indent}api.onBlockBreak((evt) => {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}});`);
-      break;
-    case "onBlockPlace":
-      lines.push(`${indent}api.onBlockPlace((evt) => {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}});`);
-      break;
-    case "onUseBlock":
-      lines.push(`${indent}api.onUseBlock((evt) => {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}});`);
-      break;
-    case "onUseItem":
-      lines.push(`${indent}api.onUseItem((evt) => {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}});`);
-      break;
-    case "onAttackEntity":
-      lines.push(`${indent}api.onAttackEntity((evt) => {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}});`);
-      break;
-    case "onEntityDamage":
-      lines.push(`${indent}api.onEntityDamage((evt) => {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}});`);
-      break;
-    case "onEntityDeath":
-      lines.push(`${indent}api.onEntityDeath((evt) => {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}});`);
-      break;
-      
-    // Commands (updated for new API)
-    case "registerCommand": {
-      // Object-based command registration
-      const cmdObj = {
-        command: p.command || "mycommand",
-        description: p.description || "",
-        args: Array.isArray(p.args) ? p.args : [],
-      };
-      if (p.permissionLevel !== undefined) cmdObj.permissionLevel = p.permissionLevel;
-      if (p.requiresOp !== undefined) cmdObj.requiresOp = p.requiresOp;
-      // Generate the execute function body from connected nodes
-      lines.push(`${indent}api.registerCommand({`);
-      lines.push(`${indent}  command: ${JSON.stringify(cmdObj.command)},`);
-      lines.push(`${indent}  description: ${JSON.stringify(cmdObj.description)},`);
-      lines.push(`${indent}  args: ${JSON.stringify(cmdObj.args, null, 2).replace(/\n/g, '\n' + indent + '    ')},`);
-      if (cmdObj.permissionLevel !== undefined)
-        lines.push(`${indent}  permissionLevel: ${cmdObj.permissionLevel},`);
-      if (cmdObj.requiresOp !== undefined)
-        lines.push(`${indent}  requiresOp: ${cmdObj.requiresOp},`);
-      lines.push(`${indent}  execute: function(ctx) {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 2));
-      lines.push(`${indent}  }`);
-      lines.push(`${indent}});`);
-      break;
-    }
-
-    // Messaging
-    case "log":
-      const availableVarsLog = getAvailableVariables(node.id);
-      const logMsg = processParamValue(p.message || "Log message", availableVarsLog);
-      lines.push(`${indent}api.log(${logMsg});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    case "broadcast":
-      const availableVarsBc = getAvailableVariables(node.id);
-      const bcMsg = processParamValue(p.message || "Broadcast message", availableVarsBc);
-      lines.push(`${indent}api.sendMessage(${bcMsg});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    case "sendMessageTo":
-      const availableVarsMsg = getAvailableVariables(node.id);
-      const toPlayer = processParamValue(p.player || "playerName", availableVarsMsg);
-      const toMsg = processParamValue(p.message || "Hello!", availableVarsMsg);
-      lines.push(`${indent}api.sendMessageTo(${toPlayer}, ${toMsg});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    // Teams (new API)
-    case "createTeam":
-      lines.push(`${indent}api.teams.create(${JSON.stringify(p.name)}, { color: ${JSON.stringify(p.color)}, friendlyFire: ${p.friendlyFire} });`);
-      break;
-    case "addToTeam":
-      lines.push(`${indent}api.teams.addPlayer(${JSON.stringify(p.team)}, ${JSON.stringify(p.player)});`);
-      break;
-    case "removeFromTeam":
-      lines.push(`${indent}api.teams.removePlayer(${JSON.stringify(p.team)}, ${JSON.stringify(p.player)});`);
-      break;
-    case "getPlayerTeam":
-      lines.push(`${indent}const team = api.teams.getPlayerTeam(${JSON.stringify(p.player)});`);
-      break;
-    case "listTeams":
-      lines.push(`${indent}const teams = api.teams.list();`);
-      break;
-
-    // Scoreboard (new API)
-    case "setScore":
-      lines.push(`${indent}api.scoreboard.setScore(${JSON.stringify(p.objective)}, ${JSON.stringify(p.player)}, ${p.score});`);
-      break;
-    case "getScore":
-      lines.push(`${indent}const score = api.scoreboard.getScore(${JSON.stringify(p.objective)}, ${JSON.stringify(p.player)});`);
-      break;
-    case "listObjectives":
-      lines.push(`${indent}const objectives = api.scoreboard.listObjectives();`);
-      break;
-
-    // Permissions (new API)
-    case "setPermission":
-      lines.push(`${indent}api.permissions.set(${JSON.stringify(p.player)}, ${JSON.stringify(p.permission)}, ${JSON.stringify(p.value)});`);
-      break;
-    case "getPermission":
-      lines.push(`${indent}const perm = api.permissions.get(${JSON.stringify(p.player)}, ${JSON.stringify(p.permission)});`);
-      break;
-    case "listPermissions":
-      lines.push(`${indent}const perms = api.permissions.list(${JSON.stringify(p.player)});`);
-      break;
-
-    // Advancements (new API)
-    case "grantAdvancement":
-      lines.push(`${indent}api.advancements.grant(${JSON.stringify(p.player)}, ${JSON.stringify(p.advancementId)});`);
-      break;
-    case "revokeAdvancement":
-      lines.push(`${indent}api.advancements.revoke(${JSON.stringify(p.player)}, ${JSON.stringify(p.advancementId)});`);
-      break;
-    case "listAdvancements":
-      lines.push(`${indent}const advs = api.advancements.list(${JSON.stringify(p.player)});`);
-      break;
-
-    // Lifecycle (new API)
-    case "onModInitialize":
-      lines.push(`${indent}api.lifecycle.onInitialize(() => {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}});`);
-      break;
-    case "onModReload":
-      lines.push(`${indent}api.lifecycle.onReload(() => {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}});`);
-      break;
-
-    // World
-    case "setBlock":
-      lines.push(`${indent}api.world.setBlock(${p.x}, ${p.y}, ${p.z}, ${JSON.stringify(p.dimension)}, ${JSON.stringify(p.blockId)});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    case "getBlock":
-      lines.push(`${indent}const block = api.world.getBlock(${p.x}, ${p.y}, ${p.z}, ${JSON.stringify(p.dimension)});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    case "fillArea":
-      lines.push(`${indent}api.world.fillArea(${p.x1}, ${p.y1}, ${p.z1}, ${p.x2}, ${p.y2}, ${p.z2}, ${JSON.stringify(p.dimension)}, ${JSON.stringify(p.blockId)});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    case "replaceBlocks":
-      lines.push(`${indent}api.world.replaceBlocks(${p.x1}, ${p.y1}, ${p.z1}, ${p.x2}, ${p.y2}, ${p.z2}, ${JSON.stringify(p.dimension)}, ${JSON.stringify(p.from)}, ${JSON.stringify(p.to)});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    // Players
-    case "getPlayers":
-      lines.push(`${indent}const players = api.players.list();`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    case "teleport":
-      lines.push(`${indent}api.players.teleport(${JSON.stringify(p.player)}, ${p.x}, ${p.y}, ${p.z}, ${JSON.stringify(p.dimension)});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    case "setGamemode":
-      lines.push(`${indent}api.players.setGamemode(${JSON.stringify(p.player)}, ${JSON.stringify(p.mode)});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    case "setHealth":
-      lines.push(`${indent}api.players.setHealth(${JSON.stringify(p.player)}, ${p.health});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    case "heal":
-      lines.push(`${indent}api.players.heal(${JSON.stringify(p.player)}, ${p.amount});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    case "giveItem":
-      lines.push(`${indent}api.players.giveItem(${JSON.stringify(p.player)}, ${JSON.stringify(p.itemId)}, ${p.count});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    // Entities
-    case "spawnEntity":
-      lines.push(`${indent}const entityId = api.entities.spawn(${JSON.stringify(p.entityType)}, ${p.x}, ${p.y}, ${p.z}, ${JSON.stringify(p.dimension)});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    case "killEntity":
-      lines.push(`${indent}api.entities.kill(${JSON.stringify(p.entityUuid)});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    case "findEntities":
-      const findType = p.type ? `, typeId: ${JSON.stringify(p.type)}` : "";
-      lines.push(`${indent}const entities = api.entities.find({`);
-      lines.push(`${indent}  center: { x: ${p.x}, y: ${p.y}, z: ${p.z}, dimensionId: ${JSON.stringify(p.dimension)} },`);
-      lines.push(`${indent}  radius: ${p.radius}${findType}`);
-      lines.push(`${indent}});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    // Sound
-    case "playSound":
-      lines.push(`${indent}api.playSound(${JSON.stringify(p.soundId)}, ${p.volume}, ${p.pitch});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    case "playSoundTo":
-      lines.push(`${indent}api.playSoundTo(${JSON.stringify(p.player)}, ${JSON.stringify(p.soundId)}, ${p.volume}, ${p.pitch});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    case "playSoundAt":
-      lines.push(`${indent}api.playSoundAt(${p.x}, ${p.y}, ${p.z}, ${JSON.stringify(p.dimension)}, ${JSON.stringify(p.soundId)}, ${p.volume}, ${p.pitch});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    // Data
-    case "loadData":
-      lines.push(`${indent}const data = api.data.load(${JSON.stringify(p.namespace)}, ${JSON.stringify(p.key)});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    case "saveData":
-      lines.push(`${indent}api.data.save(${JSON.stringify(p.namespace)}, ${JSON.stringify(p.key)}, ${p.value});`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
-      break;
-      
-    // Scheduling
-    case "runLater":
-      lines.push(`${indent}api.scheduling.runLater(${p.ticks}, () => {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}});`);
-      break;
-      
-    case "runRepeating":
-      lines.push(`${indent}api.scheduling.runRepeating(${p.interval}, () => {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}});`);
-      break;
-      
-    // Control
-    case "if":
-      lines.push(`${indent}if (${p.condition}) {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}}`);
-      break;
-      
-    case "forEach":
-      lines.push(`${indent}${p.array}.forEach((${p.varName}) => {`);
-      lines.push(...generateConnectedNodes(node, indentLevel + 1));
-      lines.push(`${indent}});`);
-      break;
-      
-    default:
-      lines.push(`${indent}// TODO: ${node.type}`);
-      if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
-      lines.push(...generateConnectedNodes(node, indentLevel));
+  // Special handling for a few node types
+  if (node.type === "registerCommand") {
+    const cmdName = p.name || "mycommand";
+    const permLevel = p.permLevel || "0";
+    const playerOnly = p.playerOnly || false;
+    lines.push(`${indent}api.registerCommand("${cmdName}", (ctx, args) => {`);
+    lines.push(...generateConnectedNodes(node, indentLevel + 1));
+    lines.push(`${indent}}, ${permLevel}, ${playerOnly});`);
+    return lines;
   }
 
+  // Control flow nodes (if, forEach)
+  if (node.type === "if") {
+    lines.push(`${indent}if (${p.condition}) {`);
+    lines.push(...generateConnectedNodes(node, indentLevel + 1));
+    lines.push(`${indent}}`);
+    return lines;
+  }
+  if (node.type === "forEach") {
+    lines.push(`${indent}${p.array}.forEach((${p.varName}) => {`);
+    lines.push(...generateConnectedNodes(node, indentLevel + 1));
+    lines.push(`${indent}});`);
+    return lines;
+  }
+
+  // Event nodes: dynamically handle any event type from NODE_DEFINITIONS
+  const def = NODE_DEFINITIONS[node.type];
+  if (def && def.eventHandler) {
+    // eventHandler: { method: "onPlayerJoin", args: ["player"] }
+    const method = def.eventHandler.method;
+    const args = def.eventHandler.args ? def.eventHandler.args.join(", ") : "";
+    lines.push(`${indent}api.${method}(${args ? `(${args}) => {` : "() => {"}`);
+    lines.push(...generateConnectedNodes(node, indentLevel + 1));
+    lines.push(`${indent}});`);
+    return lines;
+  }
+
+  // Generic node: use NODE_DEFINITIONS to generate code
+  if (def && def.codeTemplate) {
+    // codeTemplate: string with placeholders for params
+    let code = def.codeTemplate;
+    // Replace placeholders with param values
+    Object.entries(p).forEach(([key, value]) => {
+      code = code.replace(new RegExp(`\\$\{${key}\}`, "g"), value);
+    });
+    lines.push(indent + code);
+    if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
+    lines.push(...generateConnectedNodes(node, indentLevel));
+    return lines;
+  }
+
+  // Fallback: comment and custom code
+  lines.push(`${indent}// TODO: ${node.type}`);
+  if (node.customCode) lines.push(indentLines(node.customCode, indentLevel));
+  lines.push(...generateConnectedNodes(node, indentLevel));
   return lines;
 }
 
@@ -1636,7 +1364,7 @@ function getAutocompleteSuggestionsJS(partial, availableVars) {
         if (propName.startsWith('[')) return; // Skip array accessors
         if (propName.toLowerCase().startsWith(propPrefix)) {
           suggestions.push({
-            value: `${varName}.${propName}`,
+            value: propName, // Just the property name, not the full path
             type: propDef.type,
             description: propDef.description,
             example: propDef.example
@@ -2053,7 +1781,7 @@ function setupCanvasPanning() {
     const dy = e.clientY - panStartY;
     
     canvasWrapper.scrollLeft = panScrollLeft - dx;
-       canvasWrapper.scrollTop = panScrollTop - dy;
+    canvasWrapper.scrollTop = panScrollTop - dy;
     
     // Update connection lines during panning
     renderConnections();
@@ -2065,7 +1793,6 @@ function setupCanvasPanning() {
       canvasWrapper.style.cursor = "";
     }
   });
-  
   
   // Also update connections when scrolling (e.g., with mouse wheel)
   canvasWrapper.addEventListener("scroll", () => {
