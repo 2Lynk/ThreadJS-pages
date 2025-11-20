@@ -1220,20 +1220,27 @@ function generateNodeCode(node, indentLevel) {
       
     // Commands (updated for new API)
     case "registerCommand": {
-      // New API: api.registerCommand(name, handler, minPermissionLevel?, playerOnly?, argSpec?)
-      const cmdName = p.name || "mycommand";
-      const permLevel = p.permLevel !== undefined ? p.permLevel : 0;
-      const playerOnly = p.playerOnly !== undefined ? p.playerOnly : false;
-      const argSpec = Array.isArray(p.argSpec) ? JSON.stringify(p.argSpec) : (p.argSpec ? JSON.stringify([p.argSpec]) : "undefined");
-      lines.push(`${indent}api.registerCommand(`);
-      lines.push(`${indent}  "${cmdName}",`);
-      lines.push(`${indent}  (ctx, args) => {`);
+      // Object-based command registration
+      const cmdObj = {
+        command: p.command || "mycommand",
+        description: p.description || "",
+        args: Array.isArray(p.args) ? p.args : [],
+      };
+      if (p.permissionLevel !== undefined) cmdObj.permissionLevel = p.permissionLevel;
+      if (p.requiresOp !== undefined) cmdObj.requiresOp = p.requiresOp;
+      // Generate the execute function body from connected nodes
+      lines.push(`${indent}api.registerCommand({`);
+      lines.push(`${indent}  command: ${JSON.stringify(cmdObj.command)},`);
+      lines.push(`${indent}  description: ${JSON.stringify(cmdObj.description)},`);
+      lines.push(`${indent}  args: ${JSON.stringify(cmdObj.args, null, 2).replace(/\n/g, '\n' + indent + '    ')},`);
+      if (cmdObj.permissionLevel !== undefined)
+        lines.push(`${indent}  permissionLevel: ${cmdObj.permissionLevel},`);
+      if (cmdObj.requiresOp !== undefined)
+        lines.push(`${indent}  requiresOp: ${cmdObj.requiresOp},`);
+      lines.push(`${indent}  execute: function(ctx) {`);
       lines.push(...generateConnectedNodes(node, indentLevel + 2));
-      lines.push(`${indent}  },`);
-      lines.push(`${indent}  ${permLevel},`);
-      lines.push(`${indent}  ${playerOnly},`);
-      lines.push(`${indent}  ${argSpec}`);
-      lines.push(`${indent});`);
+      lines.push(`${indent}  }`);
+      lines.push(`${indent}});`);
       break;
     }
 
@@ -2046,7 +2053,7 @@ function setupCanvasPanning() {
     const dy = e.clientY - panStartY;
     
     canvasWrapper.scrollLeft = panScrollLeft - dx;
-    canvasWrapper.scrollTop = panScrollTop - dy;
+       canvasWrapper.scrollTop = panScrollTop - dy;
     
     // Update connection lines during panning
     renderConnections();
