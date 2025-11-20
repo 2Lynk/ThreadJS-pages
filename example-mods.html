@@ -442,7 +442,9 @@
     const desc = document.createElement("div");
     desc.className = "mod-description";
     if (mod.description) {
-      desc.textContent = mod.description;
+      // Show only first 15 lines of description
+      const trimmedDesc = mod.description.trim().split('\n').slice(0, 15).join('\n');
+      desc.textContent = trimmedDesc;
     } else {
       desc.classList.add("empty");
       desc.textContent = "No description found in the file comments yet.";
